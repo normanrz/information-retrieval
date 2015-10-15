@@ -2,7 +2,7 @@ package SearchEngine;
 
 /**
  *
- * @author: Your team name
+ * @author: JasperRzepka
  * @dataset: US patent grants : ipg files from http://www.google.com/googlebooks/uspto-patents-grants-text.html
  * @course: Information Retrieval and Web Search, Hasso-Plattner Institut, 2015
  *
@@ -21,10 +21,12 @@ package SearchEngine;
 import java.util.ArrayList;
 
 
-public class SearchEngineTemplate extends SearchEngine { // Replace 'Template' with your search engine's name, i.e. SearchEngineMyTeamName
+public class SearchEngineJasperRzepka extends SearchEngine {
 
-    
-    public SearchEngineTemplate() { // Replace 'Template' with your search engine's name, i.e. SearchEngineMyTeamName
+
+    protected static String baseDirectory = "data/";
+
+    public SearchEngineJasperRzepka() {
         // This should stay as is! Don't add anything here!
         super();
     }
