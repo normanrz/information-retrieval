@@ -1,16 +1,7 @@
 package SearchEngine;
 
-
-import java.io.FileReader;
-import java.io.IOException;
-
-import SearchEngine.SaxImporter.DummyEntityResolver;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
-
 import SearchEngine.SaxImporter.SaxImporter;
+
 
 /**
  *
@@ -28,29 +19,19 @@ public class SearchEngineTest {
     
     public static void main(String args[]) throws Exception {
 
+        // SaxImporter.readDocNumberAndTitle("data/testData.xml");
 
-        try {
-            XMLReader xmlReader = XMLReaderFactory.createXMLReader();
-            FileReader reader = new FileReader("data/testData.xml");
-            InputSource inputSource = new InputSource(reader);
+        // SaxImporter.readDocNumberFromGzip("ipg150106.xml.gz");
 
-            xmlReader.setEntityResolver(new DummyEntityResolver());
-            xmlReader.setContentHandler(new SaxImporter());
-            xmlReader.parse(inputSource);
-
-        } catch (IOException|SAXException e) {
-            e.printStackTrace();
-        }
-
-        // SearchEngine myEngine = new SearchEngineJasperRzepka();
+        SearchEngine myEngine = new SearchEngineJasperRzepka();
         
-        // long start = System.currentTimeMillis();
+        long start = System.currentTimeMillis();
         
-        // myEngine.index(String directory)
+        myEngine.index("data");
         
-        // long time = System.currentTimeMillis() - start;
+        long time = System.currentTimeMillis() - start;
         
-        // System.out.print("Indexing Time:\t" + time + "\tms\n");
+        System.out.print("Indexing Time:\t" + time + "\tms\n");
         
         // myEngine.loadIndex(String directory)
         

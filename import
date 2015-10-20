@@ -1,0 +1,13 @@
+#!/bin/bash
+
+zips=$(find . -name "ipg*.zip")
+
+for zip in $zips; do
+  fn=$(basename $zip ".zip")
+  echo "Writing ${fn}.xml.gz"
+  {
+    echo "<data>"
+    unzip -p ${fn}.zip ${fn}.xml | sed -E -e '/(<!DOCTYPE|<\?xml)/d'
+    echo "</data>" 
+  } | gzip > ${fn}.xml.gz
+done

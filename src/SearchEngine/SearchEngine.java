@@ -1,7 +1,6 @@
 package SearchEngine;
 
 /**
- *
  * @author: Konstantina.Lazarid
  * @dataset: US patent grants : ipg files from http://www.google.com/googlebooks/uspto-patents-grants-text.html
  * @course: Information Retrieval and Web Search, Hasso-Plattner Institut, 2015
@@ -20,44 +19,44 @@ import java.util.ArrayList;
 */
 public abstract class SearchEngine {
 
-        // paths
-	protected static String baseDirectory = "";  /************* Define your baseDirectory here !! ******************/
-        protected static String teamDirectory; // don't change this
-        
-         // we will need these later in the course
-        protected int topK; 
-        protected int prf; 
-        
-	public SearchEngine() {
-		
-            // the baseDirectory is already defined
-            teamDirectory = baseDirectory + getClass().getSimpleName(); // creates SearchEngineMyTeamName directory
-            new File(teamDirectory).mkdirs();
-	}
+    // paths
+    protected static String baseDirectory = "";
+    protected static String teamDirectory; // don't change this
 
-        // contruct your patent index and save it in a file in the teamDirectory
-        abstract void index(String directory);
-        
-        // load the index's seeklist from the teamDirectory
-	abstract boolean loadIndex(String directory);
-        
-        // contruct a compressed version of the index and save it in a file in the teamDirectory
-        abstract void compressIndex(String directory);
+    // we will need these later in the course
+    protected int topK;
+    protected int prf;
 
-        // load the seeklist for the compressed index from the teamDirectory
-        abstract boolean loadCompressedIndex(String directory);
+    public SearchEngine() {
 
-        // search the index for a given query and return the relevant patent titles in an ArrayList of Strings
-        abstract ArrayList<String> search(String query, int topK, int prf);
+        // the baseDirectory is already defined
+        teamDirectory = baseDirectory + getClass().getSimpleName(); // creates SearchEngineMyTeamName directory
+        new File(teamDirectory).mkdirs();
+    }
 
-        // we will need this later in the course
-        public void setTopK(int value){
-            topK = value; 
-        }
-        
-        // we will need this later in the course
-        public void setPRF(int value){
-            prf = value;
-        }
-        
+    // contruct your patent index and save it in a file in the teamDirectory
+    abstract void index(String directory);
+
+    // load the index's seeklist from the teamDirectory
+    abstract boolean loadIndex(String directory);
+
+    // contruct a compressed version of the index and save it in a file in the teamDirectory
+    abstract void compressIndex(String directory);
+
+    // load the seeklist for the compressed index from the teamDirectory
+    abstract boolean loadCompressedIndex(String directory);
+
+    // search the index for a given query and return the relevant patent titles in an ArrayList of Strings
+    abstract ArrayList<String> search(String query, int topK, int prf);
+
+    // we will need this later in the course
+    public void setTopK(int value) {
+        topK = value;
+    }
+
+    // we will need this later in the course
+    public void setPRF(int value) {
+        prf = value;
+    }
+
 }

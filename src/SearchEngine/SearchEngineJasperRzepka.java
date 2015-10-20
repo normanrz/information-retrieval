@@ -18,13 +18,20 @@ package SearchEngine;
  * Keep in mind to include your implementation decisions also in the pdf file of each assignment
  */
 
+import SearchEngine.SaxImporter.SaxImporter;
+
+import java.io.File;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 
 public class SearchEngineJasperRzepka extends SearchEngine {
 
 
     protected static String baseDirectory = "data/";
+    protected static int numberOfThreads = Runtime.getRuntime().availableProcessors();
 
     public SearchEngineJasperRzepka() {
         // This should stay as is! Don't add anything here!
@@ -33,6 +40,23 @@ public class SearchEngineJasperRzepka extends SearchEngine {
 
     @Override
     void index(String directory) {
+
+        ExecutorService exec = Executors.newFixedThreadPool(numberOfThreads);
+        try {
+            File dir = new File(directory);
+            for (File file : dir.listFiles()) {
+                if (file.getName().endsWith((".xml.gz"))) {
+                    exec.submit(() -> SaxImporter.readDocNumberFromGzip(file));
+                }
+            }
+            exec.shutdown();
+            exec.awaitTermination(2L, TimeUnit.DAYS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            exec.shutdown();
+        }
+
     }
 
     @Override

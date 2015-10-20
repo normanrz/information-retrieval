@@ -1,59 +1,46 @@
 package SearchEngine.SaxImporter;
 
-import org.xml.sax.*;
-import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import java.io.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
- * @author: JasperRzepka
- * @course: Information Retrieval and Web Search, Hasso-Plattner Institut, 2015
+ * Created by norman on 19.10.15.
  */
-public class SaxImporter extends DefaultHandler {
+public class SaxImporter {
 
-    private String inventionTitle = "";
-    private String docNumber = "";
-    private StringBuffer currentBuffer;
-    private Boolean isInPublicationReference = false;
+    public static void readDocNumberAndTitle(File xmlFile) {
+        try {
+            SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
+            InputStream xmlStream = new FileInputStream(xmlFile);
+            saxParser.parse(xmlStream, new DocNumberAndTitleHandler());
 
-    @Override
-    public void startElement(String namespaceURI,
-                             String localName,
-                             String qName,
-                             Attributes atts)
-            throws SAXException {
-
-        currentBuffer = new StringBuffer();
-        switch (localName) {
-            case "publication-reference":
-                isInPublicationReference = true;
-                break;
+        } catch (ParserConfigurationException|IOException|SAXException e) {
+            e.printStackTrace();
         }
     }
 
-    @Override
-    public void endElement(String uri, String localName, String qName) throws SAXException {
-        String currentValue = currentBuffer.toString().replaceAll("\\s+", " ");
-        switch (localName) {
-            case "publication-reference":
-                isInPublicationReference = false;
-                break;
-            case "us-patent-grant":
-                System.out.println(docNumber + ": " + inventionTitle);
-                break;
-            case "invention-title":
-                inventionTitle = currentValue;
-                break;
-            case "doc-number":
-                if (isInPublicationReference) {
-                    docNumber = currentValue;
-                }
-                break;
+    public static void readDocNumberFromGzip(File gzipFile) {
+        try {
+            SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
+            InputStream xmlStream = new GZIPInputStream(new FileInputStream(gzipFile));
+            saxParser.parse(xmlStream, new DocNumberAndTitleHandler());
+            xmlStream.close();
+        } catch (ParserConfigurationException|IOException|SAXException e) {
+            e.printStackTrace();
         }
-    }
 
-    @Override
-    public void characters(char[] ch, int start, int length) throws SAXException {
-        currentBuffer.append(new String(ch, start, length));
     }
-
 }
