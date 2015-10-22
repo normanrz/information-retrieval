@@ -40,7 +40,6 @@ public class SearchEngineJasperRzepka extends SearchEngine {
 
     @Override
     void index(String directory) {
-
         ExecutorService exec = Executors.newFixedThreadPool(numberOfThreads);
         try {
             File dir = new File(directory);

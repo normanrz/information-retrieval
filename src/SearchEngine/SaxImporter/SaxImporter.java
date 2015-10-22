@@ -36,7 +36,7 @@ public class SaxImporter {
         try {
             SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
             InputStream xmlStream = new GZIPInputStream(new FileInputStream(gzipFile));
-            saxParser.parse(xmlStream, new DocNumberAndTitleHandler());
+            saxParser.parse(xmlStream, new DocNumberAndAbstractHandler());
             xmlStream.close();
         } catch (ParserConfigurationException|IOException|SAXException e) {
             e.printStackTrace();
