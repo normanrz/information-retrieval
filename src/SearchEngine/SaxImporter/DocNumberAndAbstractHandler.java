@@ -1,11 +1,15 @@
 package SearchEngine.SaxImporter;
 
+import SearchEngine.DocNumberAndAbstract;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.stream.Stream;
 
 
 /**
@@ -20,6 +24,7 @@ public class DocNumberAndAbstractHandler extends DefaultHandler {
     private Boolean isInPublicationReference = false;
     private Boolean isUtilityPatent = false;
     private int counter = 0;
+    private ArrayList<DocNumberAndAbstract> buffer = new ArrayList();
 
     @Override
     public void startElement(String namespaceURI,
@@ -50,7 +55,8 @@ public class DocNumberAndAbstractHandler extends DefaultHandler {
                 break;
             case "us-patent-grant":
                 if (isUtilityPatent) {
-                    System.out.println(docNumber + ": " + inventionAbstract);
+                    buffer.add(new DocNumberAndAbstract(docNumber, inventionAbstract));
+                    // System.out.println(docNumber + ": " + inventionAbstract);
                     counter++;
                 }
                 break;
@@ -75,6 +81,10 @@ public class DocNumberAndAbstractHandler extends DefaultHandler {
     @Override
     public InputSource resolveEntity(String publicId, String systemId) {
         return new InputSource(new ByteArrayInputStream("<?xml version='1.0' encoding='UTF-8'?>".getBytes()));
+    }
+
+    public Stream<DocNumberAndAbstract> getBuffer() {
+        return buffer.stream();
     }
 
 }

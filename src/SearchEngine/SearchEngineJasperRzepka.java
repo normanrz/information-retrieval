@@ -22,9 +22,12 @@ import SearchEngine.SaxImporter.SaxImporter;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 
 public class SearchEngineJasperRzepka extends SearchEngine {
@@ -40,21 +43,14 @@ public class SearchEngineJasperRzepka extends SearchEngine {
 
     @Override
     void index(String directory) {
-        ExecutorService exec = Executors.newFixedThreadPool(numberOfThreads);
-        try {
+
             File dir = new File(directory);
-            for (File file : dir.listFiles()) {
-                if (file.getName().endsWith((".xml.gz"))) {
-                    exec.submit(() -> SaxImporter.readDocNumberFromGzip(file));
-                }
-            }
-            exec.shutdown();
-            exec.awaitTermination(2L, TimeUnit.DAYS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            exec.shutdown();
-        }
+            Stream.of(dir.listFiles()).parallel()
+                    .filter(file -> file.getName().endsWith((".xml.gz")))
+                    .map(file -> SaxImporter.readDocNumberFromGzip(file))
+                    .filter(Optional::isPresent)
+                    .flatMap(Optional::get)
+                    .forEach(doc -> System.out.println(doc));
 
     }
 

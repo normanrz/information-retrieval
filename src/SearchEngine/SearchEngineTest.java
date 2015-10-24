@@ -2,6 +2,8 @@ package SearchEngine;
 
 import SearchEngine.SaxImporter.SaxImporter;
 
+import java.util.ArrayList;
+
 
 /**
  *
@@ -33,13 +35,11 @@ public class SearchEngineTest {
         
         System.out.print("Indexing Time:\t" + time + "\tms\n");
         
-        // myEngine.loadIndex(String directory)
+        myEngine.loadIndex("index");
         
-        // String query = "";
-        
-        // ArrayList <String> results = new ArrayList <> ();
-        
-        // results = myEngine.search(String query, int topK, int prf)
+        String query = "dumbass";
+
+        ArrayList<String> results = myEngine.search(query, 0, 0);
         
     }
 
