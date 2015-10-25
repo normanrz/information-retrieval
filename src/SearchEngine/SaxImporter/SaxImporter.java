@@ -1,9 +1,7 @@
 package SearchEngine.SaxImporter;
 
-import SearchEngine.DocNumberAndAbstract;
-import org.xml.sax.InputSource;
+import SearchEngine.PatentDocument;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -13,8 +11,6 @@ import java.io.*;
 import java.util.*;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 /**
  * Created by norman on 19.10.15.
@@ -32,7 +28,7 @@ public class SaxImporter {
         }
     }
 
-    public static Optional<Stream<DocNumberAndAbstract>> readDocNumberFromGzip(File gzipFile) {
+    public static Optional<Stream<PatentDocument>> readDocNumberFromGzip(File gzipFile) {
         try {
             SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
             InputStream xmlStream = new GZIPInputStream(new FileInputStream(gzipFile));
