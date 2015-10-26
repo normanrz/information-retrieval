@@ -28,6 +28,10 @@ import org.tartarus.snowball.ext.englishStemmer;
 import java.io.File;
 import java.io.StringReader;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.IntBinaryOperator;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -56,6 +60,9 @@ public class SearchEngineJasperRzepka extends SearchEngine {
     protected static String baseDirectory = "data/";
     protected static int numberOfThreads = Runtime.getRuntime().availableProcessors();
 
+    protected final SnowballStemmer stemmer = new englishStemmer();
+    protected final ConcurrentHashMap<String, ConcurrentLinkedQueue<PatentDocument>> index = new ConcurrentHashMap<>();
+
     public SearchEngineJasperRzepka() {
         // This should stay as is! Don't add anything here!
         super();
@@ -66,35 +73,40 @@ public class SearchEngineJasperRzepka extends SearchEngine {
 
         File dir = new File(directory);
         Stream.of(dir.listFiles()).parallel()
-                .filter(file -> file.getName().endsWith((".xml.gz")))
-                .map(SaxImporter::readDocNumberFromGzip)
-                .filter(Optional::isPresent)
-                .flatMap(Optional::get)
+                .filter(file -> file.getName().endsWith((".xml")))
+                .map(SaxImporter::readDocNumberAndTitle)
+                .flatMap(value -> value)
                 .forEach(doc -> {
 
-                    SnowballStemmer stemmer = new englishStemmer();
-                    PTBTokenizer<CoreLabel> ptbt = new PTBTokenizer<>(
-                            new StringReader(doc.abstractText), new CoreLabelTokenFactory(), "");
+                    PTBTokenizer<CoreLabel> tokenizer = new PTBTokenizer<>(
+                            new StringReader(doc.title + " " + doc.abstractText), new CoreLabelTokenFactory(), "");
 
-                    tokenizerAsStream(ptbt)
+                    tokenizerAsStream(tokenizer)
                             .filter(token -> {
                                 return !stopwords.contains(token.value());
                             })
-                            .map(token -> {
-                                stemmer.setCurrent(token.value());
-                                if (stemmer.stem()) {
-                                    System.out.println(stemmer.getCurrent() + "  " + token.value());
-                                    return Optional.of(stemmer.getCurrent());
-                                } else {
-                                    return Optional.empty();
-                                }
-                            })
-                            .toArray();
+                            .forEach(token -> {
+                                stem(token.value())
+                                        .map(word -> {
+//                                            System.out.println(word + "  " + token.value());
+                                            synchronized (index) {
+                                                if (!index.containsKey(word)) {
+                                                    index.put(word, new ConcurrentLinkedQueue<>());
+                                                }
+                                            }
+                                            ConcurrentLinkedQueue postingsList = index.get(word);
+                                            postingsList.add(doc);
+                                            return null;
+                                        });
+                            });
 //                            .filter(Optional::isPresent)
 //                            .map(Optional::get)
 //                            .forEach(System.out::println);
 //                     System.out.println(doc);
                 });
+
+        System.out.println("Terms in index: " + index.size());
+        System.out.println(index.reduceValuesToLong(4, value -> value.size(), 0, (a, b) -> a + b));
 
     }
 
@@ -114,7 +126,27 @@ public class SearchEngineJasperRzepka extends SearchEngine {
 
     @Override
     ArrayList<String> search(String query, int topK, int prf) {
-        return null;
+        Optional<String> stemmedQuery = stem(query);
+        if (stemmedQuery.isPresent()) {
+            ConcurrentLinkedQueue<PatentDocument> postingsList = index.get(stemmedQuery.get());
+            if (postingsList != null) {
+                return postingsList
+                        .stream()
+                        .distinct()
+                        .map(doc -> doc.docNumber + ": " + doc.title + ": " + doc.abstractText)
+                        .collect(Collectors.toCollection(ArrayList::new));
+            }
+        }
+        return new ArrayList<>(0);
+    }
+
+    private synchronized Optional<String> stem(String word) {
+        stemmer.setCurrent(word);
+        if (stemmer.stem()) {
+            return Optional.of(stemmer.getCurrent());
+        } else {
+            return Optional.empty();
+        }
     }
 
     private static <T> Stream<T> enumerationAsStream(Enumeration<T> e) {

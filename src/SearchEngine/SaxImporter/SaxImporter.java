@@ -17,28 +17,31 @@ import java.util.zip.GZIPInputStream;
  */
 public class SaxImporter {
 
-    public static void readDocNumberAndTitle(File xmlFile) {
+    public static Stream<PatentDocument> readDocNumberAndTitle(File xmlFile) {
         try {
             SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
             InputStream xmlStream = new FileInputStream(xmlFile);
-            saxParser.parse(xmlStream, new DocNumberAndTitleHandler());
-
+            DocNumberAndAbstractHandler handler = new DocNumberAndAbstractHandler();
+            saxParser.parse(xmlStream, handler);
+            xmlStream.close();
+            return handler.getBuffer();
         } catch (ParserConfigurationException|IOException|SAXException e) {
             e.printStackTrace();
+            return Stream.empty();
         }
     }
 
-    public static Optional<Stream<PatentDocument>> readDocNumberFromGzip(File gzipFile) {
+    public static Stream<PatentDocument> readDocNumberFromGzip(File gzipFile) {
         try {
             SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
             InputStream xmlStream = new GZIPInputStream(new FileInputStream(gzipFile));
             DocNumberAndAbstractHandler handler = new DocNumberAndAbstractHandler();
             saxParser.parse(xmlStream, handler);
             xmlStream.close();
-            return Optional.of(handler.getBuffer());
+            return handler.getBuffer();
         } catch (ParserConfigurationException|IOException|SAXException e) {
             e.printStackTrace();
-            return Optional.empty();
+            return Stream.empty();
         }
 
     }

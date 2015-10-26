@@ -36,10 +36,15 @@ public class SearchEngineTest {
         System.out.print("Indexing Time:\t" + time + "\tms\n");
         
         myEngine.loadIndex("index");
-        
-        String query = "dumbass";
 
-        ArrayList<String> results = myEngine.search(query, 0, 0);
+        for (String query : new String[] { "selection", "device", "justify", "write" }) {
+
+            System.out.println("Query: " + query);
+            ArrayList<String> results = myEngine.search(query, 0, 0);
+            results.forEach(System.out::println);
+
+            System.out.println();
+        }
         
     }
 
