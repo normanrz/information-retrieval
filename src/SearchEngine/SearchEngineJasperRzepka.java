@@ -60,7 +60,7 @@ public class SearchEngineJasperRzepka extends SearchEngine {
     protected static String baseDirectory = "data/";
     protected static int numberOfThreads = Runtime.getRuntime().availableProcessors();
 
-    protected final IndexJasperRzepka<PatentDocument> index = new IndexJasperRzepka<>();
+    protected final IndexJasperRzepka<Tuple<PatentDocument, Integer>> index = new IndexJasperRzepka<>();
     protected final SnowballStemmer stemmer = new englishStemmer();
 
     public SearchEngineJasperRzepka() {
@@ -82,17 +82,12 @@ public class SearchEngineJasperRzepka extends SearchEngine {
                             new StringReader(doc.title + " " + doc.abstractText), new CoreLabelTokenFactory(), "");
 
                     tokenizerAsStream(tokenizer)
-                            .filter(token -> {
-                                return !stopwords.contains(token.value());
-                            })
+                            .filter(token ->  !stopwords.contains(token.value()))
                             .forEach(token -> {
                                 String stemmedToken = stem(token.value());
-                                index.put(stemmedToken, doc);
+                                index.put(stemmedToken, new Tuple<PatentDocument, Integer>(doc, token.beginPosition()));
                             });
-//                            .filter(Optional::isPresent)
-//                            .map(Optional::get)
-//                            .forEach(System.out::println);
-//                     System.out.println(doc);
+
                 });
 
 
@@ -117,6 +112,7 @@ public class SearchEngineJasperRzepka extends SearchEngine {
     ArrayList<String> search(String query, int topK, int prf) {
         String stemmedQuery = stem(query);
         return index.get(stemmedQuery)
+                .map(tuple -> tuple.x)
                 .distinct()
                 .map(doc -> doc.docNumber + ": " + doc.title + ": " + doc.abstractText)
                 .collect(Collectors.toCollection(ArrayList::new));
@@ -150,8 +146,7 @@ public class SearchEngineJasperRzepka extends SearchEngine {
     private static <T> Stream<T> tokenizerAsStream(Tokenizer<T> e) {
         return StreamSupport.stream(
                 Spliterators.spliteratorUnknownSize(
-                        e,
-                        Spliterator.ORDERED), false);
+                        e, Spliterator.ORDERED), false);
     }
 
 }
