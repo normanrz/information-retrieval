@@ -61,7 +61,7 @@ public class SearchEngineJasperRzepka extends SearchEngine {
     protected static int numberOfThreads = Runtime.getRuntime().availableProcessors();
 
     protected final SnowballStemmer stemmer = new englishStemmer();
-    protected final ConcurrentHashMap<String, ConcurrentLinkedQueue<PatentDocument>> index = new ConcurrentHashMap<>();
+    protected final ConcurrentHashMap<String, ConcurrentLinkedQueue<Tuple<PatentDocument, Integer>>> index = new ConcurrentHashMap<>();
 
     public SearchEngineJasperRzepka() {
         // This should stay as is! Don't add anything here!
@@ -95,7 +95,7 @@ public class SearchEngineJasperRzepka extends SearchEngine {
                                                 }
                                             }
                                             ConcurrentLinkedQueue postingsList = index.get(word);
-                                            postingsList.add(doc);
+                                            postingsList.add(new Tuple(doc, token.beginPosition()));
                                             return null;
                                         });
                             });
@@ -128,10 +128,11 @@ public class SearchEngineJasperRzepka extends SearchEngine {
     ArrayList<String> search(String query, int topK, int prf) {
         Optional<String> stemmedQuery = stem(query);
         if (stemmedQuery.isPresent()) {
-            ConcurrentLinkedQueue<PatentDocument> postingsList = index.get(stemmedQuery.get());
+            ConcurrentLinkedQueue<Tuple<PatentDocument, Integer>> postingsList = index.get(stemmedQuery.get());
             if (postingsList != null) {
                 return postingsList
                         .stream()
+                        .map(tuple -> tuple.x)
                         .distinct()
                         .map(doc -> doc.docNumber + ": " + doc.title + ": " + doc.abstractText)
                         .collect(Collectors.toCollection(ArrayList::new));
