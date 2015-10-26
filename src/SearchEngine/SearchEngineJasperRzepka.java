@@ -60,8 +60,8 @@ public class SearchEngineJasperRzepka extends SearchEngine {
     protected static String baseDirectory = "data/";
     protected static int numberOfThreads = Runtime.getRuntime().availableProcessors();
 
+    protected final IndexJasperRzepka<PatentDocument> index = new IndexJasperRzepka<>();
     protected final SnowballStemmer stemmer = new englishStemmer();
-    protected final ConcurrentHashMap<String, ConcurrentLinkedQueue<PatentDocument>> index = new ConcurrentHashMap<>();
 
     public SearchEngineJasperRzepka() {
         // This should stay as is! Don't add anything here!
@@ -86,18 +86,8 @@ public class SearchEngineJasperRzepka extends SearchEngine {
                                 return !stopwords.contains(token.value());
                             })
                             .forEach(token -> {
-                                stem(token.value())
-                                        .map(word -> {
-//                                            System.out.println(word + "  " + token.value());
-                                            synchronized (index) {
-                                                if (!index.containsKey(word)) {
-                                                    index.put(word, new ConcurrentLinkedQueue<>());
-                                                }
-                                            }
-                                            ConcurrentLinkedQueue postingsList = index.get(word);
-                                            postingsList.add(doc);
-                                            return null;
-                                        });
+                                String stemmedToken = stem(token.value());
+                                index.put(stemmedToken, doc);
                             });
 //                            .filter(Optional::isPresent)
 //                            .map(Optional::get)
@@ -105,9 +95,8 @@ public class SearchEngineJasperRzepka extends SearchEngine {
 //                     System.out.println(doc);
                 });
 
-        System.out.println("Terms in index: " + index.size());
-        System.out.println(index.reduceValuesToLong(4, value -> value.size(), 0, (a, b) -> a + b));
 
+        index.printStats();
     }
 
     @Override
@@ -126,26 +115,20 @@ public class SearchEngineJasperRzepka extends SearchEngine {
 
     @Override
     ArrayList<String> search(String query, int topK, int prf) {
-        Optional<String> stemmedQuery = stem(query);
-        if (stemmedQuery.isPresent()) {
-            ConcurrentLinkedQueue<PatentDocument> postingsList = index.get(stemmedQuery.get());
-            if (postingsList != null) {
-                return postingsList
-                        .stream()
-                        .distinct()
-                        .map(doc -> doc.docNumber + ": " + doc.title + ": " + doc.abstractText)
-                        .collect(Collectors.toCollection(ArrayList::new));
-            }
-        }
-        return new ArrayList<>(0);
+        String stemmedQuery = stem(query);
+        return index.get(stemmedQuery)
+                .distinct()
+                .map(doc -> doc.docNumber + ": " + doc.title + ": " + doc.abstractText)
+                .collect(Collectors.toCollection(ArrayList::new));
+
     }
 
-    private synchronized Optional<String> stem(String word) {
+    private synchronized String stem(String word) {
         stemmer.setCurrent(word);
         if (stemmer.stem()) {
-            return Optional.of(stemmer.getCurrent());
+            return stemmer.getCurrent();
         } else {
-            return Optional.empty();
+            return word;
         }
     }
 
@@ -167,15 +150,7 @@ public class SearchEngineJasperRzepka extends SearchEngine {
     private static <T> Stream<T> tokenizerAsStream(Tokenizer<T> e) {
         return StreamSupport.stream(
                 Spliterators.spliteratorUnknownSize(
-                        new Iterator<T>() {
-                            public T next() {
-                                return e.next();
-                            }
-
-                            public boolean hasNext() {
-                                return e.hasNext();
-                            }
-                        },
+                        e,
                         Spliterator.ORDERED), false);
     }
 
