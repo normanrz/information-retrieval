@@ -73,7 +73,7 @@ public class SearchEngineJasperRzepka extends SearchEngine {
                 .forEach(doc -> {
 
                     PTBTokenizer<CoreLabel> tokenizer = new PTBTokenizer<>(
-                            new StringReader(doc.title + " " + doc.abstractText), new CoreLabelTokenFactory(), "");
+                            new StringReader((doc.title + " " + doc.abstractText).toLowerCase()), new CoreLabelTokenFactory(), "");
 
                     tokenizerAsStream(tokenizer)
                             .filter(token ->  !stopwords.contains(token.value()))
@@ -104,7 +104,7 @@ public class SearchEngineJasperRzepka extends SearchEngine {
 
     @Override
     ArrayList<String> search(String query, int topK, int prf) {
-        String stemmedQuery = stem(query);
+        String stemmedQuery = stem(query.toLowerCase());
         return index.get(stemmedQuery)
                 .map(tuple -> tuple.x)
                 .distinct()
