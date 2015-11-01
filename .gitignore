@@ -1,5 +1,8 @@
 .idea
 out
 information-retrieval.iml
+.classpath
+.metadata/
+.project
 data
 
