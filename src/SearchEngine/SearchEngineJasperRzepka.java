@@ -90,23 +90,27 @@ public class SearchEngineJasperRzepka extends SearchEngine {
 
 
         index.printStats();
-
         index.save(new File("index.bin"));
+
+
     }
 
     @Override
     boolean loadIndex(String directory) {
-        PostingIndex idx = PostingIndex.load(new File(directory));
+        PostingIndex idx = PostingIndex.load(new File("index.bin"));
         idx.printStats();
         return false;
     }
 
     @Override
     void compressIndex(String directory) {
+        index.saveCompressed(new File("index.bin.gz"));
     }
 
     @Override
     boolean loadCompressedIndex(String directory) {
+        PostingIndex idx = PostingIndex.loadCompressed(new File("index.bin.gz"));
+        idx.printStats();
         return false;
     }
 

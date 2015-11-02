@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 /**
  * Created by norman on 26.10.15.
  */
-public class IndexJasperRzepka<T> {
+public class GenericIndex<T> {
 
     protected final ConcurrentSkipListMap<String, ConcurrentLinkedQueue<T>> index = new ConcurrentSkipListMap<>();
 

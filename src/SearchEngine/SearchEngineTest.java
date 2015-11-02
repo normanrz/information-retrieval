@@ -35,7 +35,7 @@ public class SearchEngineTest {
         
         myEngine.loadIndex("index.bin");
 
-        for (String query : new String[] { "selection", "device", "justify", "write" }) {
+        for (String query : new String[] { "file-system", "included", "storing" }) {
 
             System.out.println("Query: " + query);
             ArrayList<String> results = myEngine.search(query, 0, 0);
