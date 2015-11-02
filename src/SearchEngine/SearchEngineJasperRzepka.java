@@ -1,5 +1,21 @@
 package SearchEngine;
 
+import java.io.File;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+import org.tartarus.snowball.SnowballStemmer;
+import org.tartarus.snowball.ext.englishStemmer;
+
 /**
  * @author: JasperRzepka
  * @dataset: US patent grants : ipg files from http://www.google.com/googlebooks/uspto-patents-grants-text.html
@@ -19,21 +35,9 @@ package SearchEngine;
 
 import SearchEngine.SaxImporter.SaxImporter;
 import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.process.Tokenizer;
 import edu.stanford.nlp.process.CoreLabelTokenFactory;
 import edu.stanford.nlp.process.PTBTokenizer;
-import org.tartarus.snowball.SnowballStemmer;
-import org.tartarus.snowball.ext.englishStemmer;
-
-import java.io.File;
-import java.io.StringReader;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.function.IntBinaryOperator;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+import edu.stanford.nlp.process.Tokenizer;
 
 
 public class SearchEngineJasperRzepka extends SearchEngine {
@@ -79,7 +83,7 @@ public class SearchEngineJasperRzepka extends SearchEngine {
                             .filter(token ->  !stopwords.contains(token.value()))
                             .forEach(token -> {
                                 String stemmedToken = stem(token.value());
-                                index.put(stemmedToken, new Tuple<PatentDocument, Integer>(doc, token.beginPosition()));
+                                index.put(stemmedToken, new Posting(doc, token.beginPosition()));
                             });
 
                 });

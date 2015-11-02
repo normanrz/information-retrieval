@@ -1,7 +1,5 @@
 package SearchEngine;
 
-import SearchEngine.SaxImporter.SaxImporter;
-
 import java.util.ArrayList;
 
 
