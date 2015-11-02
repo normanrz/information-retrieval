@@ -1,7 +1,12 @@
 package SearchEngine;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.stream.Stream;
 
 /**
@@ -9,7 +14,7 @@ import java.util.stream.Stream;
  */
 public class IndexJasperRzepka<T> {
 
-    protected final ConcurrentHashMap<String, ConcurrentLinkedQueue<T>> index = new ConcurrentHashMap<>();
+    protected final ConcurrentSkipListMap<String, ConcurrentLinkedQueue<T>> index = new ConcurrentSkipListMap<>();
 
 
     public void put(String key, T value) {
@@ -35,7 +40,8 @@ public class IndexJasperRzepka<T> {
 
     public void printStats() {
         System.out.println("Terms in index: " + index.size());
-        System.out.println("Document entries in index: " +
-                index.reduceValuesToLong(4, ConcurrentLinkedQueue::size, 0, (a, b) -> a + b));
+//        System.out.println("Document entries in index: " +
+//                index.reduceValuesToLong(4, ConcurrentLinkedQueue::size, 0, (a, b) -> a + b));
     }
 }
+

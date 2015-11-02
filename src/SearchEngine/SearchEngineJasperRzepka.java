@@ -58,7 +58,7 @@ public class SearchEngineJasperRzepka extends SearchEngine {
     protected static String baseDirectory = "data/";
     protected static int numberOfThreads = Runtime.getRuntime().availableProcessors();
 
-    protected final IndexJasperRzepka<Posting> index = new IndexJasperRzepka<>();
+    protected final PostingIndex index = new PostingIndex();
     protected final SnowballStemmer stemmer = new englishStemmer();
 
     public SearchEngineJasperRzepka() {
@@ -90,6 +90,8 @@ public class SearchEngineJasperRzepka extends SearchEngine {
 
 
         index.printStats();
+
+        index.save(new File("index.bin"));
     }
 
     @Override
