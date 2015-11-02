@@ -58,7 +58,7 @@ public class SearchEngineJasperRzepka extends SearchEngine {
     protected static String baseDirectory = "data/";
     protected static int numberOfThreads = Runtime.getRuntime().availableProcessors();
 
-    protected final IndexJasperRzepka<Tuple<PatentDocument, Integer>> index = new IndexJasperRzepka<>();
+    protected final IndexJasperRzepka<Posting> index = new IndexJasperRzepka<>();
     protected final SnowballStemmer stemmer = new englishStemmer();
 
     public SearchEngineJasperRzepka() {
@@ -110,9 +110,9 @@ public class SearchEngineJasperRzepka extends SearchEngine {
     ArrayList<String> search(String query, int topK, int prf) {
         String stemmedQuery = stem(query.toLowerCase());
         return index.get(stemmedQuery)
-                .map(tuple -> tuple.x)
+                .map(posting -> posting.doc())
                 .distinct()
-                .map(doc -> doc.docNumber + ": " + doc.title + ": " + doc.abstractText)
+                .map(doc -> doc + ": " + doc.title + ": " + doc.abstractText)
                 .collect(Collectors.toCollection(ArrayList::new));
 
     }
