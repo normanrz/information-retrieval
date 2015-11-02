@@ -96,6 +96,8 @@ public class SearchEngineJasperRzepka extends SearchEngine {
 
     @Override
     boolean loadIndex(String directory) {
+        PostingIndex idx = PostingIndex.load(new File(directory));
+        idx.printStats();
         return false;
     }
 

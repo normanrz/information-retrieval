@@ -33,7 +33,7 @@ public class SearchEngineTest {
         
         System.out.print("Indexing Time:\t" + time + "\tms\n");
         
-        myEngine.loadIndex("index");
+        myEngine.loadIndex("index.bin");
 
         for (String query : new String[] { "selection", "device", "justify", "write" }) {
 
