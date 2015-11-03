@@ -3,7 +3,10 @@ package SearchEngine.Index;
 import SearchEngine.Posting;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -14,9 +17,9 @@ import java.util.zip.GZIPOutputStream;
 public class MergePostingIndex {
 
 
-    public void merge(Collection<File> inputIndexFiles, File outputIndexFile) throws IOException {
+    public void merge(List<File> inputIndexFiles, File outputIndexFile) throws IOException {
 
-        Collection<InputStream> inputStreams = new ArrayList<>(inputIndexFiles.size());
+        List<InputStream> inputStreams = new ArrayList<>(inputIndexFiles.size());
         for (File file : inputIndexFiles) {
             inputStreams.add(new FileInputStream(file));
         }
@@ -24,9 +27,9 @@ public class MergePostingIndex {
 
     }
 
-    public void mergeCompressed(Collection<File> inputIndexFiles, File outputIndexFile) throws IOException {
+    public void mergeCompressed(List<File> inputIndexFiles, File outputIndexFile) throws IOException {
 
-        Collection<InputStream> inputStreams = new ArrayList<>(inputIndexFiles.size());
+        List<InputStream> inputStreams = new ArrayList<>(inputIndexFiles.size());
         for (File file : inputIndexFiles) {
             inputStreams.add(new GZIPInputStream(new FileInputStream(file)));
         }
@@ -34,9 +37,9 @@ public class MergePostingIndex {
 
     }
 
-    public void merge(Collection<InputStream> inputBaseStreams, OutputStream outputBaseStream) throws IOException {
+    public void merge(List<InputStream> inputBaseStreams, OutputStream outputBaseStream) throws IOException {
 
-        Collection<DataInputStream> inputStreams = new ArrayList<>(inputBaseStreams.size());
+        List<DataInputStream> inputStreams = new ArrayList<>(inputBaseStreams.size());
         for (InputStream baseStream : inputBaseStreams) {
             inputStreams.add(new DataInputStream(baseStream));
         }
@@ -64,14 +67,14 @@ public class MergePostingIndex {
             TermWriter.writeTerm(outputStream, minimalTerm);
 
             // Filter streams with that term
-            Collection<DataInputStream> relevantStreams =
+            List<DataInputStream> relevantStreams =
                     currentTerms.entrySet().stream()
                             .filter(entry -> entry.getValue().equals(minimalTerm))
                             .map(entry -> entry.getKey())
                             .collect(Collectors.toList());
 
             // Merge sort their posting lists
-            Collection<Posting> mergedPostingsList =
+            List<Posting> mergedPostingsList =
                     relevantStreams.stream()
                             .map(stream -> {
                                 try {

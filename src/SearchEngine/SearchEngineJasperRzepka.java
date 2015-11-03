@@ -1,5 +1,14 @@
 package SearchEngine;
 
+import SearchEngine.Importer.PatentDocumentImporter;
+import SearchEngine.Index.PostingIndex;
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.process.CoreLabelTokenFactory;
+import edu.stanford.nlp.process.PTBTokenizer;
+import edu.stanford.nlp.process.Tokenizer;
+import org.tartarus.snowball.SnowballStemmer;
+import org.tartarus.snowball.ext.englishStemmer;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -7,21 +16,10 @@ import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Spliterator;
-import java.util.Spliterators;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import SearchEngine.Importer.PatentDocumentImporter;
-import SearchEngine.Index.PostingIndex;
-import org.tartarus.snowball.SnowballStemmer;
-import org.tartarus.snowball.ext.englishStemmer;
 
 /**
  * @author: JasperRzepka
@@ -39,11 +37,6 @@ import org.tartarus.snowball.ext.englishStemmer;
  * <p>
  * Keep in mind to include your implementation decisions also in the pdf file of each assignment
  */
-
-import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.process.CoreLabelTokenFactory;
-import edu.stanford.nlp.process.PTBTokenizer;
-import edu.stanford.nlp.process.Tokenizer;
 
 
 public class SearchEngineJasperRzepka extends SearchEngine {
@@ -96,14 +89,17 @@ public class SearchEngineJasperRzepka extends SearchEngine {
                 });
 
 
+        System.out.println("Imported index");
         index.printStats();
         index.save(new File("index.bin"));
+        index.saveCompressed(new File("index.bin.gz"));
 
 
     }
 
     @Override
     boolean loadIndex(String directory) {
+        System.out.println("Load index");
         PostingIndex.load(new File("index.bin")).printStats();
         return false;
     }
@@ -115,6 +111,7 @@ public class SearchEngineJasperRzepka extends SearchEngine {
 
     @Override
     boolean loadCompressedIndex(String directory) {
+        System.out.println("Load compressed index");
         PostingIndex.loadCompressed(new File("index.bin.gz")).printStats();
         return false;
     }

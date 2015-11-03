@@ -3,7 +3,7 @@ package SearchEngine.Index;
 import SearchEngine.Posting;
 
 import java.io.*;
-
+import java.util.ArrayList;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -18,7 +18,7 @@ public class PostingIndex extends GenericIndex<Posting> {
 
             for (String term : index.navigableKeySet()) {
                 TermWriter.writeTerm(outputStream, term);
-                PostingWriter.writePostingsList(outputStream, index.get(term));
+                PostingWriter.writePostingsList(outputStream, new ArrayList<>(index.get(term)));
             }
             outputStream.close();
         } catch (IOException e) {
@@ -52,7 +52,7 @@ public class PostingIndex extends GenericIndex<Posting> {
             while (true) {
                 try {
                     String term = TermReader.readTerm(stream);
-                    for(Posting posting : PostingReader.readPostingsList(stream)) {
+                    for (Posting posting : PostingReader.readPostingsList(stream)) {
                         newIndex.put(term, posting);
                     }
                 } catch (EOFException eof) {
@@ -85,7 +85,6 @@ public class PostingIndex extends GenericIndex<Posting> {
             return null;
         }
     }
-
 
 
 }
