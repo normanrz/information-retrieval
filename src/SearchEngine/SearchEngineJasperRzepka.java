@@ -1,7 +1,13 @@
 package SearchEngine;
 
 import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.StringReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -85,7 +91,7 @@ public class SearchEngineJasperRzepka extends SearchEngine {
                                 String stemmedToken = stem(token.value());
                                 index.put(stemmedToken, new Posting(doc, token.beginPosition()));
                             });
-
+                    storeDoc(doc);
                 });
 
 
@@ -118,9 +124,9 @@ public class SearchEngineJasperRzepka extends SearchEngine {
     ArrayList<String> search(String query, int topK, int prf) {
         String stemmedQuery = stem(query.toLowerCase());
         return index.get(stemmedQuery)
-                .map(posting -> posting.doc())
+                .map(posting -> posting.docId())
                 .distinct()
-                .map(doc -> doc + ": " + doc.title + ": " + doc.abstractText)
+                .map(doc_id -> String.format("%08d %s", doc_id, loadDocTitle(doc_id)))
                 .collect(Collectors.toCollection(ArrayList::new));
 
     }
@@ -153,6 +159,40 @@ public class SearchEngineJasperRzepka extends SearchEngine {
         return StreamSupport.stream(
                 Spliterators.spliteratorUnknownSize(
                         e, Spliterator.ORDERED), false);
+    }
+    
+    private static void storeDoc(PatentDocument doc) {
+    	PrintWriter file = null;
+		try {
+			file = new PrintWriter("docs/"+doc.docNumber);
+			file.println(doc.title);
+			file.println(doc.abstractText);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if(file != null) file.close();
+		}
+    }
+    
+    private static String loadDocTitle(long docId) {
+    	try {
+			return loadDocLines(docId).get(0);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+    }
+    
+    private static List<String> loadDocLines(long docId) throws IOException {
+    	File dir = new File("docs/");
+    	File [] files = dir.listFiles(new FilenameFilter() {
+    	    @Override
+    	    public boolean accept(File dir, String name) {
+    	        return name.contains(String.valueOf(docId));
+    	    }
+    	});
+    	Path path = Paths.get(files[0].getAbsolutePath());
+        return Files.readAllLines(path);
     }
 
 }

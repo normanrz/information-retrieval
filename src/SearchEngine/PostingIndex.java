@@ -22,7 +22,7 @@ public class PostingIndex extends GenericIndex<Posting> {
                 Queue<Posting> postingsList = index.get(term);
                 outputStream.writeInt(postingsList.size());
                 for (Posting posting : postingsList) {
-                    outputStream.writeLong(posting.doc_id());
+                    outputStream.writeLong(posting.docId());
                     outputStream.writeInt(posting.pos());
                 }
             }

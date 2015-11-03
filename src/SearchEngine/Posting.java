@@ -1,27 +1,20 @@
 package SearchEngine;
 
 public class Posting {
-	private final long doc_id;
+	private final long docId;
 	private final Integer pos;
-	private PatentDocument doc;
 
 	public Posting(PatentDocument doc, Integer pos) {
-		this.doc = doc;
-		this.doc_id = Long.parseLong(doc.docNumber);
-		this.pos = pos;
+		this(Long.parseLong(doc.docNumber), pos);
 	}
 	
 	public Posting(long doc_id, Integer pos) {
-		this.doc_id = doc_id;
+		this.docId = doc_id;
 		this.pos = pos;
 	}
 	
-	public PatentDocument doc() {
-		return this.doc;
-	}
-	
-	public long doc_id() {
-		return this.doc_id;
+	public long docId() {
+		return this.docId;
 	}
 	
 	public Integer pos() {
@@ -29,6 +22,6 @@ public class Posting {
 	}
 	
 	public String toString() {
-		return String.format("(%s:%s)", doc, pos);
+		return String.format("(%s:%s)", docId, pos);
 	}
 }
