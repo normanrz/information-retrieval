@@ -1,10 +1,9 @@
-package SearchEngine;
+package SearchEngine.Index;
+
+import SearchEngine.Posting;
 
 import java.io.*;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Queue;
+
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -18,16 +17,8 @@ public class PostingIndex extends GenericIndex<Posting> {
             DataOutputStream outputStream = new DataOutputStream(stream);
 
             for (String term : index.navigableKeySet()) {
-                byte[] termBytes = term.getBytes("UTF8");
-                outputStream.writeInt(termBytes.length);
-                outputStream.write(termBytes);
-
-                Queue<Posting> postingsList = index.get(term);
-                outputStream.writeInt(postingsList.size());
-                for (Posting posting : postingsList) {
-                    outputStream.writeLong(posting.docId());
-                    outputStream.writeInt(posting.pos());
-                }
+                TermWriter.writeTerm(outputStream, term);
+                PostingWriter.writePostingsList(outputStream, index.get(term));
             }
             outputStream.close();
         } catch (IOException e) {
@@ -60,17 +51,8 @@ public class PostingIndex extends GenericIndex<Posting> {
             int j = 0;
             while (true) {
                 try {
-                    int termLength = stream.readInt();
-                    byte[] termBytes = new byte[termLength];
-                    stream.readFully(termBytes);
-                    String term = new String(termBytes, "UTF8");
-
-                    int postingsListLength = stream.readInt();
-                    for (int i = 0; i < postingsListLength; i++) {
-                        long docNumber = stream.readLong();
-                        int pos = stream.readInt();
-
-                        Posting posting = new Posting(docNumber, pos);
+                    String term = TermReader.readTerm(stream);
+                    for(Posting posting : PostingReader.readPostingsList(stream)) {
                         newIndex.put(term, posting);
                     }
                 } catch (EOFException eof) {

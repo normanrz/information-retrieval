@@ -1,8 +1,7 @@
-package SearchEngine;
+package SearchEngine.Index;
 
-import javafx.geometry.Pos;
+import SearchEngine.Posting;
 
-import javax.imageio.IIOException;
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -13,47 +12,6 @@ import java.util.zip.GZIPOutputStream;
  * Created by norman on 03.11.15.
  */
 public class MergePostingIndex {
-
-    private String readTerm(DataInputStream stream) throws IOException {
-        int termLength = stream.readInt();
-        byte[] termBytes = new byte[termLength];
-        stream.readFully(termBytes);
-        return new String(termBytes, "UTF8");
-    }
-
-    private Posting readPosting(DataInputStream stream) throws IOException {
-        long docNumber = stream.readLong();
-        int pos = stream.readInt();
-        return new Posting(docNumber, pos);
-    }
-
-    private Collection<Posting> readPostingsList(DataInputStream stream) throws IOException {
-        int postingsListLength = stream.readInt();
-        Collection<Posting> postingsList = new ArrayList<>(postingsListLength);
-        for (int i = 0; i < postingsListLength; i++) {
-            postingsList.add(readPosting(stream));
-        }
-        return postingsList;
-    }
-
-    private void writeTerm(DataOutputStream stream, String term) throws IOException {
-        byte[] termBytes = term.getBytes("UTF8");
-        stream.writeInt(termBytes.length);
-        stream.write(termBytes);
-    }
-
-    private void writePosting(DataOutputStream stream, Posting posting) throws IOException {
-        stream.writeLong(posting.docId());
-        stream.writeInt(posting.pos());
-    }
-
-    private void writePostingsList(DataOutputStream stream, Collection<Posting> postingsList) throws IOException {
-        stream.writeInt(postingsList.size());
-        for (Posting posting : postingsList) {
-            writePosting(stream, posting);
-        }
-    }
-
 
 
     public void merge(Collection<File> inputIndexFiles, File outputIndexFile) throws IOException {
@@ -90,7 +48,7 @@ public class MergePostingIndex {
         // Get current term of all streams
         for (DataInputStream stream : inputStreams) {
             try {
-                String term = readTerm(stream);
+                String term = TermReader.readTerm(stream);
                 currentTerms.put(stream, term);
             } catch (EOFException e) {
                 continue;
@@ -103,7 +61,7 @@ public class MergePostingIndex {
             String minimalTerm = currentTerms.values().stream().min(String::compareTo).get();
 
             // Write term to output
-            writeTerm(outputStream, minimalTerm);
+            TermWriter.writeTerm(outputStream, minimalTerm);
 
             // Filter streams with that term
             Collection<DataInputStream> relevantStreams =
@@ -117,7 +75,7 @@ public class MergePostingIndex {
                     relevantStreams.stream()
                             .map(stream -> {
                                 try {
-                                    return readPostingsList(stream);
+                                    return PostingReader.readPostingsList(stream);
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                     return null;
@@ -129,12 +87,12 @@ public class MergePostingIndex {
                             .collect(Collectors.toList());
 
             // Write merged posting list to output
-            writePostingsList(outputStream, mergedPostingsList);
+            PostingWriter.writePostingsList(outputStream, mergedPostingsList);
 
             // Get new current term or close/remove stream if EOF
             for (DataInputStream stream : relevantStreams) {
                 try {
-                    String term = readTerm(stream);
+                    String term = TermReader.readTerm(stream);
                     currentTerms.put(stream, term);
                 } catch (EOFException e) {
                     currentTerms.remove(stream);

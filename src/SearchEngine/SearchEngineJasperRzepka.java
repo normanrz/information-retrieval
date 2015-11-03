@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import SearchEngine.Importer.PatentDocumentImporter;
+import SearchEngine.Index.PostingIndex;
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
 
@@ -38,7 +40,6 @@ import org.tartarus.snowball.ext.englishStemmer;
  * Keep in mind to include your implementation decisions also in the pdf file of each assignment
  */
 
-import SearchEngine.SaxImporter.SaxImporter;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.process.CoreLabelTokenFactory;
 import edu.stanford.nlp.process.PTBTokenizer;
@@ -48,7 +49,7 @@ import edu.stanford.nlp.process.Tokenizer;
 public class SearchEngineJasperRzepka extends SearchEngine {
 
     // http://www.uspto.gov/patft//help/stopword.htm
-    protected static List<String> stopwords = Arrays.asList(new String[] {
+    protected static List<String> stopwords = Arrays.asList(new String[]{
             "a", "has", "such", "accordance", "have", "suitable", "according", "having", "than", "all", "herein",
             "that", "also", "however", "the", "an", "if", "their", "and", "in", "then", "another", "into", "there",
             "are", "invention", "thereby", "as", "is", "therefore", "at", "it", "thereof", "be", "its", "thereto",
@@ -77,15 +78,16 @@ public class SearchEngineJasperRzepka extends SearchEngine {
         File dir = new File(directory);
         Stream.of(dir.listFiles()).parallel()
                 .filter(file -> file.getName().endsWith((".xml")))
-                .map(SaxImporter::readDocNumberAndTitle)
+                .map(PatentDocumentImporter::readPatentDocuments)
                 .flatMap(value -> value)
                 .forEach(doc -> {
 
+                    String tokenizableDocument = (doc.title + " " + doc.abstractText).toLowerCase();
                     PTBTokenizer<CoreLabel> tokenizer = new PTBTokenizer<>(
-                            new StringReader((doc.title + " " + doc.abstractText).toLowerCase()), new CoreLabelTokenFactory(), "");
+                            new StringReader(tokenizableDocument), new CoreLabelTokenFactory(), "");
 
                     tokenizerAsStream(tokenizer)
-                            .filter(token ->  !stopwords.contains(token.value()))
+                            .filter(token -> !stopwords.contains(token.value()))
                             .forEach(token -> {
                                 String stemmedToken = stem(token.value());
                                 index.put(stemmedToken, new Posting(doc, token.beginPosition()));
@@ -102,8 +104,7 @@ public class SearchEngineJasperRzepka extends SearchEngine {
 
     @Override
     boolean loadIndex(String directory) {
-        PostingIndex idx = PostingIndex.load(new File("index.bin"));
-        idx.printStats();
+        PostingIndex.load(new File("index.bin")).printStats();
         return false;
     }
 
@@ -114,8 +115,7 @@ public class SearchEngineJasperRzepka extends SearchEngine {
 
     @Override
     boolean loadCompressedIndex(String directory) {
-        PostingIndex idx = PostingIndex.loadCompressed(new File("index.bin.gz"));
-        idx.printStats();
+        PostingIndex.loadCompressed(new File("index.bin.gz")).printStats();
         return false;
     }
 
@@ -159,33 +159,33 @@ public class SearchEngineJasperRzepka extends SearchEngine {
                 Spliterators.spliteratorUnknownSize(
                         e, Spliterator.ORDERED), false);
     }
-    
+
     private static void storeDoc(PatentDocument doc) {
-    	PrintWriter file = null;
-		try {
-			file = new PrintWriter("docs/"+doc.docNumber);
-			file.println(doc.title);
-			file.println(doc.abstractText);
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			if(file != null) file.close();
-		}
+        PrintWriter file = null;
+        try {
+            file = new PrintWriter("docs/" + doc.docNumber);
+            file.println(doc.title);
+            file.println(doc.abstractText);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (file != null) file.close();
+        }
     }
-    
+
     private static String loadDocTitle(long docId) {
-    	try {
-			return loadDocLines(docId).get(0);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
+        try {
+            return loadDocLines(docId).get(0);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
-    
+
     private static List<String> loadDocLines(long docId) throws IOException {
-    	File dir = new File("docs/");
-    	File [] files = dir.listFiles((File _dir, String name) -> name.contains(String.valueOf(docId)));
-    	Path path = Paths.get(files[0].getAbsolutePath());
+        File dir = new File("docs/");
+        File[] files = dir.listFiles((File _dir, String name) -> name.contains(String.valueOf(docId)));
+        Path path = Paths.get(files[0].getAbsolutePath());
         return Files.readAllLines(path);
     }
 

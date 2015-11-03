@@ -1,4 +1,4 @@
-package SearchEngine.SaxImporter;
+package SearchEngine.Importer;
 
 import SearchEngine.PatentDocument;
 import org.xml.sax.Attributes;
@@ -15,7 +15,7 @@ import java.util.stream.Stream;
  * @author: JasperRzepka
  * @course: Information Retrieval and Web Search, Hasso-Plattner Institut, 2015
  */
-public class DocNumberAndAbstractHandler extends DefaultHandler {
+public class PatentDocumentHandler extends DefaultHandler {
 
     private String inventionAbstract = "";
     private String inventionTitle = "";
@@ -24,7 +24,7 @@ public class DocNumberAndAbstractHandler extends DefaultHandler {
     private Boolean isInPublicationReference = false;
     private Boolean isUtilityPatent = false;
     private int counter = 0;
-    private ArrayList<PatentDocument> buffer = new ArrayList();
+    private ArrayList<PatentDocument> buffer = new ArrayList<>();
 
     @Override
     public void startElement(String namespaceURI,
@@ -32,7 +32,9 @@ public class DocNumberAndAbstractHandler extends DefaultHandler {
                              String qName,
                              Attributes atts)
             throws SAXException {
-        if(qName.equals("b")) { return; }
+        if (qName.equals("b")) {
+            return;
+        }
         currentBuffer = new StringBuffer();
         switch (qName) {
             case "publication-reference":
@@ -86,7 +88,7 @@ public class DocNumberAndAbstractHandler extends DefaultHandler {
         return new InputSource(new ByteArrayInputStream("<?xml version='1.0' encoding='UTF-8'?>".getBytes()));
     }
 
-    public Stream<PatentDocument> getBuffer() {
+    public Stream<PatentDocument> getBufferedStream() {
         return buffer.stream();
     }
 

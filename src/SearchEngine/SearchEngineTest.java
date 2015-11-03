@@ -22,9 +22,9 @@ public class SearchEngineTest {
     
     public static void main(String args[]) throws Exception {
 
-        // SaxImporter.readDocNumberAndTitle("data/testData.xml");
+        // PatentDocumentImporter.readPatentDocuments("data/testData.xml");
 
-        // SaxImporter.readDocNumberFromGzip("ipg150106.xml.gz");
+        // PatentDocumentImporter.readDocNumberFromGzip("ipg150106.xml.gz");
 
         SearchEngine myEngine = new SearchEngineJasperRzepka();
         
