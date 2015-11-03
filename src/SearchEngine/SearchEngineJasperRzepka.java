@@ -1,7 +1,6 @@
 package SearchEngine;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
@@ -185,12 +184,7 @@ public class SearchEngineJasperRzepka extends SearchEngine {
     
     private static List<String> loadDocLines(long docId) throws IOException {
     	File dir = new File("docs/");
-    	File [] files = dir.listFiles(new FilenameFilter() {
-    	    @Override
-    	    public boolean accept(File dir, String name) {
-    	        return name.contains(String.valueOf(docId));
-    	    }
-    	});
+    	File [] files = dir.listFiles((File _dir, String name) -> name.contains(String.valueOf(docId)));
     	Path path = Paths.get(files[0].getAbsolutePath());
         return Files.readAllLines(path);
     }

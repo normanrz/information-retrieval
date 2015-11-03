@@ -1,6 +1,6 @@
 package SearchEngine;
 
-public class Posting {
+public class Posting implements Comparable<Posting> {
 	private final long docId;
 	private final Integer pos;
 
@@ -24,4 +24,14 @@ public class Posting {
 	public String toString() {
 		return String.format("(%s:%s)", docId, pos);
 	}
+
+	@Override
+	public int compareTo(Posting o) {
+		if (Long.compare(this.docId(), o.docId()) == 0) {
+			return Long.compare(this.pos(), o.pos());
+		} else {
+			return Long.compare(this.docId(), o.docId());
+		}
+	}
+
 }

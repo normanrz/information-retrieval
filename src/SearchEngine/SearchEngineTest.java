@@ -1,6 +1,9 @@
 package SearchEngine;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 
 /**
@@ -34,6 +37,8 @@ public class SearchEngineTest {
         System.out.print("Indexing Time:\t" + time + "\tms\n");
         
         myEngine.loadIndex("index.bin");
+
+        // new MergePostingIndex().merge(Arrays.asList(new File[] { new File("index.bin") }), new File("index.bin2"));
 
         for (String query : new String[] { "file-system", "included", "storing" }) {
 

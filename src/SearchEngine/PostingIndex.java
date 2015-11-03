@@ -1,6 +1,9 @@
 package SearchEngine;
 
 import java.io.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Queue;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -100,5 +103,7 @@ public class PostingIndex extends GenericIndex<Posting> {
             return null;
         }
     }
+
+
 
 }
