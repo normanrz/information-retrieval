@@ -22,7 +22,7 @@ public class SearchEngineTest {
 
         // PatentDocumentImporter.readDocNumberFromGzip("ipg150106.xml.gz");
 
-        SearchEngine myEngine = new SearchEngineJasperRzepka();
+    	SearchEngineJasperRzepka myEngine = new SearchEngineJasperRzepka();
 
         long start = System.currentTimeMillis();
 
@@ -37,14 +37,16 @@ public class SearchEngineTest {
 
         // new MergePostingIndex().merge(Arrays.asList(new File[] { new File("index.bin") }), new File("index.bin2"));
 
-        for (String query : new String[]{"file-system", "included", "storing"}) {
-
-            System.out.println("Query: " + query);
-            ArrayList<String> results = myEngine.search(query, 0, 0);
-            results.forEach(System.out::println);
-
-            System.out.println();
-        }
+//        for (String query : new String[]{"file-system", "included", "storing"}) {
+//
+//            System.out.println("Query: " + query);
+//            ArrayList<String> results = myEngine.search(query, 0, 0);
+//            results.forEach(System.out::println);
+//
+//            System.out.println();
+//        }
+        
+        (new SearchPostingIndex(myEngine.getIndex())).search("including");
 
     }
 

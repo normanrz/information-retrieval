@@ -1,8 +1,14 @@
 package SearchEngine;
 
 import SearchEngine.Index.PostingIndex;
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.process.CoreLabelTokenFactory;
+import edu.stanford.nlp.process.PTBTokenizer;
 
-import java.util.List;
+import java.io.StringReader;
+import java.util.*;import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * Created by norman on 05.11.15.
@@ -16,11 +22,29 @@ public class SearchPostingIndex {
     }
 
     public List<PatentDocument> search(String query) {
+        List<String> tokens = new PTBTokenizer<>(
+                new StringReader(query), new CoreLabelTokenFactory(), "").tokenize()
+        		.stream()
+        		.map(t -> t.value())
+        		.collect(Collectors.toList());
+        
+        if(tokens.contains("AND")) {
+        	searchAnd(tokens.toArray(new String[tokens.size()]));
+        } else if(tokens.contains("OR")) {
+        	searchOr(tokens.toArray(new String[tokens.size()]));
+        } else if(tokens.contains("NOT")) {
+        	searchNot(tokens.toArray(new String[tokens.size()]));
+        } else {
+        	searchPhrase(tokens.toArray(new String[tokens.size()]));
+        }
+        
+        
+        return null;
 
     }
 
 
-    public List<PatentDocument> phraseQuerySearch(String query) {
+    private List<Posting> searchPhrase(String... tokens) {
         // Split tokens
 
         // searchAnd(tokens)
@@ -54,6 +78,10 @@ public class SearchPostingIndex {
         // Find second token in same documents
 
         // continue for all
+    }
+    
+    private List<PatentDocument> searchNot(String... tokens) {
+    	
     }
 
 }

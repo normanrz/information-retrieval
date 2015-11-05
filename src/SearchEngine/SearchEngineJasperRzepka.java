@@ -187,5 +187,9 @@ public class SearchEngineJasperRzepka extends SearchEngine {
         Path path = Paths.get(files[0].getAbsolutePath());
         return Files.readAllLines(path);
     }
+    
+    public PostingIndex getIndex() {
+    	return this.index;
+    }
 
 }
