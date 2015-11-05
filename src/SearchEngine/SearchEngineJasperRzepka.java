@@ -1,25 +1,19 @@
 package SearchEngine;
 
 import SearchEngine.Importer.PatentDocumentImporter;
+import SearchEngine.Importer.PatentDocumentPreprocessor;
 import SearchEngine.Index.PostingIndex;
-import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.process.CoreLabelTokenFactory;
-import edu.stanford.nlp.process.PTBTokenizer;
-import edu.stanford.nlp.process.Tokenizer;
-import org.tartarus.snowball.SnowballStemmer;
-import org.tartarus.snowball.ext.englishStemmer;
+import SearchEngine.Index.PostingIndexSearcher;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 /**
  * @author: JasperRzepka
@@ -41,24 +35,10 @@ import java.util.stream.StreamSupport;
 
 public class SearchEngineJasperRzepka extends SearchEngine {
 
-    // http://www.uspto.gov/patft//help/stopword.htm
-    protected static List<String> stopwords = Arrays.asList(new String[]{
-            "a", "has", "such", "accordance", "have", "suitable", "according", "having", "than", "all", "herein",
-            "that", "also", "however", "the", "an", "if", "their", "and", "in", "then", "another", "into", "there",
-            "are", "invention", "thereby", "as", "is", "therefore", "at", "it", "thereof", "be", "its", "thereto",
-            "because", "means", "these", "been", "not", "they", "being", "now", "this", "by", "of", "those", "claim",
-            "on", "thus", "comprises", "onto", "to", "corresponding", "or", "use", "could", "other", "various",
-            "described", "particularly", "was", "desired", "preferably", "were", "do", "preferred", "what", "does",
-            "present", "when", "each", "provide", "where", "embodiment", "provided", "whereby", "fig", "provides",
-            "wherein", "figs", "relatively", "which", "for", "respectively", "while", "from", "said", "who", "further",
-            "should", "will", "generally", "since", "with", "had", "some", "would"
-    });
-
     protected static String baseDirectory = "data/";
     protected static int numberOfThreads = Runtime.getRuntime().availableProcessors();
 
     protected PostingIndex index = new PostingIndex();
-    protected final SnowballStemmer stemmer = new englishStemmer();
 
     public SearchEngineJasperRzepka() {
         // This should stay as is! Don't add anything here!
@@ -76,15 +56,13 @@ public class SearchEngineJasperRzepka extends SearchEngine {
                 .forEach(doc -> {
 
                     String tokenizableDocument = (doc.title + " " + doc.abstractText).toLowerCase();
-                    PTBTokenizer<CoreLabel> tokenizer = new PTBTokenizer<>(
-                            new StringReader(tokenizableDocument), new CoreLabelTokenFactory(), "");
-
-                    tokenizerAsStream(tokenizer)
-                            .filter(token -> !stopwords.contains(token.value()))
+                    PatentDocumentPreprocessor.tokenize(tokenizableDocument).stream()
+                            .filter(PatentDocumentPreprocessor::isNoStopword)
                             .forEach(token -> {
-                                String stemmedToken = stem(token.value());
+                                String stemmedToken = PatentDocumentPreprocessor.stem(token.value());
                                 index.put(stemmedToken, new Posting(doc, token.beginPosition()));
                             });
+
                     storeDoc(doc);
                 });
 
@@ -120,44 +98,12 @@ public class SearchEngineJasperRzepka extends SearchEngine {
 
     @Override
     ArrayList<String> search(String query, int topK, int prf) {
-        String stemmedQuery = stem(query.toLowerCase());
-        return index.get(stemmedQuery)
-                .map(posting -> posting.docId())
-                .distinct()
-                .map(doc_id -> String.format("%08d %s", doc_id, loadDocTitle(doc_id)))
+        PostingIndexSearcher searcher = new PostingIndexSearcher(index);
+        return Arrays.stream(searcher.search(query))
+                .mapToObj(docId -> String.format("%08d %s", docId, loadDocTitle(docId)))
                 .collect(Collectors.toCollection(ArrayList::new));
-
     }
 
-    private synchronized String stem(String word) {
-        stemmer.setCurrent(word);
-        if (stemmer.stem()) {
-            return stemmer.getCurrent();
-        } else {
-            return word;
-        }
-    }
-
-    private static <T> Stream<T> enumerationAsStream(Enumeration<T> e) {
-        return StreamSupport.stream(
-                Spliterators.spliteratorUnknownSize(
-                        new Iterator<T>() {
-                            public T next() {
-                                return e.nextElement();
-                            }
-
-                            public boolean hasNext() {
-                                return e.hasMoreElements();
-                            }
-                        },
-                        Spliterator.ORDERED), false);
-    }
-
-    private static <T> Stream<T> tokenizerAsStream(Tokenizer<T> e) {
-        return StreamSupport.stream(
-                Spliterators.spliteratorUnknownSize(
-                        e, Spliterator.ORDERED), false);
-    }
 
     private static void storeDoc(PatentDocument doc) {
         PrintWriter file = null;
@@ -172,7 +118,7 @@ public class SearchEngineJasperRzepka extends SearchEngine {
         }
     }
 
-    private static String loadDocTitle(long docId) {
+    public static String loadDocTitle(long docId) {
         try {
             return loadDocLines(docId).get(0);
         } catch (IOException e) {
@@ -186,10 +132,6 @@ public class SearchEngineJasperRzepka extends SearchEngine {
         File[] files = dir.listFiles((File _dir, String name) -> name.contains(String.valueOf(docId)));
         Path path = Paths.get(files[0].getAbsolutePath());
         return Files.readAllLines(path);
-    }
-    
-    public PostingIndex getIndex() {
-    	return this.index;
     }
 
 }

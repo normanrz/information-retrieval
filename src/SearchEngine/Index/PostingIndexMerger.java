@@ -14,7 +14,7 @@ import java.util.zip.GZIPOutputStream;
 /**
  * Created by norman on 03.11.15.
  */
-public class MergePostingIndex {
+public class PostingIndexMerger {
 
 
     public void merge(List<File> inputIndexFiles, File outputIndexFile) throws IOException {

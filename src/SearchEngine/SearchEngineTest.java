@@ -35,18 +35,21 @@ public class SearchEngineTest {
         myEngine.loadIndex("index.bin");
         myEngine.loadCompressedIndex("index.bin.gz");
 
-        // new MergePostingIndex().merge(Arrays.asList(new File[] { new File("index.bin") }), new File("index.bin2"));
+        // new PostingIndexMerger().merge(Arrays.asList(new File[] { new File("index.bin") }), new File("index.bin2"));
 
-//        for (String query : new String[]{"file-system", "included", "storing"}) {
-//
-//            System.out.println("Query: " + query);
-//            ArrayList<String> results = myEngine.search(query, 0, 0);
-//            results.forEach(System.out::println);
-//
-//            System.out.println();
-//        }
-        
-        (new SearchPostingIndex(myEngine.getIndex())).search("including");
+        String[] queries = { "secure application", "comprises AND consists", "methods NOT inventions",
+                "data OR method", "prov* NOT free", "inc* OR memory", "the presented invention", "mobile devices" };
+
+        for (String query : queries) {
+
+            System.out.println("Query: " + query);
+            ArrayList<String> results = myEngine.search(query, 0, 0);
+            results.forEach(System.out::println);
+
+            System.out.println();
+        }
+
+
 
     }
 
