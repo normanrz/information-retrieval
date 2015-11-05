@@ -1,5 +1,5 @@
 .idea
-out
+target
 information-retrieval.iml
 .classpath
 .metadata/
