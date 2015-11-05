@@ -57,7 +57,7 @@ public class SearchEngineJasperRzepka extends SearchEngine {
     protected static String baseDirectory = "data/";
     protected static int numberOfThreads = Runtime.getRuntime().availableProcessors();
 
-    protected final PostingIndex index = new PostingIndex();
+    protected PostingIndex index = new PostingIndex();
     protected final SnowballStemmer stemmer = new englishStemmer();
 
     public SearchEngineJasperRzepka() {
@@ -100,7 +100,8 @@ public class SearchEngineJasperRzepka extends SearchEngine {
     @Override
     boolean loadIndex(String directory) {
         System.out.println("Load index");
-        PostingIndex.load(new File("index.bin")).printStats();
+        index = PostingIndex.load(new File("index.bin"));
+        index.printStats();
         return false;
     }
 
@@ -112,7 +113,8 @@ public class SearchEngineJasperRzepka extends SearchEngine {
     @Override
     boolean loadCompressedIndex(String directory) {
         System.out.println("Load compressed index");
-        PostingIndex.loadCompressed(new File("index.bin.gz")).printStats();
+        index = PostingIndex.loadCompressed(new File("index.bin.gz"));
+        index.printStats();
         return false;
     }
 
