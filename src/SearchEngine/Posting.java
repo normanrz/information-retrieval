@@ -35,4 +35,13 @@ public class Posting implements Comparable<Posting> {
         }
     }
 
+    @Override
+    public boolean equals(Object other) {
+        if (other.getClass() == Posting.class) {
+            return compareTo((Posting)other) == 0;
+        } else {
+            return super.equals(other);
+        }
+    }
+
 }

@@ -33,6 +33,13 @@ public class GenericIndex<T> {
         }
     }
 
+    public Stream<T> getByPrefix(String prefixKey) {
+        return index.keySet().stream()
+                .filter(key -> key.startsWith(prefixKey))
+                .map(key -> index.get(key))
+                .flatMap(value -> value.stream());
+    }
+
     public void printStats() {
         System.out.println("Terms in index: " + index.size());
 //        System.out.println("Document entries in index: " +
