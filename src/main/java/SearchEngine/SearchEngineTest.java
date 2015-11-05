@@ -22,7 +22,7 @@ public class SearchEngineTest {
 
         // PatentDocumentImporter.readDocNumberFromGzip("ipg150106.xml.gz");
 
-    	SearchEngineJasperRzepka myEngine = new SearchEngineJasperRzepka();
+        SearchEngineJasperRzepka myEngine = new SearchEngineJasperRzepka();
 
         long start = System.currentTimeMillis();
 
@@ -37,8 +37,8 @@ public class SearchEngineTest {
 
         // new PostingIndexMerger().merge(Arrays.asList(new File[] { new File("index.bin") }), new File("index.bin2"));
 
-        String[] queries = { "secure application", "comprises AND consists", "methods NOT inventions",
-                "data OR method", "prov* NOT free", "inc* OR memory", "the presented invention", "mobile devices" };
+        String[] queries = {"secure application", "comprises AND consists", "methods NOT inventions",
+                "data OR method", "prov* NOT free", "inc* OR memory", "the presented invention", "mobile devices"};
 
         for (String query : queries) {
 
@@ -48,7 +48,6 @@ public class SearchEngineTest {
 
             System.out.println();
         }
-
 
 
     }

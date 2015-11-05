@@ -31,16 +31,21 @@ public class PostingIndexSearcher {
         tokens = mergeAsteriskTokens(tokens);
 
         if (tokens.contains("AND")) {
-            tokens.remove("AND");
-        	return searchAnd(tokens.toArray(new String[tokens.size()]));
+            tokens = lowerCaseTokens(tokens);
+            tokens = removeStopwords(tokens);
+            return searchAnd(tokens.toArray(new String[tokens.size()]));
         } else if (tokens.contains("OR")) {
-            tokens.remove("OR");
-        	return searchOr(tokens.toArray(new String[tokens.size()]));
+            tokens = lowerCaseTokens(tokens);
+            tokens = removeStopwords(tokens);
+            return searchOr(tokens.toArray(new String[tokens.size()]));
         } else if (tokens.contains("NOT")) {
-            tokens.remove("NOT");
-        	return searchNot(tokens.toArray(new String[tokens.size()]));
+            tokens = lowerCaseTokens(tokens);
+            tokens = removeStopwords(tokens);
+            return searchNot(tokens.toArray(new String[tokens.size()]));
         } else {
-        	return searchPhrase(tokens.toArray(new String[tokens.size()]));
+            tokens = lowerCaseTokens(tokens);
+            tokens = removeStopwords(tokens);
+            return searchPhrase(tokens.toArray(new String[tokens.size()]));
         }
 
     }
@@ -48,7 +53,7 @@ public class PostingIndexSearcher {
     private List<String> mergeAsteriskTokens(List<String> tokens) {
         List<String> outputTokens = new ArrayList<>();
         int i = 0;
-        for(String token : tokens) {
+        for (String token : tokens) {
             if (token.equals("*")) {
                 if (i > 0) {
                     outputTokens.set(i - 1, outputTokens.get(i - 1) + "*");
@@ -60,6 +65,18 @@ public class PostingIndexSearcher {
 
         }
         return outputTokens;
+    }
+
+    private List<String> removeStopwords(List<String> tokens) {
+        return tokens.stream()
+                .filter(PatentDocumentPreprocessor::isNoStopword)
+                .collect(Collectors.toList());
+    }
+
+    private List<String> lowerCaseTokens(List<String> tokens) {
+        return tokens.stream()
+                .map(String::toLowerCase)
+                .collect(Collectors.toList());
     }
 
 
@@ -96,10 +113,7 @@ public class PostingIndexSearcher {
     }
 
 
-
-
     private List<Posting> searchToken(String token) {
-        token = token.toLowerCase();
         if (token.endsWith("*")) {
             // Prefix search
             token = token.substring(0, token.length() - 1);
@@ -161,11 +175,10 @@ public class PostingIndexSearcher {
             int[] docIds1 = postingsDocIds(results1);
 
             return Arrays.stream(docIds0)
-                    .filter(docId -> ! intArrayContains(docIds1, docId))
+                    .filter(docId -> !intArrayContains(docIds1, docId))
                     .toArray();
         }
     }
-
 
 
     private int[] postingsDocIds(List<Posting> postings) {

@@ -54,6 +54,7 @@ public class PatentDocumentPreprocessor {
     public static boolean isNoStopword(CoreLabel token) {
         return isNoStopword(token.value());
     }
+
     public static boolean isNoStopword(String token) {
         return !stopwords.contains(token);
     }
