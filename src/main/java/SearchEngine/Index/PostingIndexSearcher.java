@@ -2,22 +2,15 @@ package SearchEngine.Index;
 
 import SearchEngine.Importer.PatentDocumentPreprocessor;
 import SearchEngine.Posting;
-import org.tartarus.snowball.SnowballStemmer;
-import org.tartarus.snowball.ext.englishStemmer;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Created by norman on 05.11.15.
- */
 public class PostingIndexSearcher {
 
     private final int[] emptyArray = new int[0];
     private final PostingIndex index;
-    private final SnowballStemmer stemmer = new englishStemmer();
 
 
     public PostingIndexSearcher(PostingIndex index) {
@@ -27,27 +20,34 @@ public class PostingIndexSearcher {
 
     public int[] search(String query) {
         List<String> tokens = PatentDocumentPreprocessor.tokenizeAsStrings(query);
-
         tokens = mergeAsteriskTokens(tokens);
 
+        SearchType searchType;
         if (tokens.contains("AND")) {
-            tokens = lowerCaseTokens(tokens);
-            tokens = removeStopwords(tokens);
-            return searchAnd(tokens.toArray(new String[tokens.size()]));
+            searchType = SearchType.AND;
         } else if (tokens.contains("OR")) {
-            tokens = lowerCaseTokens(tokens);
-            tokens = removeStopwords(tokens);
-            return searchOr(tokens.toArray(new String[tokens.size()]));
+            searchType = SearchType.OR;
         } else if (tokens.contains("NOT")) {
-            tokens = lowerCaseTokens(tokens);
-            tokens = removeStopwords(tokens);
-            return searchNot(tokens.toArray(new String[tokens.size()]));
+            searchType = SearchType.NOT;
         } else {
-            tokens = lowerCaseTokens(tokens);
-            tokens = removeStopwords(tokens);
-            return searchPhrase(tokens.toArray(new String[tokens.size()]));
+            searchType = SearchType.PHRASE;
         }
 
+        tokens = lowerCaseTokens(tokens);
+        tokens = removeStopwords(tokens);
+
+        switch (searchType) {
+            case AND:
+                return searchAnd(tokens);
+            case OR:
+                return searchOr(tokens);
+            case NOT:
+                return searchNot(tokens);
+            case PHRASE:
+                return searchPhrase(tokens);
+            default:
+                return new int[]{};
+        }
     }
 
     private List<String> mergeAsteriskTokens(List<String> tokens) {
@@ -80,11 +80,11 @@ public class PostingIndexSearcher {
     }
 
 
-    private int[] searchPhrase(String... tokens) {
+    private int[] searchPhrase(List<String> tokens) {
 
         final int spaceLength = 1;
 
-        if (tokens.length == 0) {
+        if (tokens.size() == 0) {
             return emptyArray;
         } else {
             int previousTokensLength = 0;
@@ -132,16 +132,16 @@ public class PostingIndexSearcher {
     }
 
 
-    private int[] searchOr(String... tokens) {
-        return postingsDocIds(Arrays.stream(tokens)
+    private int[] searchOr(List<String> tokens) {
+        return postingsDocIds(tokens.stream()
                 .map(this::searchToken)
                 .flatMap(postings -> postings.stream())
                 .collect(Collectors.toList()));
     }
 
     // Returns postings with the positions of the last token
-    private int[] searchAnd(String... tokens) {
-        if (tokens.length == 0) {
+    private int[] searchAnd(List<String> tokens) {
+        if (tokens.size() == 0) {
             return emptyArray;
         } else {
             int[] results = null;
@@ -163,15 +163,15 @@ public class PostingIndexSearcher {
         }
     }
 
-    private int[] searchNot(String... tokens) {
-        if (tokens.length != 2) {
+    private int[] searchNot(List<String> tokens) {
+        if (tokens.size() != 2) {
             return emptyArray;
         } else {
 
-            List<Posting> results0 = searchToken(tokens[0]);
+            List<Posting> results0 = searchToken(tokens.get(0));
             int[] docIds0 = postingsDocIds(results0);
 
-            List<Posting> results1 = searchTokenInDocs(tokens[1], docIds0);
+            List<Posting> results1 = searchTokenInDocs(tokens.get(1), docIds0);
             int[] docIds1 = postingsDocIds(results1);
 
             return Arrays.stream(docIds0)
