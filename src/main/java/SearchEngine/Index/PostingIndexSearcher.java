@@ -19,9 +19,11 @@ public class PostingIndexSearcher {
 
 
     public int[] search(String query) {
+        // Tokenize query
         List<String> tokens = PatentDocumentPreprocessor.tokenizeAsStrings(query);
         tokens = mergeAsteriskTokens(tokens);
 
+        // Detect SearchType
         SearchType searchType;
         if (tokens.contains("AND")) {
             searchType = SearchType.AND;
@@ -33,9 +35,11 @@ public class PostingIndexSearcher {
             searchType = SearchType.PHRASE;
         }
 
+        // Preprocess tokens
         tokens = lowerCaseTokens(tokens);
         tokens = removeStopwords(tokens);
 
+        // Execute search
         switch (searchType) {
             case AND:
                 return searchAnd(tokens);
@@ -50,35 +54,6 @@ public class PostingIndexSearcher {
         }
     }
 
-    private List<String> mergeAsteriskTokens(List<String> tokens) {
-        List<String> outputTokens = new ArrayList<>();
-        int i = 0;
-        for (String token : tokens) {
-            if (token.equals("*")) {
-                if (i > 0) {
-                    outputTokens.set(i - 1, outputTokens.get(i - 1) + "*");
-                }
-            } else {
-                outputTokens.add(token);
-                i++;
-            }
-
-        }
-        return outputTokens;
-    }
-
-    private List<String> removeStopwords(List<String> tokens) {
-        return tokens.stream()
-                .filter(PatentDocumentPreprocessor::isNoStopword)
-                .collect(Collectors.toList());
-    }
-
-    private List<String> lowerCaseTokens(List<String> tokens) {
-        return tokens.stream()
-                .map(String::toLowerCase)
-                .collect(Collectors.toList());
-    }
-
 
     private int[] searchPhrase(List<String> tokens) {
 
@@ -91,17 +66,22 @@ public class PostingIndexSearcher {
             List<Posting> results = null;
             for (String token : tokens) {
                 if (results == null) {
+                    // First token
                     results = searchToken(token);
                 } else {
 
+                    // Subsequent tokens
                     final int finalPreviousTokensLength = previousTokensLength;
                     final int[] docIds = postingsDocIds(results);
                     List<Posting> tokenResults = searchTokenInDocs(token, docIds);
 
+                    // Shrink result set based on subsequent token matches
                     results = results.stream()
                             .filter(posting ->
                                             tokenResults.stream()
+                                                    // Current token is in same document
                                                     .filter(posting1 -> posting1.docId() == posting.docId())
+                                                    // Current token position matches expected position
                                                     .anyMatch(posting1 -> posting1.pos() == posting.pos() + finalPreviousTokensLength)
                             )
                             .collect(Collectors.toList());
@@ -115,11 +95,11 @@ public class PostingIndexSearcher {
 
     private List<Posting> searchToken(String token) {
         if (token.endsWith("*")) {
-            // Prefix search
+            // Prefix search (no stemming)
             token = token.substring(0, token.length() - 1);
             return index.getByPrefix(token).collect(Collectors.toList());
         } else {
-            // Regular search
+            // Regular search with stemming
             String stemmedToken = PatentDocumentPreprocessor.stem(token);
             return index.get(stemmedToken).collect(Collectors.toList());
         }
@@ -139,7 +119,6 @@ public class PostingIndexSearcher {
                 .collect(Collectors.toList()));
     }
 
-    // Returns postings with the positions of the last token
     private int[] searchAnd(List<String> tokens) {
         if (tokens.size() == 0) {
             return emptyArray;
@@ -168,11 +147,9 @@ public class PostingIndexSearcher {
             return emptyArray;
         } else {
 
-            List<Posting> results0 = searchToken(tokens.get(0));
-            int[] docIds0 = postingsDocIds(results0);
-
-            List<Posting> results1 = searchTokenInDocs(tokens.get(1), docIds0);
-            int[] docIds1 = postingsDocIds(results1);
+            // Remove intersecting documents
+            int[] docIds0 = postingsDocIds(searchToken(tokens.get(0)));
+            int[] docIds1 = postingsDocIds(searchTokenInDocs(tokens.get(1), docIds0));
 
             return Arrays.stream(docIds0)
                     .filter(docId -> !intArrayContains(docIds1, docId))
@@ -196,5 +173,38 @@ public class PostingIndexSearcher {
         }
         return false;
     }
+
+
+    private List<String> mergeAsteriskTokens(List<String> tokens) {
+        List<String> outputTokens = new ArrayList<>();
+        int i = 0;
+        for (String token : tokens) {
+            if (token.equals("*")) {
+                if (i > 0) {
+                    outputTokens.set(i - 1, outputTokens.get(i - 1) + "*");
+                }
+            } else {
+                outputTokens.add(token);
+                i++;
+            }
+
+        }
+        return outputTokens;
+    }
+
+
+    private List<String> removeStopwords(List<String> tokens) {
+        return tokens.stream()
+                .filter(PatentDocumentPreprocessor::isNoStopword)
+                .collect(Collectors.toList());
+    }
+
+
+    private List<String> lowerCaseTokens(List<String> tokens) {
+        return tokens.stream()
+                .map(String::toLowerCase)
+                .collect(Collectors.toList());
+    }
+
 
 }
