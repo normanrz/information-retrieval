@@ -8,6 +8,7 @@ import SearchEngine.Index.PostingIndexSearcher;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,6 +36,16 @@ import java.util.stream.Stream;
  */
 
 
+class Counter {
+    int i = 0;
+    public void increment() {
+        i += 1;
+    }
+    public int value() {
+        return i;
+    }
+}
+
 public class SearchEngineJasperRzepka extends SearchEngine {
 
     protected static String baseDirectory = "data/";
@@ -57,13 +68,20 @@ public class SearchEngineJasperRzepka extends SearchEngine {
                 .flatMap(value -> value)
                 .forEach(doc -> {
 
+                    Counter i = new Counter();
+                    ArrayList<String> tokens = new ArrayList<String>();
+
                     String tokenizableDocument = (doc.title + " " + doc.abstractText).toLowerCase();
                     PatentDocumentPreprocessor.tokenize(tokenizableDocument).stream()
                             .filter(PatentDocumentPreprocessor::isNoStopword)
                             .forEach(token -> {
                                 String stemmedToken = PatentDocumentPreprocessor.stem(token.value());
-                                index.put(stemmedToken, new Posting(doc, token.beginPosition()));
+                                index.put(stemmedToken, new Posting(doc, i.value()));
+                                tokens.add(token.value());
+                                i.increment();
                             });
+
+                    String processedDocument = String.join(" ", tokens);
 
                     storeDoc(doc);
                 });
