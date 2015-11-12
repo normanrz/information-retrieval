@@ -1,16 +1,69 @@
 package SearchEngine.Index;
 
-import SearchEngine.Posting;
+import SearchEngine.PatentDocument;
+import SearchEngine.DocumentPostings;
 
 import java.io.*;
-import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
  * Created by norman on 02.11.15.
  */
-public class PostingIndex extends GenericIndex<Posting> {
+public class PostingIndex extends GenericIndex<DocumentPostings> {
+
+    public Optional<DocumentPostings> get(String token, int docId) {
+        return get(token)
+                .filter(documentPostings -> documentPostings.docId() == docId)
+                .findFirst();
+    }
+
+    public void putPosting(String token, PatentDocument doc, int pos) {
+        putPosting(token, Integer.parseInt(doc.docNumber), pos);
+    }
+
+    public void putPosting(String token, int docId, int pos) {
+        ConcurrentLinkedQueue<DocumentPostings> postingsList = index.get(token);
+        if (postingsList == null) {
+            put(token, new DocumentPostings(docId, pos));
+        } else {
+            Optional<DocumentPostings> documentPostings = get(token, docId);
+            if (documentPostings.isPresent()) {
+                documentPostings.get().addPosition(pos);
+            } else {
+                put(token, new DocumentPostings(docId, pos));
+            }
+        }
+    }
+
+    public int collectionTokenCount() {
+        return index.values().stream()
+                .flatMap(list -> list.stream())
+                .mapToInt(DocumentPostings::tokenFrequency)
+                .sum();
+    }
+    public int documentTokenCount(int docId) {
+        return index.values().stream()
+                .flatMap(list -> list.stream())
+                .filter(documentPostings -> documentPostings.docId() == docId)
+                .mapToInt(DocumentPostings::tokenFrequency)
+                .sum();
+    }
+
+    public int collectionTokenFrequency(String token) {
+        return get(token)
+                .mapToInt(DocumentPostings::tokenFrequency)
+                .sum();
+    }
+
+    public int documentTokenFrequency(String token, int docId) {
+        return get(token, docId)
+                .map(DocumentPostings::tokenFrequency)
+                .orElse(0);
+    }
 
     public void save(OutputStream stream) {
         try {
@@ -18,7 +71,7 @@ public class PostingIndex extends GenericIndex<Posting> {
 
             for (String term : index.navigableKeySet()) {
                 TermWriter.writeTerm(outputStream, term);
-                PostingWriter.writePostingsList(outputStream, new ArrayList<>(index.get(term)));
+//                PostingWriter.writePostingsList(outputStream, new ArrayList<>(index.get(term)));
             }
             outputStream.close();
         } catch (IOException e) {
@@ -45,26 +98,26 @@ public class PostingIndex extends GenericIndex<Posting> {
 
     public static PostingIndex load(InputStream inputStream) {
         PostingIndex newIndex = new PostingIndex();
-        try {
-            DataInputStream stream = new DataInputStream(inputStream);
-
-            int j = 0;
-            while (true) {
-                try {
-                    String term = TermReader.readTerm(stream);
-                    for (Posting posting : PostingReader.readPostingsList(stream)) {
-                        newIndex.put(term, posting);
-                    }
-                } catch (EOFException eof) {
-                    break;
-                }
-                j++;
-            }
-
-            stream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            DataInputStream stream = new DataInputStream(inputStream);
+//
+//            int j = 0;
+//            while (true) {
+//                try {
+//                    String term = TermReader.readTerm(stream);
+//                    for (Posting posting : PostingReader.readPostingsList(stream)) {
+//                        newIndex.put(term, posting);
+//                    }
+//                } catch (EOFException eof) {
+//                    break;
+//                }
+//                j++;
+//            }
+//
+//            stream.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
         return newIndex;
     }
 

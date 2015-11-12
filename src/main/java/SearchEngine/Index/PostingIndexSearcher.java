@@ -1,12 +1,15 @@
 package SearchEngine.Index;
 
+import SearchEngine.DocumentPostings;
 import SearchEngine.Importer.PatentDocumentPreprocessor;
 import SearchEngine.Posting;
 
+import javax.print.Doc;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PostingIndexSearcher {
 
@@ -93,15 +96,20 @@ public class PostingIndexSearcher {
 
 
     private List<Posting> searchToken(String token) {
+        Stream<DocumentPostings> results;
         if (token.endsWith("*")) {
             // Prefix search (no stemming)
             token = token.substring(0, token.length() - 1);
-            return index.getByPrefix(token).collect(Collectors.toList());
+            results = index.getByPrefix(token);
+
         } else {
             // Regular search with stemming
             String stemmedToken = PatentDocumentPreprocessor.stem(token);
-            return index.get(stemmedToken).collect(Collectors.toList());
+            results = index.get(stemmedToken);
         }
+        return results
+                .flatMap(documentPostings -> documentPostings.toPostings().stream())
+                .collect(Collectors.toList());
     }
 
     private List<Posting> searchTokenInDocs(String token, int[] docIds) {

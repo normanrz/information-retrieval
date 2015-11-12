@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -34,18 +35,6 @@ import static org.iq80.leveldb.impl.Iq80DBFactory.*;
  */
 
 
-class Counter {
-    int i = 0;
-
-    public void increment() {
-        i += 1;
-    }
-
-    public int value() {
-        return i;
-    }
-}
-
 public class SearchEngineJasperRzepka extends SearchEngine {
 
     protected static String baseDirectory = "data/";
@@ -60,46 +49,47 @@ public class SearchEngineJasperRzepka extends SearchEngine {
 
     @Override
     void index(String directory) {
-        try {
-            Options options = new Options();
-            options.createIfMissing(true);
-            final DB db = factory.open(new File("docs"), options);
+//        try {
+        Options options = new Options();
+        options.createIfMissing(true);
+//            final DB db = factory.open(new File("docs"), options);
 
-            File dir = new File(directory);
-            Stream.of(dir.listFiles()).parallel()
-                    .filter(file -> file.getName().endsWith((".xml")))
-                    .map(PatentDocumentImporter::readPatentDocuments)
-                    .flatMap(value -> value)
-                    .forEach(doc -> {
-                        Counter i = new Counter();
-                        ArrayList<String> tokens = new ArrayList<String>();
+        File dir = new File(directory);
+        Stream.of(dir.listFiles()).parallel()
+                .filter(file -> file.getName().endsWith((".xml")))
+                .map(PatentDocumentImporter::readPatentDocuments)
+                .flatMap(value -> value)
+                .forEach(doc -> {
+                    AtomicInteger tokenPosition = new AtomicInteger(0);
+                    ArrayList<String> tokens = new ArrayList<String>();
 
-                        String tokenizableDocument = (doc.title + " " + doc.abstractText).toLowerCase();
-                        PatentDocumentPreprocessor.tokenize(tokenizableDocument).stream()
-                                .filter(PatentDocumentPreprocessor::isNoStopword)
-                                .forEach(token -> {
-                                    String stemmedToken = PatentDocumentPreprocessor.stem(token.value());
-                                    index.put(stemmedToken, new Posting(doc, i.value()));
-                                    tokens.add(token.value());
-                                    i.increment();
-                                });
+                    String tokenizableDocument = (doc.title + " " + doc.abstractText).toLowerCase();
+                    PatentDocumentPreprocessor.tokenize(tokenizableDocument).stream()
+                            .filter(PatentDocumentPreprocessor::isNoStopword)
+                            .forEach(token -> {
+                                String stemmedToken = PatentDocumentPreprocessor.stem(token.value());
+                                index.putPosting(stemmedToken, doc, tokenPosition.getAndIncrement());
+                                tokens.add(token.value());
+                            });
+
+
 //                        String processedDocument = String.join(" ", tokens);
 
-                        db.put(bytes(String.format("%s:title", doc.docNumber)), bytes(doc.title));
-                        db.put(bytes(String.format("%s:abstract", doc.docNumber)), bytes(doc.abstractText));
+//                        db.put(bytes(String.format("%s:title", doc.docNumber)), bytes(doc.title));
+//                        db.put(bytes(String.format("%s:abstract", doc.docNumber)), bytes(doc.abstractText));
 
-                    });
+                });
 
 
-            System.out.println("Imported index");
-            index.printStats();
+        System.out.println("Imported index");
+        index.printStats();
 //            index.save(new File("index.bin"));
-            index.saveCompressed(new File("index.bin.gz"));
+        index.saveCompressed(new File("index.bin.gz"));
 
-            db.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//            db.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     @Override
@@ -134,7 +124,7 @@ public class SearchEngineJasperRzepka extends SearchEngine {
             PostingIndexSearcher searcher = new PostingIndexSearcher(index);
             result = Arrays.stream(searcher.search(query))
                     .mapToObj(docId -> String.format("%08d", docId))
-                    .map(docId -> String.format("%s %s", docId, loadDocTitle(docId, db)))
+                    .map(docId -> String.format("%s\t%s", docId, loadDocTitle(docId, db)))
                     .collect(Collectors.toCollection(ArrayList::new));
 
             db.close();
