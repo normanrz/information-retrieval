@@ -32,12 +32,12 @@ public class SearchEngineTest {
 
         System.out.print("Indexing Time:\t" + time + "\tms\n");
 
-        myEngine.loadIndex("index.bin");
-        myEngine.loadCompressedIndex("index.bin.gz");
+//        myEngine.loadIndex("index.bin");
+//        myEngine.loadCompressedIndex("index.bin.gz");
 
         // new PostingIndexMerger().merge(Arrays.asList(new File[] { new File("index.bin") }), new File("index.bin2"));
 
-        String[] queries = {"secure application", "comprises AND consists", "methods NOT inventions",
+        String[] queries = {"comprises AND consists", "methods NOT inventions",
                 "data OR method", "prov* NOT free", "inc* OR memory", "the presented invention", "mobile devices"};
 
         for (String query : queries) {

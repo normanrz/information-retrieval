@@ -4,6 +4,8 @@ import SearchEngine.Importer.PatentDocumentImporter;
 import SearchEngine.Importer.PatentDocumentPreprocessor;
 import SearchEngine.Index.PostingIndex;
 import SearchEngine.Index.PostingIndexSearcher;
+import org.iq80.leveldb.*;
+import static org.iq80.leveldb.impl.Iq80DBFactory.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,32 +51,42 @@ public class SearchEngineJasperRzepka extends SearchEngine {
 
     @Override
     void index(String directory) {
-
-        File dir = new File(directory);
-        Stream.of(dir.listFiles()).parallel()
-                .filter(file -> file.getName().endsWith((".xml")))
-                .map(PatentDocumentImporter::readPatentDocuments)
-                .flatMap(value -> value)
-                .forEach(doc -> {
-
-                    String tokenizableDocument = (doc.title + " " + doc.abstractText).toLowerCase();
-                    PatentDocumentPreprocessor.tokenize(tokenizableDocument).stream()
-                            .filter(PatentDocumentPreprocessor::isNoStopword)
-                            .forEach(token -> {
-                                String stemmedToken = PatentDocumentPreprocessor.stem(token.value());
-                                index.put(stemmedToken, new Posting(doc, token.beginPosition()));
-                            });
-
-                    storeDoc(doc);
-                });
+        try {
+            Options options = new Options();
+            options.createIfMissing(true);
+            final DB db = factory.open(new File("docs"), options);
 
 
-        System.out.println("Imported index");
-        index.printStats();
-        index.save(new File("index.bin"));
-        index.saveCompressed(new File("index.bin.gz"));
+            File dir = new File(directory);
+            Stream.of(dir.listFiles()).parallel()
+                    .filter(file -> file.getName().endsWith((".xml")))
+                    .map(PatentDocumentImporter::readPatentDocuments)
+                    .flatMap(value -> value)
+                    .forEach(doc -> {
+
+                        String tokenizableDocument = (doc.title + " " + doc.abstractText).toLowerCase();
+                        PatentDocumentPreprocessor.tokenize(tokenizableDocument).stream()
+                                .filter(PatentDocumentPreprocessor::isNoStopword)
+                                .forEach(token -> {
+                                    String stemmedToken = PatentDocumentPreprocessor.stem(token.value());
+                                    index.put(stemmedToken, new Posting(doc, token.beginPosition()));
+                                });
+
+                        db.put(bytes(String.format("%s:title", doc.docNumber)), bytes(doc.title));
+                        db.put(bytes(String.format("%s:abstract", doc.docNumber)), bytes(doc.abstractText));
+
+                    });
 
 
+            System.out.println("Imported index");
+            index.printStats();
+            index.save(new File("index.bin"));
+            index.saveCompressed(new File("index.bin.gz"));
+
+            db.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -100,40 +112,27 @@ public class SearchEngineJasperRzepka extends SearchEngine {
 
     @Override
     ArrayList<String> search(String query, int topK, int prf) {
-        PostingIndexSearcher searcher = new PostingIndexSearcher(index);
-        return Arrays.stream(searcher.search(query))
-                .mapToObj(docId -> String.format("%08d %s", docId, loadDocTitle(docId)))
-                .collect(Collectors.toCollection(ArrayList::new));
-    }
-
-
-    private static void storeDoc(PatentDocument doc) {
-        PrintWriter file = null;
+        Options options = new Options();
+        options.createIfMissing(true);
+        ArrayList<String> result = null;
         try {
-            file = new PrintWriter("docs/" + doc.docNumber);
-            file.println(doc.title);
-            file.println(doc.abstractText);
+            final DB db = factory.open(new File("docs"), options);
+
+            PostingIndexSearcher searcher = new PostingIndexSearcher(index);
+            result = Arrays.stream(searcher.search(query))
+                    .mapToObj(docId -> String.format("%08d", docId))
+                    .map(docId -> String.format("%s %s", docId, loadDocTitle(docId, db)))
+                    .collect(Collectors.toCollection(ArrayList::new));
+
+            db.close();
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            if (file != null) file.close();
         }
+
+        return result;
     }
 
-    public static String loadDocTitle(long docId) {
-        try {
-            return loadDocLines(docId).get(0);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+    public static String loadDocTitle(String docId, DB db) {
+        return asString(db.get(bytes(String.format("%s:title", docId))));
     }
-
-    private static List<String> loadDocLines(long docId) throws IOException {
-        File dir = new File("docs/");
-        File[] files = dir.listFiles((File _dir, String name) -> name.contains(String.valueOf(docId)));
-        Path path = Paths.get(files[0].getAbsolutePath());
-        return Files.readAllLines(path);
-    }
-
 }
