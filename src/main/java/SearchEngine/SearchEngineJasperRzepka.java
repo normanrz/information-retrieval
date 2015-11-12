@@ -4,20 +4,17 @@ import SearchEngine.Importer.PatentDocumentImporter;
 import SearchEngine.Importer.PatentDocumentPreprocessor;
 import SearchEngine.Index.PostingIndex;
 import SearchEngine.Index.PostingIndexSearcher;
-import org.iq80.leveldb.*;
-import static org.iq80.leveldb.impl.Iq80DBFactory.*;
+import org.iq80.leveldb.DB;
+import org.iq80.leveldb.Options;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.iq80.leveldb.impl.Iq80DBFactory.*;
 
 /**
  * @author: JasperRzepka
@@ -36,6 +33,18 @@ import java.util.stream.Stream;
  * Keep in mind to include your implementation decisions also in the pdf file of each assignment
  */
 
+
+class Counter {
+    int i = 0;
+
+    public void increment() {
+        i += 1;
+    }
+
+    public int value() {
+        return i;
+    }
+}
 
 public class SearchEngineJasperRzepka extends SearchEngine {
 
@@ -56,21 +65,25 @@ public class SearchEngineJasperRzepka extends SearchEngine {
             options.createIfMissing(true);
             final DB db = factory.open(new File("docs"), options);
 
-
             File dir = new File(directory);
             Stream.of(dir.listFiles()).parallel()
                     .filter(file -> file.getName().endsWith((".xml")))
                     .map(PatentDocumentImporter::readPatentDocuments)
                     .flatMap(value -> value)
                     .forEach(doc -> {
+                        Counter i = new Counter();
+                        ArrayList<String> tokens = new ArrayList<String>();
 
                         String tokenizableDocument = (doc.title + " " + doc.abstractText).toLowerCase();
                         PatentDocumentPreprocessor.tokenize(tokenizableDocument).stream()
                                 .filter(PatentDocumentPreprocessor::isNoStopword)
                                 .forEach(token -> {
                                     String stemmedToken = PatentDocumentPreprocessor.stem(token.value());
-                                    index.put(stemmedToken, new Posting(doc, token.beginPosition()));
+                                    index.put(stemmedToken, new Posting(doc, i.value()));
+                                    tokens.add(token.value());
+                                    i.increment();
                                 });
+//                        String processedDocument = String.join(" ", tokens);
 
                         db.put(bytes(String.format("%s:title", doc.docNumber)), bytes(doc.title));
                         db.put(bytes(String.format("%s:abstract", doc.docNumber)), bytes(doc.abstractText));
@@ -80,7 +93,7 @@ public class SearchEngineJasperRzepka extends SearchEngine {
 
             System.out.println("Imported index");
             index.printStats();
-            index.save(new File("index.bin"));
+//            index.save(new File("index.bin"));
             index.saveCompressed(new File("index.bin.gz"));
 
             db.close();

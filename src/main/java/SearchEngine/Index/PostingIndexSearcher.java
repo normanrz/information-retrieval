@@ -2,6 +2,7 @@ package SearchEngine.Index;
 
 import SearchEngine.Importer.PatentDocumentPreprocessor;
 import SearchEngine.Posting;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -57,12 +58,10 @@ public class PostingIndexSearcher {
 
     private int[] searchPhrase(List<String> tokens) {
 
-        final int spaceLength = 1;
-
         if (tokens.size() == 0) {
             return emptyArray;
         } else {
-            int previousTokensLength = 0;
+            int tokenCount = 0;
             List<Posting> results = null;
             for (String token : tokens) {
                 if (results == null) {
@@ -71,7 +70,7 @@ public class PostingIndexSearcher {
                 } else {
 
                     // Subsequent tokens
-                    final int finalPreviousTokensLength = previousTokensLength;
+                    final int finalTokenCount = tokenCount;
                     final int[] docIds = postingsDocIds(results);
                     List<Posting> tokenResults = searchTokenInDocs(token, docIds);
 
@@ -81,12 +80,12 @@ public class PostingIndexSearcher {
                                             tokenResults.stream()
                                                     // Current token is in same document
                                                     .filter(posting1 -> posting1.docId() == posting.docId())
-                                                    // Current token position matches expected position
-                                                    .anyMatch(posting1 -> posting1.pos() == posting.pos() + finalPreviousTokensLength)
+                                                            // Current token position matches expected position
+                                                    .anyMatch(posting1 -> posting1.pos() == posting.pos() + finalTokenCount)
                             )
                             .collect(Collectors.toList());
                 }
-                previousTokensLength += token.length() + spaceLength;
+                tokenCount += 1;
             }
             return postingsDocIds(results);
         }
@@ -120,7 +119,7 @@ public class PostingIndexSearcher {
     }
 
     private int[] searchAnd(List<String> tokens) {
-        if (tokens.size() == 0) {
+        if (tokens.isEmpty()) {
             return emptyArray;
         } else {
             int[] results = null;
@@ -130,7 +129,7 @@ public class PostingIndexSearcher {
                     // First token
                     results = postingsDocIds(searchToken(token));
                 } else {
-                    // Subsequent tokens
+                    // Subsequent tokens in intersecting documents
                     results = postingsDocIds(searchTokenInDocs(token, results));
                 }
 

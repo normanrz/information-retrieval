@@ -33,7 +33,7 @@ public class SearchEngineTest {
         System.out.print("Indexing Time:\t" + time + "\tms\n");
 
 //        myEngine.loadIndex("index.bin");
-//        myEngine.loadCompressedIndex("index.bin.gz");
+        myEngine.loadCompressedIndex("index.bin.gz");
 
         // new PostingIndexMerger().merge(Arrays.asList(new File[] { new File("index.bin") }), new File("index.bin2"));
 
