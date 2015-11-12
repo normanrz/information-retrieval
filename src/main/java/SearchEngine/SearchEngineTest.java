@@ -37,8 +37,10 @@ public class SearchEngineTest {
 
         // new PostingIndexMerger().merge(Arrays.asList(new File[] { new File("index.bin") }), new File("index.bin2"));
 
-        String[] queries = {"comprises AND consists", "methods NOT inventions",
-                "data OR method", "prov* NOT free", "inc* OR memory", "the presented invention", "mobile devices"};
+//        String[] queries = {"comprises AND consists", "methods NOT inventions",
+//                "data OR method", "prov* NOT free", "inc* OR memory", "the presented invention", "mobile devices"};
+
+        String[] queries = {"processing", "computers", "mobile devices", "data"};
 
         for (String query : queries) {
 

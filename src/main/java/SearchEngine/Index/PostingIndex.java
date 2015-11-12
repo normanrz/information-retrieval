@@ -40,15 +40,11 @@ public class PostingIndex extends GenericIndex<DocumentPostings> {
     }
 
     public int collectionTokenCount() {
-        return index.values().stream()
-                .flatMap(list -> list.stream())
-                .mapToInt(DocumentPostings::tokenFrequency)
+        return all().mapToInt(DocumentPostings::tokenFrequency)
                 .sum();
     }
     public int documentTokenCount(int docId) {
-        return index.values().stream()
-                .flatMap(list -> list.stream())
-                .filter(documentPostings -> documentPostings.docId() == docId)
+        return all().filter(documentPostings -> documentPostings.docId() == docId)
                 .mapToInt(DocumentPostings::tokenFrequency)
                 .sum();
     }

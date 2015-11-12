@@ -127,6 +127,10 @@ public class SearchEngineJasperRzepka extends SearchEngine {
                     .map(docId -> String.format("%s\t%s", docId, loadDocTitle(docId, db)))
                     .collect(Collectors.toCollection(ArrayList::new));
 
+            searcher.rankResults(query, searcher.search(query), 2000).forEach(postingSearchResult -> {
+                System.out.println(String.format("%08d %.8f", postingSearchResult.docId, postingSearchResult.rank));
+            });
+
             db.close();
         } catch (IOException e) {
             e.printStackTrace();

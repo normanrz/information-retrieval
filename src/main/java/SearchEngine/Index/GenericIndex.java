@@ -33,6 +33,10 @@ public class GenericIndex<T> {
         }
     }
 
+    public Stream<T> all() {
+        return index.values().stream().flatMap(ConcurrentLinkedQueue::stream);
+    }
+
     public Stream<T> getByPrefix(String prefixKey) {
         return index.keySet().stream()
                 .filter(key -> key.startsWith(prefixKey))

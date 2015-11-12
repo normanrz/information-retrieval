@@ -3,6 +3,8 @@ package SearchEngine.Index;
 import SearchEngine.DocumentPostings;
 import SearchEngine.Importer.PatentDocumentPreprocessor;
 import SearchEngine.Posting;
+import SearchEngine.PostingSearchResult;
+import org.apache.commons.collections.primitives.IntList;
 
 import javax.print.Doc;
 import java.util.ArrayList;
@@ -211,6 +213,43 @@ public class PostingIndexSearcher {
         return tokens.stream()
                 .map(String::toLowerCase)
                 .collect(Collectors.toList());
+    }
+
+    private List<String> stemmedTokens(List<String> tokens) {
+        return tokens.stream()
+                .map(PatentDocumentPreprocessor::stem)
+                .collect(Collectors.toList());
+    }
+
+
+    public List<PostingSearchResult> rankResults(String query, int[] docIds, int mu) {
+        List<String> tokens = PatentDocumentPreprocessor.tokenizeAsStrings(query);
+        tokens = mergeAsteriskTokens(tokens);
+
+        // Preprocess tokens
+        tokens = lowerCaseTokens(tokens);
+        tokens = removeStopwords(tokens);
+
+        tokens = stemmedTokens(tokens);
+
+        final List<String> finalTokens = tokens;
+
+        return Arrays.stream(docIds)
+                .mapToObj(docId -> new PostingSearchResult(docId, queryLikelihood(finalTokens, docId, mu)))
+                .sorted(PostingSearchResult::compareTo)
+                .collect(Collectors.toList());
+    }
+
+
+    public double queryLikelihood(List<String> tokens, int docId, int mu) {
+        return tokens.stream()
+                .mapToDouble(token ->  (index.documentTokenFrequency(token, docId) +
+                                    mu * ((double)index.collectionTokenFrequency(token) / (double)index.collectionTokenCount())) /
+                                    (index.documentTokenCount(docId) + mu)
+                        )
+                .map(Math::log)
+                .sum();
+
     }
 
 
