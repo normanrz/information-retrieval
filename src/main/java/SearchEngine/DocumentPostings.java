@@ -16,8 +16,12 @@ public class DocumentPostings {
     private final int docId;
     private final ArrayIntList positions = new ArrayIntList();
 
-    public DocumentPostings(int doc_id, int... initialPositions) {
-        this.docId = doc_id;
+    public DocumentPostings(int docId, IntList initialPositions) {
+        this(docId, initialPositions.toArray());
+    }
+
+    public DocumentPostings(int docId, int... initialPositions) {
+        this.docId = docId;
         for (int pos : initialPositions) {
             this.addPosition(pos);
         }

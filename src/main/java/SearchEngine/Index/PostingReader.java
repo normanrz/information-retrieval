@@ -1,6 +1,9 @@
 package SearchEngine.Index;
 
+import SearchEngine.DocumentPostings;
 import SearchEngine.Posting;
+import org.apache.commons.collections.primitives.ArrayIntList;
+import org.apache.commons.collections.primitives.IntList;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -12,15 +15,17 @@ import java.util.List;
  */
 public class PostingReader {
 
+    @Deprecated
     public static Posting readPosting(DataInputStream stream) throws IOException {
-        int docNumber = stream.readInt();
+        int docId = stream.readInt();
         int pos = stream.readInt();
-        return new SearchEngine.Posting(docNumber, pos);
+        return new Posting(docId, pos);
     }
 
-    public static List<SearchEngine.Posting> readPostingsList(DataInputStream stream) throws IOException {
+    @Deprecated
+    public static List<Posting> readPostingsList(DataInputStream stream) throws IOException {
         int postingsListLength = stream.readInt();
-        List<Posting> postingsList = new ArrayList<>(postingsListLength);
+        List<Posting> output = new ArrayList<>(postingsListLength);
 
         Posting lastPosting = null;
         for (int i = 0; i < postingsListLength; i++) {
@@ -28,15 +33,48 @@ public class PostingReader {
             if (lastPosting != null) {
                 posting = fromDelta(posting, lastPosting);
             }
-            postingsList.add(posting);
+            output.add(posting);
             lastPosting = posting;
 
         }
-        return postingsList;
+        return output;
+    }
+
+    public static DocumentPostings readDocumentPostings(DataInputStream stream) throws IOException {
+        int docId = stream.readInt();
+        int termFrequency = stream.readInt();
+        IntList positions = new ArrayIntList(termFrequency);
+        for (int i = 0; i < termFrequency; i++) {
+            positions.add(stream.readInt());
+        }
+        return new DocumentPostings(docId, positions);
+    }
+
+    public static List<DocumentPostings> readDocumentPostingsList(DataInputStream stream) throws IOException {
+        int documentPostingsListLength = stream.readInt();
+        List<DocumentPostings> output = new ArrayList<>(documentPostingsListLength);
+
+        DocumentPostings lastDocumentPostings = null;
+        for (int i = 0; i < documentPostingsListLength; i++) {
+            DocumentPostings documentPostings = readDocumentPostings(stream);
+            if (lastDocumentPostings != null) {
+                documentPostings = fromDelta(documentPostings, lastDocumentPostings);
+            }
+            output.add(documentPostings);
+            lastDocumentPostings = documentPostings;
+
+        }
+
+        return output;
     }
 
 
-    public static Posting fromDelta(Posting a, Posting b) {
-        return new Posting(a.docId() + b.docId(), a.pos() + b.pos());
+    private static DocumentPostings fromDelta(DocumentPostings a, DocumentPostings b) {
+        return new DocumentPostings(a.docId() + b.docId(), a.positions());
+    }
+
+    @Deprecated
+    private static Posting fromDelta(Posting a, Posting b) {
+        return new Posting(a.docId() + b.docId(), a.pos());
     }
 }

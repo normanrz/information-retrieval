@@ -4,6 +4,7 @@ import SearchEngine.PatentDocument;
 import SearchEngine.DocumentPostings;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -39,6 +40,7 @@ public class PostingIndex extends GenericIndex<DocumentPostings> {
         }
     }
 
+
     public int collectionTokenCount() {
         return all().mapToInt(DocumentPostings::tokenFrequency)
                 .sum();
@@ -61,13 +63,15 @@ public class PostingIndex extends GenericIndex<DocumentPostings> {
                 .orElse(0);
     }
 
+
+
     public void save(OutputStream stream) {
         try {
             DataOutputStream outputStream = new DataOutputStream(stream);
 
             for (String term : index.navigableKeySet()) {
                 TermWriter.writeTerm(outputStream, term);
-//                PostingWriter.writePostingsList(outputStream, new ArrayList<>(index.get(term)));
+                PostingWriter.writeDocumentPostingsList(outputStream, new ArrayList<>(index.get(term)));
             }
             outputStream.close();
         } catch (IOException e) {
@@ -94,26 +98,24 @@ public class PostingIndex extends GenericIndex<DocumentPostings> {
 
     public static PostingIndex load(InputStream inputStream) {
         PostingIndex newIndex = new PostingIndex();
-//        try {
-//            DataInputStream stream = new DataInputStream(inputStream);
-//
-//            int j = 0;
-//            while (true) {
-//                try {
-//                    String term = TermReader.readTerm(stream);
-//                    for (Posting posting : PostingReader.readPostingsList(stream)) {
-//                        newIndex.put(term, posting);
-//                    }
-//                } catch (EOFException eof) {
-//                    break;
-//                }
-//                j++;
-//            }
-//
-//            stream.close();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+        try {
+            DataInputStream stream = new DataInputStream(inputStream);
+
+            while (true) {
+                try {
+                    String term = TermReader.readTerm(stream);
+                    for (DocumentPostings documentPostings : PostingReader.readDocumentPostingsList(stream)) {
+                        newIndex.put(term, documentPostings);
+                    }
+                } catch (EOFException eof) {
+                    break;
+                }
+            }
+
+            stream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return newIndex;
     }
 
@@ -133,6 +135,13 @@ public class PostingIndex extends GenericIndex<DocumentPostings> {
             e.printStackTrace();
             return null;
         }
+    }
+
+
+    @Override
+    public void printStats() {
+        super.printStats();
+        System.out.println("Postings in index: " + collectionTokenCount());
     }
 
 

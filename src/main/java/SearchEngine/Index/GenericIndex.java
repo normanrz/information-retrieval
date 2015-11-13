@@ -1,5 +1,6 @@
 package SearchEngine.Index;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.stream.Stream;
@@ -37,6 +38,11 @@ public class GenericIndex<T> {
         return index.values().stream().flatMap(ConcurrentLinkedQueue::stream);
     }
 
+    public Stream<String> allKeys() {
+        return index.navigableKeySet().stream();
+    }
+
+
     public Stream<T> getByPrefix(String prefixKey) {
         return index.keySet().stream()
                 .filter(key -> key.startsWith(prefixKey))
@@ -46,8 +52,6 @@ public class GenericIndex<T> {
 
     public void printStats() {
         System.out.println("Terms in index: " + index.size());
-//        System.out.println("Document entries in index: " +
-//                index.reduceValuesToLong(4, ConcurrentLinkedQueue::size, 0, (a, b) -> a + b));
     }
 }
 
