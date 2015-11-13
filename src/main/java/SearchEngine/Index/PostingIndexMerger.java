@@ -1,5 +1,6 @@
 package SearchEngine.Index;
 
+import SearchEngine.DocumentPostings;
 import SearchEngine.Posting;
 
 import java.io.*;
@@ -39,10 +40,10 @@ public class PostingIndexMerger {
 
     public void merge(List<InputStream> inputBaseStreams, OutputStream outputBaseStream) throws IOException {
 
-        List<DataInputStream> inputStreams = new ArrayList<>(inputBaseStreams.size());
-        for (InputStream baseStream : inputBaseStreams) {
-            inputStreams.add(new DataInputStream(baseStream));
-        }
+        List<DataInputStream> inputStreams = inputBaseStreams.stream()
+                .map(BufferedInputStream::new)
+                .map(DataInputStream::new)
+                .collect(Collectors.toList());
 
         DataOutputStream outputStream = new DataOutputStream(outputBaseStream);
 
@@ -74,11 +75,11 @@ public class PostingIndexMerger {
                             .collect(Collectors.toList());
 
             // Merge sort their posting lists
-            List<Posting> mergedPostingsList =
+            List<DocumentPostings> mergedPostingsList =
                     relevantStreams.stream()
                             .map(stream -> {
                                 try {
-                                    return PostingReader.readPostingsList(stream);
+                                    return PostingReader.readDocumentPostingsList(stream);
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                     return null;
@@ -90,7 +91,7 @@ public class PostingIndexMerger {
                             .collect(Collectors.toList());
 
             // Write merged posting list to output
-            PostingWriter.writePostingsList(outputStream, mergedPostingsList);
+            PostingWriter.writeDocumentPostingsList(outputStream, mergedPostingsList);
 
             // Get new current term or close/remove stream if EOF
             for (DataInputStream stream : relevantStreams) {

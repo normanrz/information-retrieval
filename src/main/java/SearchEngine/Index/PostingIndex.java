@@ -1,148 +1,31 @@
 package SearchEngine.Index;
 
-import SearchEngine.PatentDocument;
 import SearchEngine.DocumentPostings;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
+import java.util.stream.Stream;
 
 /**
- * Created by norman on 02.11.15.
+ * Created by norman on 13.11.15.
  */
-public class PostingIndex extends GenericIndex<DocumentPostings> {
+public interface PostingIndex {
 
-    public Optional<DocumentPostings> get(String token, int docId) {
-        return get(token)
-                .filter(documentPostings -> documentPostings.docId() == docId)
-                .findFirst();
-    }
+    Optional<DocumentPostings> get(String token, int docId);
 
-    public void putPosting(String token, PatentDocument doc, int pos) {
-        putPosting(token, Integer.parseInt(doc.docNumber), pos);
-    }
+    Stream<DocumentPostings> get(String token);
 
-    public void putPosting(String token, int docId, int pos) {
-        ConcurrentLinkedQueue<DocumentPostings> postingsList = index.get(token);
-        if (postingsList == null) {
-            put(token, new DocumentPostings(docId, pos));
-        } else {
-            Optional<DocumentPostings> documentPostings = get(token, docId);
-            if (documentPostings.isPresent()) {
-                documentPostings.get().addPosition(pos);
-            } else {
-                put(token, new DocumentPostings(docId, pos));
-            }
-        }
-    }
+    Stream<DocumentPostings> getByPrefix(String token);
 
+    Stream<DocumentPostings> getInDocs(String token, int[] docIds);
 
-    public int collectionTokenCount() {
-        return all().mapToInt(DocumentPostings::tokenFrequency)
-                .sum();
-    }
-    public int documentTokenCount(int docId) {
-        return all().filter(documentPostings -> documentPostings.docId() == docId)
-                .mapToInt(DocumentPostings::tokenFrequency)
-                .sum();
-    }
+    Stream<DocumentPostings> getByPrefixInDocs(String token, int[] docIds);
 
-    public int collectionTokenFrequency(String token) {
-        return get(token)
-                .mapToInt(DocumentPostings::tokenFrequency)
-                .sum();
-    }
+    int collectionTokenCount();
 
-    public int documentTokenFrequency(String token, int docId) {
-        return get(token, docId)
-                .map(DocumentPostings::tokenFrequency)
-                .orElse(0);
-    }
+    int documentTokenCount(int docId);
 
+    int collectionTokenFrequency(String token);
 
-
-    public void save(OutputStream stream) {
-        try {
-            DataOutputStream outputStream = new DataOutputStream(stream);
-
-            for (String term : index.navigableKeySet()) {
-                TermWriter.writeTerm(outputStream, term);
-                PostingWriter.writeDocumentPostingsList(outputStream, new ArrayList<>(index.get(term)));
-            }
-            outputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void save(File file) {
-        try {
-            save(new FileOutputStream(file));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void saveCompressed(File file) {
-        try {
-            save(new GZIPOutputStream(new FileOutputStream(file)));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    public static PostingIndex load(InputStream inputStream) {
-        PostingIndex newIndex = new PostingIndex();
-        try {
-            DataInputStream stream = new DataInputStream(inputStream);
-
-            while (true) {
-                try {
-                    String term = TermReader.readTerm(stream);
-                    for (DocumentPostings documentPostings : PostingReader.readDocumentPostingsList(stream)) {
-                        newIndex.put(term, documentPostings);
-                    }
-                } catch (EOFException eof) {
-                    break;
-                }
-            }
-
-            stream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return newIndex;
-    }
-
-    public static PostingIndex loadCompressed(File file) {
-        try {
-            return load(new GZIPInputStream(new FileInputStream(file)));
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public static PostingIndex load(File file) {
-        try {
-            return load(new FileInputStream(file));
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-
-    @Override
-    public void printStats() {
-        super.printStats();
-        System.out.println("Postings in index: " + collectionTokenCount());
-    }
-
+    int documentTokenFrequency(String token, int docId);
 
 }

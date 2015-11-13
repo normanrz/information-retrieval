@@ -4,9 +4,8 @@ import SearchEngine.DocumentPostings;
 import SearchEngine.Importer.PatentDocumentPreprocessor;
 import SearchEngine.Posting;
 import SearchEngine.PostingSearchResult;
-import org.apache.commons.collections.primitives.IntList;
+import SearchEngine.utils.IntArrayUtils;
 
-import javax.print.Doc;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,7 +26,7 @@ public class PostingIndexSearcher {
     public int[] search(String query) {
         // Tokenize query
         List<String> tokens = PatentDocumentPreprocessor.tokenizeAsStrings(query);
-        tokens = mergeAsteriskTokens(tokens);
+        tokens = PatentDocumentPreprocessor.mergeAsteriskTokens(tokens);
 
         // Detect SearchType
         SearchType searchType;
@@ -42,8 +41,8 @@ public class PostingIndexSearcher {
         }
 
         // Preprocess tokens
-        tokens = lowerCaseTokens(tokens);
-        tokens = removeStopwords(tokens);
+        tokens = PatentDocumentPreprocessor.lowerCaseTokens(tokens);
+        tokens = PatentDocumentPreprocessor.removeStopwords(tokens);
 
         // Execute search
         switch (searchType) {
@@ -115,9 +114,21 @@ public class PostingIndexSearcher {
     }
 
     private List<Posting> searchTokenInDocs(String token, int[] docIds) {
-        return searchToken(token).stream()
-                .filter(posting -> intArrayContains(docIds, posting.docId()))
+        Stream<DocumentPostings> results;
+        if (token.endsWith("*")) {
+            // Prefix search (no stemming)
+            token = token.substring(0, token.length() - 1);
+            results = index.getByPrefixInDocs(token, docIds);
+
+        } else {
+            // Regular search with stemming
+            String stemmedToken = PatentDocumentPreprocessor.stem(token);
+            results = index.getInDocs(stemmedToken, docIds);
+        }
+        return results
+                .flatMap(documentPostings -> documentPostings.toPostings().stream())
                 .collect(Collectors.toList());
+
     }
 
 
@@ -161,7 +172,7 @@ public class PostingIndexSearcher {
             int[] docIds1 = postingsDocIds(searchTokenInDocs(tokens.get(1), docIds0));
 
             return Arrays.stream(docIds0)
-                    .filter(docId -> !intArrayContains(docIds1, docId))
+                    .filter(docId -> !IntArrayUtils.intArrayContains(docIds1, docId))
                     .toArray();
         }
     }
@@ -174,83 +185,8 @@ public class PostingIndexSearcher {
                 .toArray();
     }
 
-    private boolean intArrayContains(final int[] array, final int key) {
-        for (final int i : array) {
-            if (i == key) {
-                return true;
-            }
-        }
-        return false;
-    }
 
 
-    private List<String> mergeAsteriskTokens(List<String> tokens) {
-        List<String> outputTokens = new ArrayList<>();
-        int i = 0;
-        for (String token : tokens) {
-            if (token.equals("*")) {
-                if (i > 0) {
-                    outputTokens.set(i - 1, outputTokens.get(i - 1) + "*");
-                }
-            } else {
-                outputTokens.add(token);
-                i++;
-            }
-
-        }
-        return outputTokens;
-    }
-
-
-    private List<String> removeStopwords(List<String> tokens) {
-        return tokens.stream()
-                .filter(PatentDocumentPreprocessor::isNoStopword)
-                .collect(Collectors.toList());
-    }
-
-
-    private List<String> lowerCaseTokens(List<String> tokens) {
-        return tokens.stream()
-                .map(String::toLowerCase)
-                .collect(Collectors.toList());
-    }
-
-    private List<String> stemmedTokens(List<String> tokens) {
-        return tokens.stream()
-                .map(PatentDocumentPreprocessor::stem)
-                .collect(Collectors.toList());
-    }
-
-
-    public List<PostingSearchResult> rankResults(String query, int[] docIds, int mu) {
-        List<String> tokens = PatentDocumentPreprocessor.tokenizeAsStrings(query);
-        tokens = mergeAsteriskTokens(tokens);
-
-        // Preprocess tokens
-        tokens = lowerCaseTokens(tokens);
-        tokens = removeStopwords(tokens);
-
-        tokens = stemmedTokens(tokens);
-
-        final List<String> finalTokens = tokens;
-
-        return Arrays.stream(docIds)
-                .mapToObj(docId -> new PostingSearchResult(docId, queryLikelihood(finalTokens, docId, mu)))
-                .sorted(PostingSearchResult::compareTo)
-                .collect(Collectors.toList());
-    }
-
-
-    public double queryLikelihood(List<String> tokens, int docId, int mu) {
-        return tokens.stream()
-                .mapToDouble(token ->  (index.documentTokenFrequency(token, docId) +
-                                    mu * ((double)index.collectionTokenFrequency(token) / (double)index.collectionTokenCount())) /
-                                    (index.documentTokenCount(docId) + mu)
-                        )
-                .map(Math::log)
-                .sum();
-
-    }
 
 
 }

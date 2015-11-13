@@ -7,6 +7,7 @@ import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
 
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -58,5 +59,51 @@ public class PatentDocumentPreprocessor {
     public static boolean isNoStopword(String token) {
         return !stopwords.contains(token);
     }
+
+
+    public static List<String> mergeAsteriskTokens(List<String> tokens) {
+        List<String> outputTokens = new ArrayList<>();
+        int i = 0;
+        for (String token : tokens) {
+            if (token.equals("*")) {
+                if (i > 0) {
+                    outputTokens.set(i - 1, outputTokens.get(i - 1) + "*");
+                }
+            } else {
+                outputTokens.add(token);
+                i++;
+            }
+
+        }
+        return outputTokens;
+    }
+
+    public static List<String> removeAsteriskTokens(List<String> tokens) {
+        return tokens.stream()
+                .filter(token -> !token.equals("*"))
+                .collect(Collectors.toList());
+    }
+
+
+    public static List<String> removeStopwords(List<String> tokens) {
+        return tokens.stream()
+                .filter(PatentDocumentPreprocessor::isNoStopword)
+                .collect(Collectors.toList());
+    }
+
+
+    public static List<String> lowerCaseTokens(List<String> tokens) {
+        return tokens.stream()
+                .map(String::toLowerCase)
+                .collect(Collectors.toList());
+    }
+
+    public static List<String> stemmedTokens(List<String> tokens) {
+        return tokens.stream()
+                .map(PatentDocumentPreprocessor::stem)
+                .collect(Collectors.toList());
+    }
+
+
 
 }

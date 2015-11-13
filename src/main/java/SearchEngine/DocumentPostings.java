@@ -7,11 +7,12 @@ import org.apache.commons.collections.primitives.IntList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by norman on 12.11.15.
  */
-public class DocumentPostings {
+public class DocumentPostings implements Comparable<DocumentPostings> {
 
     private final int docId;
     private final ArrayIntList positions = new ArrayIntList();
@@ -47,5 +48,25 @@ public class DocumentPostings {
         return Arrays.stream(positions.toArray())
                 .mapToObj(pos -> new Posting(docId(), pos))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public int compareTo(DocumentPostings o) {
+        return Integer.compare(docId(), o.docId());
+    }
+
+    public static DocumentPostings merge(DocumentPostings a, DocumentPostings b) {
+        if (a.docId() != b.docId()) {
+            return null;
+        } else {
+            IntList mergedPositions = new ArrayIntList(a.positions().size() +  b.positions().size());
+
+            Stream.of(a.positions(), b.positions())
+                    .flatMapToInt(value -> Arrays.stream(value.toArray()))
+                    .sorted()
+                    .forEach(mergedPositions::add);
+
+            return new DocumentPostings(a.docId(), mergedPositions);
+        }
     }
 }

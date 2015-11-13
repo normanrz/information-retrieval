@@ -11,6 +11,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.stream.Stream;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Created by norman on 19.10.15.
@@ -33,6 +34,15 @@ public class PatentDocumentImporter {
     public static Stream<PatentDocument> readPatentDocuments(File xmlFile) {
         try {
             InputStream xmlStream = new FileInputStream(xmlFile);
+            return readPatentDocuments(xmlStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return Stream.empty();
+        }
+    }
+    public static Stream<PatentDocument> readCompressedPatentDocuments(File xmlFile) {
+        try {
+            InputStream xmlStream = new GZIPInputStream(new FileInputStream(xmlFile));
             return readPatentDocuments(xmlStream);
         } catch (IOException e) {
             e.printStackTrace();

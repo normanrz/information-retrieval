@@ -1,6 +1,13 @@
 package SearchEngine;
 
+import SearchEngine.Index.DiskPostingIndex;
+import SearchEngine.Index.PostingIndexMerger;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -18,40 +25,64 @@ public class SearchEngineTest {
 
     public static void main(String args[]) throws Exception {
 
-        // PatentDocumentImporter.readPatentDocuments("data/testData.xml");
-
-        // PatentDocumentImporter.readDocNumberFromGzip("ipg150106.xml.gz");
-
         SearchEngineJasperRzepka myEngine = new SearchEngineJasperRzepka();
 
-        long start = System.currentTimeMillis();
+        runTimed(() -> {
 
-        myEngine.index("data");
+            myEngine.indexTest("data/testData.xml", "index.bin.gz");
+
+        }, "Indexing");
+
+//        runTimed(() -> {
+//            try {
+//                new PostingIndexMerger().mergeCompressed(Arrays.asList(new File[]{
+//                                new File("index.00.gz"), new File("index.01.gz"), new File("index.02.gz"),
+//                                new File("index.03.gz"), new File("index.04.gz"), new File("index.05.gz")}),
+//                        new File("index.bin.gz"));
+//            } catch (IOException e) {
+//                // Empty
+//            }
+//        }, "Merging");
+
+
+        runTimed(() -> {
+
+            myEngine.loadCompressedIndex("index.bin.gz");
+
+        }, "Load Index");
+
+
+        runTimed(() -> {
+//            String[] queries = {"comprises AND consists", "methods NOT inventions",
+//                    "data OR method", "prov* NOT free", "inc* OR memory", "the presented invention", "mobile devices"};
+            String[] queries = {"processing", "computers", "mobile devices", "data"};
+
+            for (String query : queries) {
+
+                List<String> results = myEngine.search(query, 10, 0);
+                System.out.println(String.format("Query: %s (%d)", query, results.size()));
+                results.forEach(System.out::println);
+
+                System.out.println();
+            }
+        }, "Query Index");
+
+//        new DiskPostingIndex();
+
+
+    }
+
+    public static void runTimed(Runnable action, String label) {
+        long start = System.currentTimeMillis();
+        try {
+            action.run();
+        } catch (Exception e) {
+            // Empty
+        }
 
         long time = System.currentTimeMillis() - start;
 
-        System.out.print("Indexing Time:\t" + time + "\tms\n");
-
-//        myEngine.loadIndex("index.bin");
-        myEngine.loadCompressedIndex("index.bin.gz");
-
-        // new PostingIndexMerger().merge(Arrays.asList(new File[] { new File("index.bin") }), new File("index.bin2"));
-
-//        String[] queries = {"comprises AND consists", "methods NOT inventions",
-//                "data OR method", "prov* NOT free", "inc* OR memory", "the presented invention", "mobile devices"};
-
-        String[] queries = {"processing", "computers", "mobile devices", "data"};
-
-        for (String query : queries) {
-
-            System.out.println("Query: " + query);
-            ArrayList<String> results = myEngine.search(query, 0, 0);
-            results.forEach(System.out::println);
-
-            System.out.println();
-        }
-
-
+        System.out.print(label + " Time:\t" + time + "\tms\n");
     }
 
 }

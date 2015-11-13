@@ -8,6 +8,7 @@ package SearchEngine;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 /* The only change you should make in this file is to define your baseDirectory!!
 *  for instance, C:/Users/myuser/Desktop/
@@ -47,7 +48,7 @@ public abstract class SearchEngine {
     abstract boolean loadCompressedIndex(String directory);
 
     // search the index for a given query and return the relevant patent titles in an ArrayList of Strings
-    abstract ArrayList<String> search(String query, int topK, int prf);
+    abstract List<String> search(String query, int topK, int prf);
 
     // we will need this later in the course
     public void setTopK(int value) {
