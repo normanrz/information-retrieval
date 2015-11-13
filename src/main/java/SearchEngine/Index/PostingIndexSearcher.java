@@ -3,10 +3,8 @@ package SearchEngine.Index;
 import SearchEngine.DocumentPostings;
 import SearchEngine.Importer.PatentDocumentPreprocessor;
 import SearchEngine.Posting;
-import SearchEngine.PostingSearchResult;
 import SearchEngine.utils.IntArrayUtils;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -184,9 +182,6 @@ public class PostingIndexSearcher {
                 .distinct()
                 .toArray();
     }
-
-
-
 
 
 }

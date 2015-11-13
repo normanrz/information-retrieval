@@ -1,12 +1,5 @@
 package SearchEngine;
 
-import SearchEngine.Index.DiskPostingIndex;
-import SearchEngine.Index.PostingIndexMerger;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 

@@ -1,7 +1,6 @@
 package SearchEngine.Index;
 
 import SearchEngine.Importer.PatentDocumentPreprocessor;
-import SearchEngine.Posting;
 import SearchEngine.PostingSearchResult;
 
 import java.util.Arrays;
@@ -39,8 +38,8 @@ public class PostingIndexRanker {
 
     public double queryLikelihood(List<String> tokens, int docId, int mu) {
         return tokens.stream()
-                .mapToDouble(token ->  (index.documentTokenFrequency(token, docId) +
-                                mu * ((double)index.collectionTokenFrequency(token) / (double)index.collectionTokenCount())) /
+                .mapToDouble(token -> (index.documentTokenFrequency(token, docId) +
+                                mu * ((double) index.collectionTokenFrequency(token) / (double) index.collectionTokenCount())) /
                                 (index.documentTokenCount(docId) + mu)
                 )
                 .map(Math::log)

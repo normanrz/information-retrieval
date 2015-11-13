@@ -59,7 +59,7 @@ public class DocumentPostings implements Comparable<DocumentPostings> {
         if (a.docId() != b.docId()) {
             return null;
         } else {
-            IntList mergedPositions = new ArrayIntList(a.positions().size() +  b.positions().size());
+            IntList mergedPositions = new ArrayIntList(a.positions().size() + b.positions().size());
 
             Stream.of(a.positions(), b.positions())
                     .flatMapToInt(value -> Arrays.stream(value.toArray()))

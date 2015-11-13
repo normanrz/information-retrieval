@@ -7,7 +7,6 @@ package SearchEngine;
  */
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 /* The only change you should make in this file is to define your baseDirectory!!

@@ -1,15 +1,13 @@
 package SearchEngine.Index;
 
-import SearchEngine.PatentDocument;
 import SearchEngine.DocumentPostings;
+import SearchEngine.PatentDocument;
 import SearchEngine.utils.IntArrayUtils;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -58,6 +56,7 @@ public class MemoryPostingIndex extends GenericIndex<DocumentPostings> implement
         return all().mapToInt(DocumentPostings::tokenFrequency)
                 .sum();
     }
+
     public int documentTokenCount(int docId) {
         return all().filter(documentPostings -> documentPostings.docId() == docId)
                 .mapToInt(DocumentPostings::tokenFrequency)
@@ -75,7 +74,6 @@ public class MemoryPostingIndex extends GenericIndex<DocumentPostings> implement
                 .map(DocumentPostings::tokenFrequency)
                 .orElse(0);
     }
-
 
 
     public void save(OutputStream stream) {

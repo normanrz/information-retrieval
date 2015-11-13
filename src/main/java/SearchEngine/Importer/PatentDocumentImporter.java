@@ -40,6 +40,7 @@ public class PatentDocumentImporter {
             return Stream.empty();
         }
     }
+
     public static Stream<PatentDocument> readCompressedPatentDocuments(File xmlFile) {
         try {
             InputStream xmlStream = new GZIPInputStream(new FileInputStream(xmlFile));

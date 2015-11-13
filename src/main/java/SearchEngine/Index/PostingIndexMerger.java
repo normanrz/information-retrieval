@@ -1,7 +1,6 @@
 package SearchEngine.Index;
 
 import SearchEngine.DocumentPostings;
-import SearchEngine.Posting;
 
 import java.io.*;
 import java.util.ArrayList;
