@@ -3,6 +3,7 @@ package SearchEngine.Index;
 import SearchEngine.DocumentPostings;
 
 import java.io.File;
+import java.time.format.SignStyle;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -39,8 +40,6 @@ public class DiskPostingIndex implements PostingIndex {
         insertSeekListEntry(new SeekListEntry("process", 32, 12));
         insertSeekListEntry(new SeekListEntry("tex", 24, 12));
         insertSeekListEntry(new SeekListEntry("add", 0, 12));
-
-        getSeekListEntries("process").forEach(entry -> System.out.println(entry.token + " " + entry.offset));
     }
 
     public Optional<DocumentPostings> get(String token, int docId) {
@@ -132,8 +131,9 @@ public class DiskPostingIndex implements PostingIndex {
     }
 
     private PostingIndex loadBlock(int offset, int length) {
+        System.out.println(String.format("Load index %d %d", offset, length));
         // Mocked block loading
-        return MemoryPostingIndex.loadCompressed(new File("index.gz"));
+        return MemoryPostingIndex.loadCompressed(new File("index.bin.gz"));
     }
 
 }

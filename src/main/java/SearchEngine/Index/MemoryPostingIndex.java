@@ -34,7 +34,7 @@ public class MemoryPostingIndex extends GenericIndex<DocumentPostings> implement
     }
 
     public void putPosting(String token, PatentDocument doc, int pos) {
-        putPosting(token, Integer.parseInt(doc.docNumber), pos);
+        putPosting(token, doc.docId, pos);
     }
 
     public void putPosting(String token, int docId, int pos) {
