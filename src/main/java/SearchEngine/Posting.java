@@ -5,7 +5,7 @@ public class Posting implements Comparable<Posting> {
     private final int pos;
 
     public Posting(PatentDocument doc, int pos) {
-        this(Integer.parseInt(doc.docNumber), pos);
+        this(doc.docId, pos);
     }
 
     public Posting(int doc_id, int pos) {

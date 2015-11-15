@@ -5,19 +5,19 @@ import SearchEngine.Importer.PatentDocumentPreprocessor;
 import SearchEngine.Index.MemoryPostingIndex;
 import SearchEngine.Index.PostingIndexRanker;
 import SearchEngine.Index.PostingIndexSearcher;
-import org.iq80.leveldb.DB;
-import org.iq80.leveldb.Options;
+import org.fusesource.lmdbjni.Database;
+import org.fusesource.lmdbjni.Env;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.iq80.leveldb.impl.Iq80DBFactory.*;
+import static org.fusesource.lmdbjni.Constants.bytes;
+import static org.fusesource.lmdbjni.Constants.string;
+
 
 /**
  * @author: JasperRzepka
@@ -51,20 +51,53 @@ public class SearchEngineJasperRzepka extends SearchEngine {
 
     @Override
     void index(String directory) {
-        Options options = new Options();
-        options.createIfMissing(true);
-        try (DB db = factory.open(new File("docs"), options)) {
+        try (Env env = new Env("docs")) {
+            try (Database db = env.openDatabase()) {
+                AtomicInteger docCounter = new AtomicInteger(0);
 
-            AtomicInteger i = new AtomicInteger(0);
+                File dir = new File(directory);
+                Stream.of(dir.listFiles()).parallel()
+                        .filter(file -> file.getName().endsWith((".xml")))
+                        .map(PatentDocumentImporter::readCompressedPatentDocuments)
+                        .forEach(patentDocumentStream -> {
+                            MemoryPostingIndex localIndex = new MemoryPostingIndex();
 
-            File dir = new File(directory);
-            Stream.of(dir.listFiles()).parallel()
-                    .filter(file -> file.getName().endsWith((".xml")))
-                    .map(PatentDocumentImporter::readCompressedPatentDocuments)
-                    .forEach(patentDocumentStream -> {
-                        MemoryPostingIndex localIndex = new MemoryPostingIndex();
+                            patentDocumentStream.forEach(doc -> {
+                                AtomicInteger tokenPosition = new AtomicInteger(0);
+                                ArrayList<String> tokens = new ArrayList<>();
 
-                        patentDocumentStream.forEach(doc -> {
+                                String tokenizableDocument = (doc.title + " " + doc.abstractText).toLowerCase();
+                                PatentDocumentPreprocessor.tokenize(tokenizableDocument).stream()
+                                        .filter(PatentDocumentPreprocessor::isNoStopword)
+                                        .forEach(token -> {
+                                            String stemmedToken = PatentDocumentPreprocessor.stem(token.value());
+                                            localIndex.putPosting(stemmedToken, doc, tokenPosition.getAndIncrement());
+                                            tokens.add(token.value());
+                                        });
+
+                                storeDoc(doc, db);
+                            });
+
+                            localIndex.printStats();
+                            localIndex.saveCompressed(new File(String.format("index.%02d.bin.gz", docCounter.getAndIncrement())));
+                        });
+
+
+                System.out.println("Imported index");
+                index.printStats();
+                index.saveCompressed(new File("index.big.gz"));
+            }
+        }
+    }
+
+    void indexTest(String sourceFile, String outputFile) {
+        try (Env env = new Env("docs")) {
+            try (Database db = env.openDatabase()) {
+
+                final MemoryPostingIndex testIndex = new MemoryPostingIndex();
+
+                PatentDocumentImporter.readPatentDocuments(new File(sourceFile))
+                        .forEach(doc -> {
                             AtomicInteger tokenPosition = new AtomicInteger(0);
                             ArrayList<String> tokens = new ArrayList<>();
 
@@ -73,59 +106,17 @@ public class SearchEngineJasperRzepka extends SearchEngine {
                                     .filter(PatentDocumentPreprocessor::isNoStopword)
                                     .forEach(token -> {
                                         String stemmedToken = PatentDocumentPreprocessor.stem(token.value());
-                                        localIndex.putPosting(stemmedToken, doc, tokenPosition.getAndIncrement());
+                                        testIndex.putPosting(stemmedToken, doc, tokenPosition.getAndIncrement());
                                         tokens.add(token.value());
                                     });
 
                             storeDoc(doc, db);
                         });
 
-                        localIndex.printStats();
-                        localIndex.saveCompressed(new File(String.format("index.%02d.bin.gz", i.getAndIncrement())));
-                    });
-
-
-            System.out.println("Imported index");
-            index.printStats();
-            index.saveCompressed(new File("index.big.gz"));
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    void indexTest(String sourceFile, String outputFile) {
-
-        Options options = new Options();
-        options.createIfMissing(true);
-
-        try (DB db = factory.open(new File("docs"), options)) {
-
-            final MemoryPostingIndex testIndex = new MemoryPostingIndex();
-
-            PatentDocumentImporter.readPatentDocuments(new File(sourceFile))
-                    .forEach(doc -> {
-                        AtomicInteger tokenPosition = new AtomicInteger(0);
-                        ArrayList<String> tokens = new ArrayList<>();
-
-                        String tokenizableDocument = (doc.title + " " + doc.abstractText).toLowerCase();
-                        PatentDocumentPreprocessor.tokenize(tokenizableDocument).stream()
-                                .filter(PatentDocumentPreprocessor::isNoStopword)
-                                .forEach(token -> {
-                                    String stemmedToken = PatentDocumentPreprocessor.stem(token.value());
-                                    testIndex.putPosting(stemmedToken, doc, tokenPosition.getAndIncrement());
-                                    tokens.add(token.value());
-                                });
-
-                        storeDoc(doc, db);
-                    });
-
-            System.out.println("Imported test index");
-            testIndex.printStats();
-            testIndex.saveCompressed(new File(outputFile));
-
-        } catch (IOException e) {
-            e.printStackTrace();
+                System.out.println("Imported test index");
+                testIndex.printStats();
+                testIndex.saveCompressed(new File(outputFile));
+            }
         }
     }
 
@@ -152,32 +143,26 @@ public class SearchEngineJasperRzepka extends SearchEngine {
 
     @Override
     List<String> search(String query, int topK, int prf) {
-        Options options = new Options();
-        options.createIfMissing(true);
-        try (DB db = factory.open(new File("docs"), options)) {
+        try (Env env = new Env("docs")) {
+            try (Database db = env.openDatabase()) {
 
-            PostingIndexSearcher searcher = new PostingIndexSearcher(index);
-            PostingIndexRanker ranker = new PostingIndexRanker(index);
+                PostingIndexSearcher searcher = new PostingIndexSearcher(index);
+                PostingIndexRanker ranker = new PostingIndexRanker(index);
 
-            return ranker.rank(query, searcher.search(query), 2000).stream()
-                    .limit(topK)
-                    .map(result -> String.format("%08d\t%.8f\t%s", result.docId, result.rank,
-                            loadDocTitle(result.docId, db)))
-                    .collect(Collectors.toList());
-
-        } catch (IOException e) {
-            e.printStackTrace();
+                return ranker.rank(query, searcher.search(query), 2000).stream()
+                        .limit(topK)
+                        .map(result -> String.format("%08d\t%.8f\t%s", result.docId, result.rank,
+                                loadDocTitle(result.docId, db)))
+                        .collect(Collectors.toList());
+            }
         }
-
-        return Collections.emptyList();
     }
 
-    public static String loadDocTitle(int docId, DB db) {
-        return asString(db.get(bytes(String.format("%08d:title", docId))));
+    public static String loadDocTitle(int docId, Database db) {
+        return string(db.get(bytes(String.format("%08d:title", docId))));
     }
 
-
-    public static synchronized void storeDoc(PatentDocument doc, DB db) {
+    public static synchronized void storeDoc(PatentDocument doc, Database db) {
         db.put(bytes(String.format("%08d:title", doc.docId)), bytes(doc.title));
         db.put(bytes(String.format("%08d:abstract", doc.docId)), bytes(doc.abstractText));
     }
