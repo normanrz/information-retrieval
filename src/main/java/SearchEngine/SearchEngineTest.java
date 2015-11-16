@@ -18,13 +18,13 @@ public class SearchEngineTest {
 
     public static void main(String args[]) throws Exception {
 
-        SearchEngineJasperRzepka myEngine = new SearchEngineJasperRzepka();
+        try (SearchEngineJasperRzepka myEngine = new SearchEngineJasperRzepka()) {
 
-        runTimed(() -> {
+            runTimed(() -> {
 
-            myEngine.indexTest("data/testData.xml", "index.bin.gz");
+                myEngine.indexTest("data/testData.xml", "index.bin.gz");
 
-        }, "Indexing");
+            }, "Indexing");
 
 //        runTimed(() -> {
 //            try {
@@ -38,31 +38,31 @@ public class SearchEngineTest {
 //        }, "Merging");
 
 
-        runTimed(() -> {
+            runTimed(() -> {
 
-            myEngine.loadCompressedIndex("index.bin.gz");
+                myEngine.loadCompressedIndex("index.bin.gz");
 
-        }, "Load Index");
+            }, "Load Index");
 
 
-        runTimed(() -> {
+            runTimed(() -> {
 //            String[] queries = {"comprises AND consists", "methods NOT inventions",
 //                    "data OR method", "prov* NOT free", "inc* OR memory", "the presented invention", "mobile devices"};
-            String[] queries = {"processing", "computers", "mobile devices", "data"};
+                String[] queries = {"processing", "computers", "mobile devices", "data"};
 
-            for (String query : queries) {
+                for (String query : queries) {
 
-                List<String> results = myEngine.search(query, 10, 0);
-                System.out.println(String.format("Query: %s (%d)", query, results.size()));
-                results.forEach(System.out::println);
+                    List<String> results = myEngine.search(query, 10, 0);
+                    System.out.println(String.format("Query: %s (%d)", query, results.size()));
+                    results.forEach(System.out::println);
 
-                System.out.println();
-            }
-        }, "Query Index");
+                    System.out.println();
+                }
+            }, "Query Index");
 
 //        new DiskPostingIndex();
 
-
+        }
     }
 
     public static void runTimed(Runnable action, String label) {

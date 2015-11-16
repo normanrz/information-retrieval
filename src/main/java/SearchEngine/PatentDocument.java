@@ -11,6 +11,7 @@ public class PatentDocument {
     public PatentDocument(String docId, String title, String abstractText) {
         this(Integer.parseInt(docId), title, abstractText);
     }
+
     public PatentDocument(int docId, String title, String abstractText) {
         this.docId = docId;
         this.title = title;
