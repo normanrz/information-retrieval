@@ -2,9 +2,13 @@ package SearchEngine.Index;
 
 import SearchEngine.DocumentPostings;
 
-import java.io.File;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.util.*;
 import java.util.stream.Stream;
+import java.util.zip.GZIPInputStream;
 
 class SeekListEntry implements Comparable<SeekListEntry> {
     final String token;
@@ -27,11 +31,15 @@ class SeekListEntry implements Comparable<SeekListEntry> {
 }
 
 
-public class DiskPostingIndex implements PostingIndex {
+public class DiskPostingIndex implements PostingIndex, AutoCloseable {
 
     private List<SeekListEntry> seekList;
+    private RandomAccessFile file;
 
-    public DiskPostingIndex() {
+    public DiskPostingIndex(String indexFile) throws IOException {
+
+        file = new RandomAccessFile(indexFile, "r");
+
         seekList = new ArrayList<>();
 
         // dummy data
@@ -131,8 +139,31 @@ public class DiskPostingIndex implements PostingIndex {
 
     private PostingIndex loadBlock(int offset, int length) {
         System.out.println(String.format("Load index %d %d", offset, length));
-        // Mocked block loading
-        return MemoryPostingIndex.loadCompressed(new File("index.bin.gz"));
+
+        try {
+            // Move file pointer
+//            file.seek(offset);
+//            byte[] buffer = new byte[length];
+//            file.readFully(buffer, 0, length);
+
+            // Mocked block loading
+            byte[] buffer = new byte[(int) file.length()];
+            file.seek(0);
+            file.readFully(buffer, 0, (int) file.length());
+
+            InputStream stream = new ByteArrayInputStream(buffer);
+
+            return MemoryPostingIndex.load(new GZIPInputStream(stream));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
+    @Override
+    public void close() throws Exception {
+        file.close();
+    }
 }
