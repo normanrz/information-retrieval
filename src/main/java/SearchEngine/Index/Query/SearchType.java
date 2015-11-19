@@ -1,4 +1,4 @@
-package SearchEngine.Index;
+package SearchEngine.Index.Query;
 
 /**
  * Created by johannes on 11/9/15.

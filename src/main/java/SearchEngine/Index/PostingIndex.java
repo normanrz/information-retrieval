@@ -20,12 +20,14 @@ public interface PostingIndex {
 
     Stream<DocumentPostings> getByPrefixInDocs(String token, int[] docIds);
 
+    Stream<String> getTokensByPrefix(String token);
+
     int collectionTokenCount();
 
     int documentTokenCount(int docId);
 
-    int collectionTokenFrequency(String token);
+    int collectionTokenCount(String token);
 
-    int documentTokenFrequency(String token, int docId);
+    int documentTokenCount(String token, int docId);
 
 }

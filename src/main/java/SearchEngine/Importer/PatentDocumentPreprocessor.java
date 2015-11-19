@@ -1,12 +1,8 @@
 package SearchEngine.Importer;
 
-import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.process.CoreLabelTokenFactory;
-import edu.stanford.nlp.process.PTBTokenizer;
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
 
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -41,25 +37,19 @@ public class PatentDocumentPreprocessor {
         }
     }
 
-    public static List<CoreLabel> tokenize(String query) {
-        return new PTBTokenizer<>(new StringReader(query), new CoreLabelTokenFactory(), "").tokenize();
-    }
+    public static List<String> tokenizeWithRegex(String query) {
 
-    public static List<String> tokenizeAsStrings(String query) {
-        return tokenize(query)
-                .stream()
-                .map(CoreLabel::value)
+        final String tokenizerWithPunctuationMarks = "[^\\p{L}\\p{Nd}_\\-\\\\/]+";
+        final String tokenizer = "[^\\p{L}\\p{Nd}]+";
+
+        return Arrays.stream(query.split(tokenizerWithPunctuationMarks))
+                .flatMap(rawToken -> Arrays.stream(rawToken.split(tokenizer)))
                 .collect(Collectors.toList());
-    }
-
-    public static boolean isNoStopword(CoreLabel token) {
-        return isNoStopword(token.value());
     }
 
     public static boolean isNoStopword(String token) {
         return !stopwords.contains(token);
     }
-
 
     public static List<String> mergeAsteriskTokens(List<String> tokens) {
         List<String> outputTokens = new ArrayList<>();

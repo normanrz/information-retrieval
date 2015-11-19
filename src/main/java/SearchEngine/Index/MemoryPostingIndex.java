@@ -15,7 +15,7 @@ import java.util.zip.GZIPOutputStream;
 /**
  * Created by norman on 02.11.15.
  */
-public class MemoryPostingIndex extends GenericIndex<DocumentPostings> implements PostingIndex {
+public class MemoryPostingIndex extends MemoryIndex<DocumentPostings> implements PostingIndex {
 
     public Optional<DocumentPostings> get(String token, int docId) {
         return get(token)
@@ -63,13 +63,13 @@ public class MemoryPostingIndex extends GenericIndex<DocumentPostings> implement
                 .sum();
     }
 
-    public int collectionTokenFrequency(String token) {
+    public int collectionTokenCount(String token) {
         return get(token)
                 .mapToInt(DocumentPostings::tokenFrequency)
                 .sum();
     }
 
-    public int documentTokenFrequency(String token, int docId) {
+    public int documentTokenCount(String token, int docId) {
         return get(token, docId)
                 .map(DocumentPostings::tokenFrequency)
                 .orElse(0);

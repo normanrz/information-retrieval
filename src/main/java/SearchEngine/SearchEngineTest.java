@@ -1,7 +1,5 @@
 package SearchEngine;
 
-import SearchEngine.Index.DiskPostingIndex;
-
 import java.util.List;
 
 
@@ -50,11 +48,11 @@ public class SearchEngineTest {
             runTimed(() -> {
 //            String[] queries = {"comprises AND consists", "methods NOT inventions",
 //                    "data OR method", "prov* NOT free", "inc* OR memory", "the presented invention", "mobile devices"};
-                String[] queries = {"processing", "computers", "mobile devices", "data"};
+                String[] queries = {"commom", "kontrol", "incluce", "streem", "digital", "rootkits", "network access"};
 
                 for (String query : queries) {
 
-                    List<String> results = myEngine.search(query, 10, 0);
+                    List<String> results = myEngine.search(query, 10, 10);
                     System.out.println(String.format("Query: %s (%d)", query, results.size()));
                     results.forEach(System.out::println);
 
@@ -81,7 +79,7 @@ public class SearchEngineTest {
         try {
             action.run();
         } catch (Exception e) {
-            // Empty
+            e.printStackTrace();
         }
 
         long time = System.currentTimeMillis() - start;

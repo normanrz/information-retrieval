@@ -1,12 +1,14 @@
-package SearchEngine.Index;
+package SearchEngine.Index.Query;
 
 import SearchEngine.DocumentPostings;
 import SearchEngine.Importer.PatentDocumentPreprocessor;
+import SearchEngine.Index.PostingIndex;
 import SearchEngine.Posting;
 import SearchEngine.utils.IntArrayUtils;
+import SearchEngine.utils.LevenshteinDistance;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -15,15 +17,28 @@ public class PostingIndexSearcher {
     private final int[] emptyArray = new int[0];
     private final PostingIndex index;
 
+    private List<String> stemmedQueryTokens;
+    private boolean shouldCorrectSpelling = false;
 
     public PostingIndexSearcher(PostingIndex index) {
         this.index = index;
     }
 
 
+    public List<String> getStemmedQueryTokens() {
+        return stemmedQueryTokens;
+    }
+
     public int[] search(String query) {
+        return search(query, false);
+    }
+
+    public int[] search(String query, boolean shouldCorrectSpelling) {
+
+        this.shouldCorrectSpelling = shouldCorrectSpelling;
+
         // Tokenize query
-        List<String> tokens = PatentDocumentPreprocessor.tokenizeAsStrings(query);
+        List<String> tokens = PatentDocumentPreprocessor.tokenizeWithRegex(query);
         tokens = PatentDocumentPreprocessor.mergeAsteriskTokens(tokens);
 
         // Detect SearchType
@@ -41,6 +56,8 @@ public class PostingIndexSearcher {
         // Preprocess tokens
         tokens = PatentDocumentPreprocessor.lowerCaseTokens(tokens);
         tokens = PatentDocumentPreprocessor.removeStopwords(tokens);
+
+        stemmedQueryTokens = PatentDocumentPreprocessor.stemmedTokens(tokens);
 
         // Execute search
         switch (searchType) {
@@ -93,6 +110,16 @@ public class PostingIndexSearcher {
         }
     }
 
+    private Optional<String> findCorrectSpelledToken(String originalToken) {
+        return index.getTokensByPrefix(originalToken.substring(0, 1))
+                .collect(Collectors.toMap(Function.identity(),
+                        candidateToken -> LevenshteinDistance.distance(candidateToken, originalToken)))
+                .entrySet().stream()
+                .sorted(Comparator.comparingDouble(Map.Entry::getValue))
+                .findFirst()
+                .map(Map.Entry::getKey);
+    }
+
 
     private List<Posting> searchToken(String token) {
         Stream<DocumentPostings> results;
@@ -105,6 +132,19 @@ public class PostingIndexSearcher {
             // Regular search with stemming
             String stemmedToken = PatentDocumentPreprocessor.stem(token);
             results = index.get(stemmedToken);
+
+            List<DocumentPostings> tmpResults = results.collect(Collectors.toList());
+            if (shouldCorrectSpelling && tmpResults.size() == 0) {
+                Optional<String> correctedTokenOptional = findCorrectSpelledToken(stemmedToken);
+                if (correctedTokenOptional.isPresent()) {
+                    stemmedQueryTokens.set(stemmedQueryTokens.indexOf(stemmedToken), correctedTokenOptional.get());
+                    results = index.get(correctedTokenOptional.get());
+                } else {
+                    results = Stream.empty();
+                }
+            } else {
+                results = tmpResults.stream();
+            }
         }
         return results
                 .flatMap(documentPostings -> documentPostings.toPostings().stream())

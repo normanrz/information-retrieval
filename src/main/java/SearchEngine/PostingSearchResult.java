@@ -5,12 +5,19 @@ package SearchEngine;
  */
 public class PostingSearchResult implements Comparable<PostingSearchResult> {
 
-    final int docId;
-    final double rank;
+    protected final int docId;
+    protected final double rank;
 
     public PostingSearchResult(int docId, double rank) {
         this.docId = docId;
         this.rank = rank;
+    }
+
+    public int getDocId() {
+        return docId;
+    }
+    public double getRank() {
+        return rank;
     }
 
     @Override

@@ -1,5 +1,8 @@
 package SearchEngine.Importer;
 
+import SearchEngine.Index.DocumentIndex;
+import SearchEngine.Index.MemoryPostingIndex;
+import SearchEngine.Index.PostingIndex;
 import SearchEngine.PatentDocument;
 import org.xml.sax.SAXException;
 
@@ -10,6 +13,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 
@@ -49,6 +54,22 @@ public class PatentDocumentImporter {
             e.printStackTrace();
             return Stream.empty();
         }
+    }
+
+    public static void importPatentDocument(PatentDocument doc, MemoryPostingIndex index, DocumentIndex documentIndex) {
+        AtomicInteger tokenPosition = new AtomicInteger(0);
+        ArrayList<String> tokens = new ArrayList<>();
+
+        String tokenizableDocument = (doc.title + " " + doc.abstractText).toLowerCase();
+        PatentDocumentPreprocessor.tokenizeWithRegex(tokenizableDocument).stream()
+                .filter(PatentDocumentPreprocessor::isNoStopword)
+                .forEach(token -> {
+                    String stemmedToken = PatentDocumentPreprocessor.stem(token);
+                    index.putPosting(stemmedToken, doc, tokenPosition.getAndIncrement());
+                    tokens.add(token);
+                });
+
+        documentIndex.storePatentDocument(doc);
     }
 
 }

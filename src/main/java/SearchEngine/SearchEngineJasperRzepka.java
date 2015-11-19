@@ -4,8 +4,8 @@ import SearchEngine.Importer.PatentDocumentImporter;
 import SearchEngine.Importer.PatentDocumentPreprocessor;
 import SearchEngine.Index.DocumentIndex;
 import SearchEngine.Index.MemoryPostingIndex;
-import SearchEngine.Index.PostingIndexRanker;
-import SearchEngine.Index.PostingIndexSearcher;
+import SearchEngine.Index.Query.PostingIndexRanker;
+import SearchEngine.Index.Query.PostingIndexSearcher;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -49,7 +49,7 @@ public class SearchEngineJasperRzepka extends SearchEngine implements AutoClosea
     @Override
     void index(String directory) {
 
-        AtomicInteger docCounter = new AtomicInteger(0);
+        AtomicInteger subIndexCounter = new AtomicInteger(0);
 
         File dir = new File(directory);
         Stream.of(dir.listFiles()).parallel()
@@ -58,31 +58,13 @@ public class SearchEngineJasperRzepka extends SearchEngine implements AutoClosea
                 .forEach(patentDocumentStream -> {
                     MemoryPostingIndex localIndex = new MemoryPostingIndex();
 
-                    patentDocumentStream.forEach(doc -> {
-                        AtomicInteger tokenPosition = new AtomicInteger(0);
-                        ArrayList<String> tokens = new ArrayList<>();
-
-                        String tokenizableDocument = (doc.title + " " + doc.abstractText).toLowerCase();
-                        PatentDocumentPreprocessor.tokenize(tokenizableDocument).stream()
-                                .filter(PatentDocumentPreprocessor::isNoStopword)
-                                .forEach(token -> {
-                                    String stemmedToken = PatentDocumentPreprocessor.stem(token.value());
-                                    localIndex.putPosting(stemmedToken, doc, tokenPosition.getAndIncrement());
-                                    tokens.add(token.value());
-                                });
-
-                        docIndex.storePatentDocument(doc);
-                    });
+                    patentDocumentStream.forEach(doc ->
+                            PatentDocumentImporter.importPatentDocument(doc, localIndex, docIndex));
 
                     localIndex.printStats();
-                    localIndex.saveCompressed(new File(String.format("index.%02d.bin.gz", docCounter.getAndIncrement())));
+                    localIndex.saveCompressed(new File(
+                            String.format("index.%02d.bin.gz", subIndexCounter.getAndIncrement())));
                 });
-
-
-        System.out.println("Imported index");
-        index.printStats();
-        index.saveCompressed(new File("index.big.gz"));
-
     }
 
     void indexTest(String sourceFile, String outputFile) {
@@ -90,21 +72,8 @@ public class SearchEngineJasperRzepka extends SearchEngine implements AutoClosea
         final MemoryPostingIndex testIndex = new MemoryPostingIndex();
 
         PatentDocumentImporter.readPatentDocuments(new File(sourceFile))
-                .forEach(doc -> {
-                    AtomicInteger tokenPosition = new AtomicInteger(0);
-                    ArrayList<String> tokens = new ArrayList<>();
-
-                    String tokenizableDocument = (doc.title + " " + doc.abstractText).toLowerCase();
-                    PatentDocumentPreprocessor.tokenize(tokenizableDocument).stream()
-                            .filter(PatentDocumentPreprocessor::isNoStopword)
-                            .forEach(token -> {
-                                String stemmedToken = PatentDocumentPreprocessor.stem(token.value());
-                                testIndex.putPosting(stemmedToken, doc, tokenPosition.getAndIncrement());
-                                tokens.add(token.value());
-                            });
-
-                    docIndex.storePatentDocument(doc);
-                });
+                .forEach(doc ->
+                        PatentDocumentImporter.importPatentDocument(doc, testIndex, docIndex));
 
         System.out.println("Imported test index");
         testIndex.printStats();
@@ -138,8 +107,23 @@ public class SearchEngineJasperRzepka extends SearchEngine implements AutoClosea
         PostingIndexSearcher searcher = new PostingIndexSearcher(index);
         PostingIndexRanker ranker = new PostingIndexRanker(index);
 
-        return ranker.rank(query, searcher.search(query), 2000).stream()
-                .limit(topK)
+        int[] searchResults = searcher.search(query, true);
+
+        List<String> queryTokens = searcher.getStemmedQueryTokens();
+        System.out.println(String.join(" ", queryTokens));
+
+        List<PostingSearchResult> rankResults = ranker.rank(queryTokens, searchResults, 2000);
+
+        rankResults.stream()
+                .map(result -> String.format("%08d\t%.8f\t%s", result.docId, result.rank,
+                        docIndex.getPatentDocumentTitle(result.docId)))
+                .forEach(System.out::println);
+
+        return ranker.rankWithRelevanceFeedback(
+                queryTokens, searchResults,
+                rankResults.subList(0, Math.min(rankResults.size(), prf)),
+                docIndex
+        ).stream()
                 .map(result -> String.format("%08d\t%.8f\t%s", result.docId, result.rank,
                         docIndex.getPatentDocumentTitle(result.docId)))
                 .collect(Collectors.toList());

@@ -1,6 +1,8 @@
-package SearchEngine.Index;
+package SearchEngine.Index.disk;
 
 import SearchEngine.DocumentPostings;
+import SearchEngine.Index.MemoryPostingIndex;
+import SearchEngine.Index.PostingIndex;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -10,48 +12,29 @@ import java.util.*;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 
-class SeekListEntry implements Comparable<SeekListEntry> {
-    final String token;
-    final int offset;
-    final int length;
-
-    public SeekListEntry(String token, int offset, int length) {
-        this.token = token;
-        this.offset = offset;
-        this.length = length;
-    }
-
-    public int compareTo(SeekListEntry o) {
-        return Comparator
-                .comparing((SeekListEntry s) -> s.token)
-                .thenComparing(s -> s.offset)
-                .thenComparing(s -> s.length)
-                .compare(this, o);
-    }
-}
-
-
 public class DiskPostingIndex implements PostingIndex, AutoCloseable {
+    @Override
+    public Stream<String> getTokensByPrefix(String token) {
+        return null;
+    }
 
-    private List<SeekListEntry> seekList;
+    private SeekList seekList = new SeekList();
     private RandomAccessFile file;
 
     public DiskPostingIndex(String indexFile) throws IOException {
 
         file = new RandomAccessFile(indexFile, "r");
 
-        seekList = new ArrayList<>();
-
         // dummy data
-        insertSeekListEntry(new SeekListEntry("process", 12, 12));
-        insertSeekListEntry(new SeekListEntry("process", 32, 12));
-        insertSeekListEntry(new SeekListEntry("tex", 24, 12));
-        insertSeekListEntry(new SeekListEntry("add", 0, 12));
+        seekList.insert(new SeekListEntry("process", 12, 12));
+        seekList.insert(new SeekListEntry("process", 32, 12));
+        seekList.insert(new SeekListEntry("tex", 24, 12));
+        seekList.insert(new SeekListEntry("add", 0, 12));
     }
 
     public Optional<DocumentPostings> get(String token, int docId) {
 
-        return getSeekListEntries(token).stream()
+        return seekList.get(token).stream()
                 .map(entry -> loadBlock(entry.offset, entry.length))
                 .map(index -> index.get(token, docId))
                 .filter(Optional::isPresent)
@@ -61,25 +44,25 @@ public class DiskPostingIndex implements PostingIndex, AutoCloseable {
     }
 
     public Stream<DocumentPostings> get(String token) {
-        return getSeekListEntries(token).stream()
+        return seekList.get(token).stream()
                 .map(entry -> loadBlock(entry.offset, entry.length))
                 .flatMap(index -> index.get(token));
     }
 
     public Stream<DocumentPostings> getByPrefix(String token) {
-        return getSeekListEntriesByPrefix(token).stream()
+        return seekList.getByPrefix(token).stream()
                 .map(entry -> loadBlock(entry.offset, entry.length))
                 .flatMap(index -> index.getByPrefix(token));
     }
 
     public Stream<DocumentPostings> getInDocs(String token, int[] docIds) {
-        return getSeekListEntries(token).stream()
+        return seekList.get(token).stream()
                 .map(entry -> loadBlock(entry.offset, entry.length))
                 .flatMap(index -> index.getInDocs(token, docIds));
     }
 
     public Stream<DocumentPostings> getByPrefixInDocs(String token, int[] docIds) {
-        return getSeekListEntriesByPrefix(token).stream()
+        return seekList.getByPrefix(token).stream()
                 .map(entry -> loadBlock(entry.offset, entry.length))
                 .flatMap(index -> index.getByPrefixInDocs(token, docIds));
     }
@@ -92,50 +75,15 @@ public class DiskPostingIndex implements PostingIndex, AutoCloseable {
         return 0;
     }
 
-    public int collectionTokenFrequency(String token) {
+    public int collectionTokenCount(String token) {
         return 0;
     }
 
-    public int documentTokenFrequency(String token, int docId) {
+    public int documentTokenCount(String token, int docId) {
         return 0;
     }
 
 
-    private void insertSeekListEntry(SeekListEntry entry) {
-        int insertIndex = Collections.binarySearch(seekList, entry);
-        if (insertIndex < 0) {
-            seekList.add(-insertIndex - 1, entry);
-        } else {
-            seekList.add(insertIndex, entry);
-        }
-    }
-
-    private List<SeekListEntry> getSeekListEntries(String token) {
-        List<SeekListEntry> results = new ArrayList<>();
-
-        SeekListEntry lastEntry = null;
-        for (SeekListEntry entry : seekList) {
-            if (entry.token.compareTo(token) >= 0) {
-                if (lastEntry != null) {
-                    results.add(lastEntry);
-                    lastEntry = null;
-                }
-            } else {
-                lastEntry = entry;
-            }
-            if (entry.token.compareTo(token) == 0) {
-                results.add(entry);
-            }
-            if (entry.token.compareTo(token) > 0) {
-                break;
-            }
-        }
-        return results;
-    }
-
-    private List<SeekListEntry> getSeekListEntriesByPrefix(String token) {
-        return null;
-    }
 
     private PostingIndex loadBlock(int offset, int length) {
         System.out.println(String.format("Load index %d %d", offset, length));

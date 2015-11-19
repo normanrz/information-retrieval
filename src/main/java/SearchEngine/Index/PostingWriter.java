@@ -3,6 +3,7 @@ package SearchEngine.Index;
 import SearchEngine.DocumentPostings;
 import SearchEngine.Posting;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
@@ -32,16 +33,18 @@ public class PostingWriter {
         }
     }
 
-    public static void writeDocumentPostings(
+    public static int writeDocumentPostings(
             DataOutputStream stream, DocumentPostings documentPostings) throws IOException {
+
         stream.writeInt(documentPostings.docId());
         stream.writeInt(documentPostings.tokenFrequency());
         for (int pos : documentPostings.positions().toArray()) {
             stream.writeInt(pos);
         }
+        return documentPostings.positions().size();
     }
 
-    public static void writeDocumentPostingsList(
+    public static int writeDocumentPostingsList(
             DataOutputStream stream, List<DocumentPostings> documentPostingsList) throws IOException {
         stream.writeInt(documentPostingsList.size());
         DocumentPostings lastDocumentPostings = null;
@@ -53,7 +56,7 @@ public class PostingWriter {
             }
             lastDocumentPostings = documentPostings;
         }
-
+        return documentPostingsList.size();
     }
 
     private static DocumentPostings toDelta(DocumentPostings a, DocumentPostings b) {
