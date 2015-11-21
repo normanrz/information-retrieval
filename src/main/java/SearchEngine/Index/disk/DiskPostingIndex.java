@@ -1,107 +1,134 @@
 package SearchEngine.Index.disk;
 
 import SearchEngine.DocumentPostings;
+import SearchEngine.Index.DocumentIndex;
 import SearchEngine.Index.MemoryPostingIndex;
 import SearchEngine.Index.PostingIndex;
+import SearchEngine.Index.PostingReader;
+import SearchEngine.utils.IntArrayUtils;
+import org.apache.commons.collections4.map.LRUMap;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.util.*;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.InflaterInputStream;
 
 public class DiskPostingIndex implements PostingIndex, AutoCloseable {
-    @Override
-    public Stream<String> getTokensByPrefix(String token) {
-        return null;
+
+
+    private DocumentIndex docIndex;
+    private SeekList seekList;
+    private RandomAccessFile file;
+    private int seekListByteLength;
+    private int collectionTokenCount;
+
+    private LRUMap<Integer, List<DocumentPostings>> lruDocumentPostingsCache = new LRUMap<>(100);
+
+    public DiskPostingIndex(String indexFile, DocumentIndex docIndex) throws IOException {
+        this.file = new RandomAccessFile(indexFile, "r");
+        this.docIndex = docIndex;
+        this.seekList = readSeekList(file);
     }
 
-    private SeekList seekList = new SeekList();
-    private RandomAccessFile file;
+    private SeekList readSeekList(RandomAccessFile indexFile) throws IOException {
+        indexFile.seek(0);
+        seekListByteLength = indexFile.readInt();
+        collectionTokenCount = indexFile.readInt();
 
-    public DiskPostingIndex(String indexFile) throws IOException {
+        byte[] seekListBuffer = new byte[seekListByteLength];
+        indexFile.readFully(seekListBuffer);
 
-        file = new RandomAccessFile(indexFile, "r");
-
-        // dummy data
-        seekList.insert(new SeekListEntry("process", 12, 12));
-        seekList.insert(new SeekListEntry("process", 32, 12));
-        seekList.insert(new SeekListEntry("tex", 24, 12));
-        seekList.insert(new SeekListEntry("add", 0, 12));
+        DataInputStream seekListDataInput = new DataInputStream(new InflaterInputStream(new ByteArrayInputStream(seekListBuffer)));
+        return SeekListReader.readSeekList(seekListDataInput);
     }
 
     public Optional<DocumentPostings> get(String token, int docId) {
-
-        return seekList.get(token).stream()
-                .map(entry -> loadBlock(entry.offset, entry.length))
-                .map(index -> index.get(token, docId))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+        return seekList.get(token)
+                .flatMap(this::loadDocumentPostings)
+                .filter(documentPostings -> documentPostings.docId() == docId)
                 .findFirst();
-
     }
 
     public Stream<DocumentPostings> get(String token) {
-        return seekList.get(token).stream()
-                .map(entry -> loadBlock(entry.offset, entry.length))
-                .flatMap(index -> index.get(token));
+        return seekList.get(token)
+                .flatMap(this::loadDocumentPostings);
     }
 
     public Stream<DocumentPostings> getByPrefix(String token) {
-        return seekList.getByPrefix(token).stream()
-                .map(entry -> loadBlock(entry.offset, entry.length))
-                .flatMap(index -> index.getByPrefix(token));
+        return seekList.getByPrefix(token)
+                .flatMap(this::loadDocumentPostings);
     }
 
     public Stream<DocumentPostings> getInDocs(String token, int[] docIds) {
-        return seekList.get(token).stream()
-                .map(entry -> loadBlock(entry.offset, entry.length))
-                .flatMap(index -> index.getInDocs(token, docIds));
+        return seekList.get(token)
+                .flatMap(this::loadDocumentPostings)
+                .filter(documentPostings ->
+                        IntArrayUtils.intArrayContains(docIds, documentPostings.docId()));
     }
 
     public Stream<DocumentPostings> getByPrefixInDocs(String token, int[] docIds) {
-        return seekList.getByPrefix(token).stream()
-                .map(entry -> loadBlock(entry.offset, entry.length))
-                .flatMap(index -> index.getByPrefixInDocs(token, docIds));
+        return seekList.getByPrefix(token)
+                .flatMap(this::loadDocumentPostings)
+                .filter(documentPostings ->
+                        IntArrayUtils.intArrayContains(docIds, documentPostings.docId()));
+    }
+
+    public Stream<DocumentPostings> all() {
+        return seekList.stream()
+                .flatMap(entry -> loadDocumentPostings(entry.offset, entry.length));
+    }
+
+    public Stream<String> getTokensByPrefix(String prefixToken) {
+        return seekList.stream()
+                .map(SeekListEntry::getToken)
+                .filter(token -> token.startsWith(prefixToken));
     }
 
     public int collectionTokenCount() {
-        return 0;
+        return collectionTokenCount;
     }
 
     public int documentTokenCount(int docId) {
-        return 0;
+        return docIndex.getPatentDocumentTokens(docId).size();
     }
 
     public int collectionTokenCount(String token) {
-        return 0;
+        return get(token)
+                .mapToInt(documentPostings -> documentPostings.positions().size())
+                .sum();
     }
 
     public int documentTokenCount(String token, int docId) {
-        return 0;
+        return (int)docIndex.getPatentDocumentTokens(docId).stream()
+                .filter(docToken -> docToken.equals(token))
+                .count();
     }
 
+    private Stream<DocumentPostings> loadDocumentPostings(SeekListEntry entry) {
+        return loadDocumentPostings(entry.getOffset(), entry.getLength());
+    }
 
+    private synchronized Stream<DocumentPostings> loadDocumentPostings(int offset, int length) {
 
-    private PostingIndex loadBlock(int offset, int length) {
-        System.out.println(String.format("Load index %d %d", offset, length));
+        if (lruDocumentPostingsCache.containsKey(offset)) {
+            return lruDocumentPostingsCache.get(offset).stream();
+        }
 
         try {
+            System.out.println(String.format("Load block %d %d", offset, length));
+
             // Move file pointer
-//            file.seek(offset);
-//            byte[] buffer = new byte[length];
-//            file.readFully(buffer, 0, length);
+            file.seek(2 * Integer.BYTES + seekListByteLength + offset);
+            byte[] buffer = new byte[length];
+            file.readFully(buffer);
 
-            // Mocked block loading
-            byte[] buffer = new byte[(int) file.length()];
-            file.seek(0);
-            file.readFully(buffer, 0, (int) file.length());
+            DataInputStream stream = new DataInputStream(new InflaterInputStream(new ByteArrayInputStream(buffer)));
 
-            InputStream stream = new ByteArrayInputStream(buffer);
+            List<DocumentPostings> list = PostingReader.readDocumentPostingsList(stream);
+            lruDocumentPostingsCache.put(offset, list);
 
-            return MemoryPostingIndex.load(new GZIPInputStream(stream));
+            return list.stream();
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -109,6 +136,7 @@ public class DiskPostingIndex implements PostingIndex, AutoCloseable {
 
         return null;
     }
+
 
     @Override
     public void close() throws Exception {

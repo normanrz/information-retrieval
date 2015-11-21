@@ -2,6 +2,7 @@ package SearchEngine.Index.disk;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  * Created by norman on 18.11.15.
@@ -18,12 +19,24 @@ public class SeekList implements Iterable<SeekListEntry> {
         list.addAll(initialEntries);
     }
 
-    public void insert(SeekListEntry entry) {
+    public void add(SeekListEntry entry) {
         list.add(entry);
+    }
+
+    public void insertAndSort(SeekListEntry entry) {
+        add(entry);
         list.sort(Comparator.<SeekListEntry>naturalOrder());
     }
 
-    public List<SeekListEntry> get(String token) {
+    public Stream<SeekListEntry> get(String token) {
+        return list.stream().filter(entry -> entry.getToken().equals(token));
+    }
+
+    public Stream<SeekListEntry> getByPrefix(String prefixToken) {
+        return list.stream().filter(entry -> entry.getToken().startsWith(prefixToken));
+    }
+
+    public List<SeekListEntry> getPrimary(String token) {
         List<SeekListEntry> results = new ArrayList<>();
 
         SeekListEntry lastEntry = null;
@@ -46,10 +59,6 @@ public class SeekList implements Iterable<SeekListEntry> {
         return results;
     }
 
-    public List<SeekListEntry> getByPrefix(String prefixToken) {
-        return null;
-    }
-
 
     @Override
     public Iterator<SeekListEntry> iterator() {
@@ -66,5 +75,8 @@ public class SeekList implements Iterable<SeekListEntry> {
         return list.spliterator();
     }
 
+    public Stream<SeekListEntry> stream() {
+        return list.stream();
+    }
 
 }

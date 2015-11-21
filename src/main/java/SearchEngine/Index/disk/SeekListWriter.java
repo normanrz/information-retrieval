@@ -4,7 +4,7 @@ import SearchEngine.Index.TermWriter;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Created by norman on 18.11.15.
@@ -17,9 +17,19 @@ public class SeekListWriter {
         TermWriter.writeTerm(stream, entry.getToken());
     }
 
-    public static void writeSeekList(DataOutputStream stream, List<SeekListEntry> list) throws IOException {
+    public static void writeSeekList(DataOutputStream stream, SeekList list) throws IOException {
         for (SeekListEntry entry : list) {
             writeSeekListEntry(stream, entry);
         }
+    }
+
+    public static int seekListByteLength(SeekList list) {
+        return seekListByteLength(list.stream().map(SeekListEntry::getToken));
+    }
+
+    public static int seekListByteLength(Stream<String> stream) {
+        return stream
+                .mapToInt(item -> 2 * Integer.BYTES + TermWriter.termByteLength(item))
+                .sum();
     }
 }

@@ -20,16 +20,16 @@ public class SeekListReader {
         return new SeekListEntry(token, offset, length);
     }
 
-    public static List<SeekListEntry> readSeekList(DataInputStream stream) throws IOException {
-        List<SeekListEntry> results = new ArrayList<>();
+    public static SeekList readSeekList(DataInputStream stream) throws IOException {
+        SeekList seekList = new SeekList();
         while (true) {
             try {
-                results.add(readSeekListEntry(stream));
+                seekList.add(readSeekListEntry(stream));
             } catch (EOFException e) {
                 break;
             }
         }
-        return results;
+        return seekList;
     }
 
 }

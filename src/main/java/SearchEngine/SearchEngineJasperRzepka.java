@@ -1,14 +1,15 @@
 package SearchEngine;
 
 import SearchEngine.Importer.PatentDocumentImporter;
-import SearchEngine.Importer.PatentDocumentPreprocessor;
 import SearchEngine.Index.DocumentIndex;
 import SearchEngine.Index.MemoryPostingIndex;
 import SearchEngine.Index.Query.PostingIndexRanker;
 import SearchEngine.Index.Query.PostingIndexSearcher;
+import SearchEngine.Index.disk.DiskPostingIndex;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -62,8 +63,12 @@ public class SearchEngineJasperRzepka extends SearchEngine implements AutoClosea
                             PatentDocumentImporter.importPatentDocument(doc, localIndex, docIndex));
 
                     localIndex.printStats();
-                    localIndex.saveCompressed(new File(
-                            String.format("index.%02d.bin.gz", subIndexCounter.getAndIncrement())));
+                    try {
+                        localIndex.save(new File(
+                                String.format("index.%02d.bin.gz", subIndexCounter.getAndIncrement())));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 });
     }
 
@@ -77,56 +82,69 @@ public class SearchEngineJasperRzepka extends SearchEngine implements AutoClosea
 
         System.out.println("Imported test index");
         testIndex.printStats();
-        testIndex.saveCompressed(new File(outputFile));
+        try {
+            testIndex.save(new File(outputFile));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
     @Override
     boolean loadIndex(String directory) {
-        System.out.println("Load index");
-        index = MemoryPostingIndex.load(new File(directory));
-        index.printStats();
+        try {
+            System.out.println("Load index");
+            index = MemoryPostingIndex.load(new File(directory));
+            index.printStats();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return false;
     }
 
     @Override
     void compressIndex(String directory) {
-        index.saveCompressed(new File("index.bin.gz"));
+        // Do nothing
     }
 
     @Override
     boolean loadCompressedIndex(String directory) {
-        System.out.println("Load compressed index");
-        index = MemoryPostingIndex.loadCompressed(new File(directory));
-        index.printStats();
-        return false;
+        return loadIndex(directory);
     }
 
     @Override
     List<String> search(String query, int topK, int prf) {
-        PostingIndexSearcher searcher = new PostingIndexSearcher(index);
-        PostingIndexRanker ranker = new PostingIndexRanker(index);
 
-        int[] searchResults = searcher.search(query, true);
+        try (DiskPostingIndex diskIndex = new DiskPostingIndex("index.bin.gz", docIndex)) {
 
-        List<String> queryTokens = searcher.getStemmedQueryTokens();
-        System.out.println(String.join(" ", queryTokens));
+            PostingIndexSearcher searcher = new PostingIndexSearcher(diskIndex);
+            PostingIndexRanker ranker = new PostingIndexRanker(diskIndex);
 
-        List<PostingSearchResult> rankResults = ranker.rank(queryTokens, searchResults, 2000);
+            int[] searchResults = searcher.search(query, true);
 
-        rankResults.stream()
-                .map(result -> String.format("%08d\t%.8f\t%s", result.docId, result.rank,
-                        docIndex.getPatentDocumentTitle(result.docId)))
-                .forEach(System.out::println);
+            List<String> queryTokens = searcher.getStemmedQueryTokens();
+            System.out.println(String.join(" ", queryTokens));
 
-        return ranker.rankWithRelevanceFeedback(
-                queryTokens, searchResults,
-                rankResults.subList(0, Math.min(rankResults.size(), prf)),
-                docIndex
-        ).stream()
-                .map(result -> String.format("%08d\t%.8f\t%s", result.docId, result.rank,
-                        docIndex.getPatentDocumentTitle(result.docId)))
-                .collect(Collectors.toList());
+            List<PostingSearchResult> rankResults = ranker.rank(queryTokens, searchResults, 2000);
+
+            rankResults.stream()
+                    .map(result -> String.format("%08d\t%.8f\t%s", result.docId, result.rank,
+                            docIndex.getPatentDocumentTitle(result.docId)))
+                    .forEach(System.out::println);
+
+            return ranker.rankWithRelevanceFeedback(
+                    queryTokens, searchResults,
+                    rankResults.subList(0, Math.min(rankResults.size(), prf)),
+                    docIndex
+            ).stream()
+                    .map(result -> String.format("%08d\t%.8f\t%s", result.docId, result.rank,
+                            docIndex.getPatentDocumentTitle(result.docId)))
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+
 
     }
 

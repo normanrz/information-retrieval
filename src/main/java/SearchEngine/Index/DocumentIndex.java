@@ -43,7 +43,6 @@ public class DocumentIndex implements AutoCloseable {
                 .map(String::toLowerCase)
                 .filter(PatentDocumentPreprocessor::isNoStopword)
                 .map(PatentDocumentPreprocessor::stem)
-                .distinct()
                 .collect(Collectors.toList());
     }
 

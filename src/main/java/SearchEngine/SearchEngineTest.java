@@ -1,5 +1,7 @@
 package SearchEngine;
 
+import SearchEngine.Index.disk.DiskPostingIndex;
+
 import java.util.List;
 
 
@@ -60,15 +62,6 @@ public class SearchEngineTest {
                 }
             }, "Query Index");
 
-//            runTimed(() -> {
-//                try (DiskPostingIndex diskIndex = new DiskPostingIndex("index.bin.gz")) {
-//                    diskIndex.get("provid").forEach(doc -> {
-//                        System.out.println(doc.docId());
-//                    });
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            }, "DiskPostingIndex");
         }
 
     }

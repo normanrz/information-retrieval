@@ -2,7 +2,7 @@ package SearchEngine.Index.disk;
 
 import java.util.Comparator;
 
-class SeekListEntry implements Comparable<SeekListEntry> {
+public class SeekListEntry implements Comparable<SeekListEntry> {
     protected final String token;
     protected final int offset;
     protected int length;

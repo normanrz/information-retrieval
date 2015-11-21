@@ -1,6 +1,10 @@
 package SearchEngine.Index;
 
 import SearchEngine.DocumentPostings;
+import SearchEngine.Index.disk.SeekList;
+import SearchEngine.Index.disk.SeekListEntry;
+import SearchEngine.Index.disk.SeekListReader;
+import SearchEngine.Index.disk.SeekListWriter;
 import SearchEngine.PatentDocument;
 import SearchEngine.utils.IntArrayUtils;
 
@@ -9,8 +13,8 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Stream;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
 
 /**
  * Created by norman on 02.11.15.
@@ -75,77 +79,73 @@ public class MemoryPostingIndex extends MemoryIndex<DocumentPostings> implements
                 .orElse(0);
     }
 
-
-    public void save(OutputStream stream) {
-        try {
-            DataOutputStream outputStream = new DataOutputStream(new BufferedOutputStream(stream));
-
-            for (String term : index.navigableKeySet()) {
-                TermWriter.writeTerm(outputStream, term);
-                PostingWriter.writeDocumentPostingsList(outputStream, new ArrayList<>(index.get(term)));
-            }
-            outputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+    public void save(File file) throws IOException {
+        try (FileOutputStream outputStream = new FileOutputStream(file)) {
+            save(outputStream);
         }
     }
 
-    public void save(File file) {
-        try {
-            save(new FileOutputStream(file));
-        } catch (IOException e) {
-            e.printStackTrace();
+    public void save(OutputStream outputStream) throws IOException {
+
+        SeekList seekList = new SeekList();
+
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        int byteCounter = 0;
+        for (String token : index.navigableKeySet()) {
+            ByteArrayOutputStream postingsBuffer = new ByteArrayOutputStream();
+            DataOutputStream postingsDataOutput = new DataOutputStream(new DeflaterOutputStream(postingsBuffer));
+            PostingWriter.writeDocumentPostingsList(postingsDataOutput, new ArrayList<>(index.get(token)));
+            postingsDataOutput.close();
+            int length = postingsBuffer.size();
+            seekList.add(new SeekListEntry(token, byteCounter, length));
+            byteCounter += length;
+            postingsBuffer.writeTo(buffer);
+        }
+
+        ByteArrayOutputStream seekListBuffer = new ByteArrayOutputStream();
+        DataOutputStream seekListDataOutput = new DataOutputStream(new DeflaterOutputStream(seekListBuffer));
+        SeekListWriter.writeSeekList(seekListDataOutput, seekList);
+        seekListDataOutput.close();
+
+        DataOutputStream fileDataOutput = new DataOutputStream(outputStream);
+        fileDataOutput.writeInt(seekListBuffer.size());
+        fileDataOutput.writeInt(collectionTokenCount());
+
+        seekListBuffer.writeTo(outputStream);
+        buffer.writeTo(outputStream);
+    }
+
+
+    public static MemoryPostingIndex load(File file) throws IOException {
+        try (FileInputStream inputStream = new FileInputStream(file)) {
+            return load(inputStream);
         }
     }
 
-    public void saveCompressed(File file) {
-        try {
-            save(new GZIPOutputStream(new FileOutputStream(file)));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    public static MemoryPostingIndex load(InputStream inputStream) {
+    public static MemoryPostingIndex load(InputStream inputStream) throws IOException {
         MemoryPostingIndex newIndex = new MemoryPostingIndex();
-        try {
-            DataInputStream stream = new DataInputStream(new BufferedInputStream(inputStream));
 
-            while (true) {
-                try {
-                    String term = TermReader.readTerm(stream);
-                    for (DocumentPostings documentPostings : PostingReader.readDocumentPostingsList(stream)) {
-                        newIndex.put(term, documentPostings);
-                    }
-                } catch (EOFException eof) {
-                    break;
-                }
-            }
+        InputStream fileStream = new BufferedInputStream(inputStream);
+        DataInputStream fileDataInput = new DataInputStream(fileStream);
 
-            stream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        int seekListByteLength = fileDataInput.readInt();
+        fileDataInput.skipBytes(Integer.BYTES);
+
+        byte[] seekListBuffer = new byte[seekListByteLength];
+        fileDataInput.readFully(seekListBuffer);
+
+        DataInputStream seekListDataInput = new DataInputStream(new InflaterInputStream(new ByteArrayInputStream(seekListBuffer)));
+        SeekList seekList = SeekListReader.readSeekList(seekListDataInput);
+
+        for (SeekListEntry entry : seekList) {
+            byte[] postingsBuffer = new byte[entry.getLength()];
+            fileDataInput.readFully(postingsBuffer);
+            DataInputStream postingsDataInput = new DataInputStream(new InflaterInputStream(new ByteArrayInputStream(postingsBuffer)));
+            PostingReader.readDocumentPostingsList(postingsDataInput)
+                    .forEach(documentPostings -> newIndex.put(entry.getToken(), documentPostings));
         }
+
         return newIndex;
-    }
-
-    public static MemoryPostingIndex loadCompressed(File file) {
-        try {
-            return load(new GZIPInputStream(new FileInputStream(file)));
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public static MemoryPostingIndex load(File file) {
-        try {
-            return load(new FileInputStream(file));
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
 
