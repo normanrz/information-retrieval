@@ -118,7 +118,7 @@ public class SearchEngineJasperRzepka extends SearchEngine implements AutoClosea
         try (DiskPostingIndex diskIndex = new DiskPostingIndex("index.bin.gz", docIndex)) {
 
             PostingIndexSearcher searcher = new PostingIndexSearcher(diskIndex);
-            PostingIndexRanker ranker = new PostingIndexRanker(diskIndex);
+            PostingIndexRanker ranker = new PostingIndexRanker(diskIndex, docIndex);
 
             int[] searchResults = searcher.search(query, true);
 
@@ -132,11 +132,9 @@ public class SearchEngineJasperRzepka extends SearchEngine implements AutoClosea
                             docIndex.getPatentDocumentTitle(result.docId)))
                     .forEach(System.out::println);
 
-            return ranker.rankWithRelevanceFeedback(
-                    queryTokens, searchResults,
-                    rankResults.subList(0, Math.min(rankResults.size(), prf)),
-                    docIndex
-            ).stream()
+            return ranker.rankWithRelevanceFeedback(queryTokens, searchResults,
+                    rankResults.subList(0, Math.min(rankResults.size(), prf)))
+                    .stream()
                     .map(result -> String.format("%08d\t%.8f\t%s", result.docId, result.rank,
                             docIndex.getPatentDocumentTitle(result.docId)))
                     .collect(Collectors.toList());

@@ -3,7 +3,6 @@ package SearchEngine.Index;
 import SearchEngine.DocumentPostings;
 import SearchEngine.Posting;
 
-import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
@@ -67,6 +66,7 @@ public class PostingWriter {
     public static int documentPostingsListByteLength(Stream<DocumentPostings> documentPostingsStream) {
         return Integer.BYTES + documentPostingsStream.mapToInt(PostingWriter::documentPostingsByteLength).sum();
     }
+
     public static int documentPostingsListByteLength(List<DocumentPostings> documentPostingsList) {
         return documentPostingsListByteLength(documentPostingsList.stream());
     }

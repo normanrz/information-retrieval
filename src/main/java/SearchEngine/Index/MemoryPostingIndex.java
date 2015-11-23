@@ -97,7 +97,7 @@ public class MemoryPostingIndex extends MemoryIndex<DocumentPostings> implements
             PostingWriter.writeDocumentPostingsList(postingsDataOutput, new ArrayList<>(index.get(token)));
             postingsDataOutput.close();
             int length = postingsBuffer.size();
-            seekList.add(new SeekListEntry(token, byteCounter, length));
+            seekList.add(new SeekListEntry(token, byteCounter, length, collectionTokenCount(token)));
             byteCounter += length;
             postingsBuffer.writeTo(buffer);
         }

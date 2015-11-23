@@ -22,7 +22,7 @@ public class LevenshteinDistance {
                 costs[j] = cj;
             }
         }
-        return costs[b.length()] / Math.max((double)a.length(), b.length());
+        return costs[b.length()] / Math.max((double) a.length(), b.length());
     }
 
 }

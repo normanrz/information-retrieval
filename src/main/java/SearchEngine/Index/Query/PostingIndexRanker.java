@@ -1,6 +1,5 @@
 package SearchEngine.Index.Query;
 
-import SearchEngine.Importer.PatentDocumentPreprocessor;
 import SearchEngine.Index.DocumentIndex;
 import SearchEngine.Index.PostingIndex;
 import SearchEngine.PostingSearchResult;
@@ -18,23 +17,23 @@ import java.util.stream.Collectors;
 public class PostingIndexRanker {
 
     private final PostingIndex index;
+    private final DocumentIndex documentIndex;
+    private int mu = 2000;
+    private int numberOfQueryTokens = 10;
 
-    public PostingIndexRanker(PostingIndex index) {
+
+    public PostingIndexRanker(PostingIndex index, DocumentIndex documentIndex) {
         this.index = index;
+        this.documentIndex = documentIndex;
     }
 
 
-    public List<PostingSearchResult> rankWithRelevanceFeedback(List<String> queryTokens, int[] docIds, List<PostingSearchResult> topRankedDocs, DocumentIndex documentIndex) {
-
-        // TODO
-        int mu = 2000;
-        int numberOfQueryTokens = 20;
+    public List<PostingSearchResult> rankWithRelevanceFeedback(List<String> queryTokens, int[] docIds, List<PostingSearchResult> topRankedDocs) {
 
         List<String> topCollectionTokens = topRankedDocs.stream()
                 .flatMap(result -> documentIndex.getPatentDocumentTokens(result.getDocId()).stream())
                 .distinct()
                 .collect(Collectors.toList());
-
 
         Map<String, Double> relevanceModelProbabilities = topCollectionTokens.stream()
                 .collect(Collectors.toMap(Function.identity(), token ->
@@ -49,7 +48,6 @@ public class PostingIndexRanker {
 
         double relevanceModelNormalizer =
                 relevanceModelProbabilities.values().stream().mapToDouble(a -> a).sum();
-
 
         List<String> highProbabilityQueryTokens = relevanceModelProbabilities.entrySet().stream()
                 .sorted(Comparator.comparingDouble(entry -> -entry.getValue()))
@@ -68,8 +66,6 @@ public class PostingIndexRanker {
                 ))
                 .sorted(PostingSearchResult::compareTo)
                 .collect(Collectors.toList());
-
-
     }
 
     public List<PostingSearchResult> rank(List<String> queryTokens, int[] docIds, int mu) {

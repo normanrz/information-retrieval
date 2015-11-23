@@ -2,16 +2,18 @@ package SearchEngine.Index.disk;
 
 import SearchEngine.DocumentPostings;
 import SearchEngine.Index.DocumentIndex;
-import SearchEngine.Index.MemoryPostingIndex;
 import SearchEngine.Index.PostingIndex;
 import SearchEngine.Index.PostingReader;
 import SearchEngine.utils.IntArrayUtils;
 import org.apache.commons.collections4.map.LRUMap;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
-import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
 public class DiskPostingIndex implements PostingIndex, AutoCloseable {
@@ -94,13 +96,13 @@ public class DiskPostingIndex implements PostingIndex, AutoCloseable {
     }
 
     public int collectionTokenCount(String token) {
-        return get(token)
-                .mapToInt(documentPostings -> documentPostings.positions().size())
+        return seekList.get(token)
+                .mapToInt(SeekListEntry::getTokenCount)
                 .sum();
     }
 
     public int documentTokenCount(String token, int docId) {
-        return (int)docIndex.getPatentDocumentTokens(docId).stream()
+        return (int) docIndex.getPatentDocumentTokens(docId).stream()
                 .filter(docToken -> docToken.equals(token))
                 .count();
     }

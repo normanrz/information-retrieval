@@ -1,7 +1,5 @@
 package SearchEngine;
 
-import SearchEngine.Index.disk.DiskPostingIndex;
-
 import java.util.List;
 
 

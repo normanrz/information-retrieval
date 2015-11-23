@@ -2,7 +2,6 @@ package SearchEngine.Importer;
 
 import SearchEngine.Index.DocumentIndex;
 import SearchEngine.Index.MemoryPostingIndex;
-import SearchEngine.Index.PostingIndex;
 import SearchEngine.PatentDocument;
 import org.xml.sax.SAXException;
 

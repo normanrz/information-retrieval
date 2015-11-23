@@ -16,6 +16,7 @@ public class PostingSearchResult implements Comparable<PostingSearchResult> {
     public int getDocId() {
         return docId;
     }
+
     public double getRank() {
         return rank;
     }

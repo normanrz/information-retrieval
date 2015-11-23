@@ -14,6 +14,7 @@ public class SeekListWriter {
     public static void writeSeekListEntry(DataOutputStream stream, SeekListEntry entry) throws IOException {
         stream.writeInt(entry.getOffset());
         stream.writeInt(entry.getLength());
+        stream.writeInt(entry.getTokenCount());
         TermWriter.writeTerm(stream, entry.getToken());
     }
 
