@@ -1,0 +1,17 @@
+Query: digital (4)
+08353046    System and method for delivery of a modular operating system
+08353047    Methods and systems for digital image data tracking
+08353048    Application digital rights management (DRM) and portability using a mobile device for authentication 
+08353055    Method and apparatus for processing rights object
+
+Query: rootkits (1)
+08353058    Methods and systems for detecting rootkits
+
+Query: network OR access (7)
+08353044    Methods and systems for computing device remediation
+08353052    Providing services to a guest device in a personal network
+08353051    Image forming apparatus, access control method, access control program and computer readable information recording medium 
+08353048    Application digital rights management (DRM) and portability using a mobile device for authentication 
+08353056    Apparatus and method for detecting program plagiarism through memory access log analysis 
+08353050    Mobile device management
+08353042    Content filtering of remote file-system access protocols

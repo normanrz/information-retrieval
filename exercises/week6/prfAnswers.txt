@@ -1,0 +1,64 @@
+Query: digital (20)
+08353044    Methods and systems for computing device remediation
+08353058    Methods and systems for detecting rootkits
+08353048    Application digital rights management (DRM) and portability using a mobile device for authentication 
+08353046    System and method for delivery of a modular operating system
+08353053    Computer program product and method for permanently storing data based on whether a device is protected with an encryption mechanism and whether data in a data structure requires encryption 
+08353045    Method and tool for information security assessment that integrates enterprise objectives with vulnerabilities 
+08353047    Methods and systems for digital image data tracking
+08353052    Providing services to a guest device in a personal network
+08353050    Mobile device management
+08353041    Secure application streaming
+08353057    Information processing apparatus, control method, and control program 
+08353040    Automatic extraction of signatures for malware
+08353042    Content filtering of remote file-system access protocols
+08353049    Separating keys and policy for consuming content
+08353051    Image forming apparatus, access control method, access control program and computer readable information recording medium 
+08353056    Apparatus and method for detecting program plagiarism through memory access log analysis 
+08353055    Method and apparatus for processing rights object
+08353054    Method for protection of a chip card from unauthorized use, chip card and chip card terminal 
+08353059    Optical scanning probe
+08353043    Web firewall and method for automatically checking web server for vulnerabilities 
+
+Query: rootkits (20)
+08353044    Methods and systems for computing device remediation
+08353058    Methods and systems for detecting rootkits
+08353048    Application digital rights management (DRM) and portability using a mobile device for authentication 
+08353046    System and method for delivery of a modular operating system
+08353045    Method and tool for information security assessment that integrates enterprise objectives with vulnerabilities 
+08353053    Computer program product and method for permanently storing data based on whether a device is protected with an encryption mechanism and whether data in a data structure requires encryption 
+08353052    Providing services to a guest device in a personal network
+08353047    Methods and systems for digital image data tracking
+08353050    Mobile device management
+08353040    Automatic extraction of signatures for malware
+08353049    Separating keys and policy for consuming content
+08353056    Apparatus and method for detecting program plagiarism through memory access log analysis 
+08353054    Method for protection of a chip card from unauthorized use, chip card and chip card terminal 
+08353041    Secure application streaming
+08353051    Image forming apparatus, access control method, access control program and computer readable information recording medium 
+08353042    Content filtering of remote file-system access protocols
+08353057    Information processing apparatus, control method, and control program 
+08353059    Optical scanning probe
+08353055    Method and apparatus for processing rights object
+08353043    Web firewall and method for automatically checking web server for vulnerabilities 
+
+Query: network OR access (19)
+08353044    Methods and systems for computing device remediation
+08353048    Application digital rights management (DRM) and portability using a mobile device for authentication 
+08353058    Methods and systems for detecting rootkits
+08353051    Image forming apparatus, access control method, access control program and computer readable information recording medium 
+08353045    Method and tool for information security assessment that integrates enterprise objectives with vulnerabilities 
+08353050    Mobile device management
+08353052    Providing services to a guest device in a personal network
+08353046    System and method for delivery of a modular operating system
+08353047    Methods and systems for digital image data tracking
+08353057    Information processing apparatus, control method, and control program 
+08353053    Computer program product and method for permanently storing data based on whether a device is protected with an encryption mechanism and whether data in a data structure requires encryption 
+08353056    Apparatus and method for detecting program plagiarism through memory access log analysis 
+08353040    Automatic extraction of signatures for malware
+08353049    Separating keys and policy for consuming content
+08353055    Method and apparatus for processing rights object
+08353042    Content filtering of remote file-system access protocols
+08353043    Web firewall and method for automatically checking web server for vulnerabilities 
+08353041    Secure application streaming
+08353054    Method for protection of a chip card from unauthorized use, chip card and chip card terminal 

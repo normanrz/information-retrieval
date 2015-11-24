@@ -1,0 +1,4 @@
+commom -> common
+kontrol -> known
+incluce -> incluc -> includ
+streem -> stream
