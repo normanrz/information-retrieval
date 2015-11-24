@@ -46,13 +46,11 @@ public class SearchEngineTest {
 
 
             runTimed(() -> {
-//            String[] queries = {"comprises AND consists", "methods NOT inventions",
-//                    "data OR method", "prov* NOT free", "inc* OR memory", "the presented invention", "mobile devices"};
-                String[] queries = {"commom", "kontrol", "incluce", "streem", "digital", "rootkits", "network access"};
+                String[] queries = {"commom", "kontrol", "incluce", "streem", "digital", "rootkits", "network OR access"};
 
                 for (String query : queries) {
 
-                    List<String> results = myEngine.search(query, 10, 10);
+                    List<String> results = myEngine.search(query, 100, 2);
                     System.out.println(String.format("Query: %s (%d)", query, results.size()));
                     results.forEach(System.out::println);
 

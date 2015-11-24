@@ -27,67 +27,83 @@ public class PostingIndexRanker {
         this.documentIndex = documentIndex;
     }
 
+    public void setMu(int mu) {
+        this.mu = mu;
+    }
 
-    public List<PostingSearchResult> rankWithRelevanceFeedback(List<String> queryTokens, int[] docIds, List<PostingSearchResult> topRankedDocs) {
+    public void setNumberOfQueryTokens(int numberOfQueryTokens) {
+        this.numberOfQueryTokens = numberOfQueryTokens;
+    }
 
-        List<String> topCollectionTokens = topRankedDocs.stream()
-                .flatMap(result -> documentIndex.getPatentDocumentTokens(result.getDocId()).stream())
+
+    public Map<String, Double> pseudoRelevanceModel(List<String> queryTokens, int[] topRankedDocIds) {
+        List<String> topCollectionTokens = Arrays.stream(topRankedDocIds)
+                .mapToObj(documentIndex::getPatentDocumentTokens)
+                .flatMap(List::stream)
                 .distinct()
                 .collect(Collectors.toList());
 
+        Map<Integer, Double> queryTokenProbabilities = Arrays.stream(topRankedDocIds)
+                .boxed()
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        docId -> queryTokens.stream()
+                                .mapToDouble(queryToken -> tokenProbability(queryToken, docId))
+                                .reduce(1, (a, b) -> a * b)));
+
         Map<String, Double> relevanceModelProbabilities = topCollectionTokens.stream()
                 .collect(Collectors.toMap(Function.identity(), token ->
-                                topRankedDocs.stream()
-                                        .mapToDouble(doc ->
-                                                tokenProbability(token, doc.getDocId(), mu) *
-                                                        queryTokens.stream()
-                                                                .mapToDouble(queryToken -> tokenProbability(queryToken, doc.getDocId(), mu))
-                                                                .reduce(1, (a, b) -> a * b))
+                                Arrays.stream(topRankedDocIds)
+                                        .mapToDouble(docId ->
+                                                tokenProbability(token, docId) * queryTokenProbabilities.get(docId))
                                         .sum()
                 ));
 
-        double relevanceModelNormalizer =
-                relevanceModelProbabilities.values().stream().mapToDouble(a -> a).sum();
+//        double relevanceModelNormalizer =
+//                relevanceModelProbabilities.values().stream().mapToDouble(a -> a).sum();
 
-        List<String> highProbabilityQueryTokens = relevanceModelProbabilities.entrySet().stream()
+        return relevanceModelProbabilities.entrySet().stream()
                 .sorted(Comparator.comparingDouble(entry -> -entry.getValue()))
                 .limit(numberOfQueryTokens)
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    public List<PostingSearchResult> rankWithRelevanceModel(int[] docIds, Map<String, Double> relevanceModel) {
 
         return Arrays.stream(docIds)
                 .mapToObj(docId -> new PostingSearchResult(docId,
-                        highProbabilityQueryTokens.stream()
+                        relevanceModel.keySet().stream()
                                 .mapToDouble(token ->
-                                        relevanceModelProbabilities.get(token) /
-                                                relevanceModelNormalizer *
-                                                Math.log(tokenProbability(token, docId, mu)))
+                                        relevanceModel.get(token) * Math.log(tokenProbability(token, docId)))
                                 .sum()
                 ))
                 .sorted(PostingSearchResult::compareTo)
                 .collect(Collectors.toList());
     }
 
-    public List<PostingSearchResult> rank(List<String> queryTokens, int[] docIds, int mu) {
+    public List<PostingSearchResult> rank(List<String> queryTokens, int[] docIds) {
 
         return Arrays.stream(docIds)
-                .mapToObj(docId -> new PostingSearchResult(docId, queryLikelihood(queryTokens, docId, mu)))
+                .mapToObj(docId -> new PostingSearchResult(docId, queryLikelihood(queryTokens, docId)))
                 .sorted(PostingSearchResult::compareTo)
                 .collect(Collectors.toList());
     }
 
 
-    public double queryLikelihood(List<String> tokens, int docId, int mu) {
+    public double queryLikelihood(List<String> tokens, int docId) {
         return tokens.stream()
-                .mapToDouble(token -> tokenProbability(token, docId, mu))
-                .map(Math::log)
+                .mapToDouble(token -> Math.log(tokenProbability(token, docId)))
                 .sum();
 
     }
 
-    private double tokenProbability(String token, int docId, int mu) {
+    private double tokenProbability(String token, int docId) {
         return (index.documentTokenCount(token, docId) +
                 mu * ((double) index.collectionTokenCount(token) / (double) index.collectionTokenCount())) /
                 (index.documentTokenCount(docId) + mu);
+    }
+
+    public static String getQueryFromRelevanceModel(Map<String, Double> relevanceModel) {
+        return String.join(" OR ", relevanceModel.keySet());
     }
 }

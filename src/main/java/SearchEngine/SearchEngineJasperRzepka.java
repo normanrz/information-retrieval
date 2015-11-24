@@ -9,8 +9,8 @@ import SearchEngine.Index.disk.DiskPostingIndex;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -112,37 +112,51 @@ public class SearchEngineJasperRzepka extends SearchEngine implements AutoClosea
         return loadIndex(directory);
     }
 
-    @Override
-    List<String> search(String query, int topK, int prf) {
-
+    Stream<PostingSearchResult> _search(String query, int prf) {
         try (DiskPostingIndex diskIndex = new DiskPostingIndex("index.bin.gz", docIndex)) {
 
+            // Set up
             PostingIndexSearcher searcher = new PostingIndexSearcher(diskIndex);
             PostingIndexRanker ranker = new PostingIndexRanker(diskIndex, docIndex);
 
-            int[] searchResults = searcher.search(query, true);
+//            searcher.setShouldCorrectSpelling(true);
+
+            // Search
+            int[] searchResults = searcher.search(query);
 
             List<String> queryTokens = searcher.getStemmedQueryTokens();
-            System.out.println(String.join(" ", queryTokens));
 
-            List<PostingSearchResult> rankResults = ranker.rank(queryTokens, searchResults, 2000);
+            // Rank first-pass
+            List<PostingSearchResult> rankResults = ranker.rank(queryTokens, searchResults);
 
-            rankResults.stream()
-                    .map(result -> String.format("%08d\t%.8f\t%s", result.docId, result.rank,
-                            docIndex.getPatentDocumentTitle(result.docId)))
-                    .forEach(System.out::println);
+            if (prf == 0) {
+                return rankResults.stream();
+            } else {
+                // Pseudo relevance feedback model
+                Map<String, Double> relevanceModel =
+                        ranker.pseudoRelevanceModel(queryTokens,
+                                PostingSearchResult.getDocIds(rankResults.subList(0, Math.min(rankResults.size(), prf))));
 
-            return ranker.rankWithRelevanceFeedback(queryTokens, searchResults,
-                    rankResults.subList(0, Math.min(rankResults.size(), prf)))
-                    .stream()
-                    .map(result -> String.format("%08d\t%.8f\t%s", result.docId, result.rank,
-                            docIndex.getPatentDocumentTitle(result.docId)))
-                    .collect(Collectors.toList());
+                String newQuery = PostingIndexRanker.getQueryFromRelevanceModel(relevanceModel);
+
+                // Search and rank again
+                return ranker.rankWithRelevanceModel(searcher.search(newQuery), relevanceModel).stream();
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
-            return Collections.emptyList();
+            return Stream.empty();
         }
+    }
 
+    @Override
+    List<String> search(String query, int topK, int prf) {
+
+        return _search(query, prf)
+                .limit(topK)
+                .map(result -> String.format("%08d\t%s", result.docId,
+                        docIndex.getPatentDocumentTitle(result.docId)))
+                .collect(Collectors.toList());
 
     }
 

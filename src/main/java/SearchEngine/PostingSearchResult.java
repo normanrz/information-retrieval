@@ -1,5 +1,7 @@
 package SearchEngine;
 
+import java.util.List;
+
 /**
  * Created by norman on 12.11.15.
  */
@@ -24,5 +26,9 @@ public class PostingSearchResult implements Comparable<PostingSearchResult> {
     @Override
     public int compareTo(PostingSearchResult o) {
         return -Double.compare(rank, o.rank);
+    }
+
+    public static int[] getDocIds(List<PostingSearchResult> results) {
+        return results.stream().mapToInt(PostingSearchResult::getDocId).toArray();
     }
 }

@@ -24,18 +24,16 @@ public class PostingIndexSearcher {
         this.index = index;
     }
 
+    public void setShouldCorrectSpelling(boolean state) {
+        shouldCorrectSpelling = state;
+    }
+
 
     public List<String> getStemmedQueryTokens() {
         return stemmedQueryTokens;
     }
 
     public int[] search(String query) {
-        return search(query, false);
-    }
-
-    public int[] search(String query, boolean shouldCorrectSpelling) {
-
-        this.shouldCorrectSpelling = shouldCorrectSpelling;
 
         // Tokenize query
         List<String> tokens = PatentDocumentPreprocessor.tokenizeWithRegex(query);
