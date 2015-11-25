@@ -1,8 +1,7 @@
-package SearchEngine.Index.Query;
+package SearchEngine.Query;
 
 import SearchEngine.Index.DocumentIndex;
 import SearchEngine.Index.PostingIndex;
-import SearchEngine.PostingSearchResult;
 
 import java.util.Arrays;
 import java.util.Comparator;

@@ -1,4 +1,4 @@
-package SearchEngine;
+package SearchEngine.Query;
 
 import java.util.List;
 

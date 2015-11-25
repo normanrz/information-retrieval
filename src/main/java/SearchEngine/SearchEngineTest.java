@@ -1,5 +1,11 @@
 package SearchEngine;
 
+import SearchEngine.Query.QueryParser.QueryParser;
+import org.parboiled.Parboiled;
+import org.parboiled.parserunners.ReportingParseRunner;
+import org.parboiled.support.ParseTreeUtils;
+import org.parboiled.support.ParsingResult;
+
 import java.util.List;
 
 
@@ -43,6 +49,19 @@ public class SearchEngineTest {
                 myEngine.loadCompressedIndex("index.bin.gz");
 
             }, "Load Index");
+
+
+            String[] queriesSamples = {
+                    "data AND info OR mobile", "data AND (info OR mobile)",
+                    "data info", "data AND information", "mobile OR \"data processing\"", "data NOT info*",
+                    "\"data proces*\" NOT processing", "\"data processing\" #2", "\"data proces*\" #4",
+                    "\"data processing\" mobile #2", "mobile data #3", "mobile dat* #2"};
+
+            for (String input : queriesSamples) {
+                QueryParser parser = Parboiled.createParser(QueryParser.class);
+                ParsingResult<?> result = new ReportingParseRunner(parser.FullQuery()).run(input);
+                System.out.println(ParseTreeUtils.printNodeTree(result));
+            }
 
 
             runTimed(() -> {

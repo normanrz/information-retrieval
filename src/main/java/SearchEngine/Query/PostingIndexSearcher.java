@@ -1,4 +1,4 @@
-package SearchEngine.Index.Query;
+package SearchEngine.Query;
 
 import SearchEngine.DocumentPostings;
 import SearchEngine.Importer.PatentDocumentPreprocessor;

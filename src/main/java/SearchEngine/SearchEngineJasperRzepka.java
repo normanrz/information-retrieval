@@ -3,9 +3,10 @@ package SearchEngine;
 import SearchEngine.Importer.PatentDocumentImporter;
 import SearchEngine.Index.DocumentIndex;
 import SearchEngine.Index.MemoryPostingIndex;
-import SearchEngine.Index.Query.PostingIndexRanker;
-import SearchEngine.Index.Query.PostingIndexSearcher;
+import SearchEngine.Query.PostingIndexRanker;
+import SearchEngine.Query.PostingIndexSearcher;
 import SearchEngine.Index.disk.DiskPostingIndex;
+import SearchEngine.Query.PostingSearchResult;
 
 import java.io.File;
 import java.io.IOException;
@@ -138,6 +139,7 @@ public class SearchEngineJasperRzepka extends SearchEngine implements AutoClosea
                                 PostingSearchResult.getDocIds(rankResults.subList(0, Math.min(rankResults.size(), prf))));
 
                 String newQuery = PostingIndexRanker.getQueryFromRelevanceModel(relevanceModel);
+                System.out.println(newQuery);
 
                 // Search and rank again
                 return ranker.rankWithRelevanceModel(searcher.search(newQuery), relevanceModel).stream();
@@ -154,8 +156,8 @@ public class SearchEngineJasperRzepka extends SearchEngine implements AutoClosea
 
         return _search(query, prf)
                 .limit(topK)
-                .map(result -> String.format("%08d\t%s", result.docId,
-                        docIndex.getPatentDocumentTitle(result.docId)))
+                .map(result -> String.format("%08d\t%s", result.getDocId(),
+                        docIndex.getPatentDocumentTitle(result.getDocId())))
                 .collect(Collectors.toList());
 
     }
