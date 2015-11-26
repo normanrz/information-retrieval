@@ -38,7 +38,7 @@ public class DocumentIndex implements AutoCloseable {
     }
 
     public List<String> getPatentDocumentTokens(int docId) {
-        return PatentDocumentPreprocessor.tokenizeWithRegex(
+        return PatentDocumentPreprocessor.tokenize(
                 getPatentDocumentTitle(docId) + " " + getPatentDocumentAbstract(docId)).stream()
                 .map(String::toLowerCase)
                 .filter(PatentDocumentPreprocessor::isNoStopword)

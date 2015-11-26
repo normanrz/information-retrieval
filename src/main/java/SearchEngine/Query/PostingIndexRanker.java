@@ -1,14 +1,13 @@
 package SearchEngine.Query;
 
+import SearchEngine.Importer.PatentDocumentPreprocessor;
 import SearchEngine.Index.DocumentIndex;
 import SearchEngine.Index.PostingIndex;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by norman on 13.11.15.
@@ -36,11 +35,33 @@ public class PostingIndexRanker {
 
 
     public Map<String, Double> pseudoRelevanceModel(List<String> queryTokens, int[] topRankedDocIds) {
-        List<String> topCollectionTokens = Arrays.stream(topRankedDocIds)
+        List<String> tokens = Arrays.stream(topRankedDocIds)
                 .mapToObj(documentIndex::getPatentDocumentTokens)
                 .flatMap(List::stream)
                 .distinct()
+                .filter(PatentDocumentPreprocessor::isNoStopword)
                 .collect(Collectors.toList());
+        return pseudoRelevanceModel(queryTokens, topRankedDocIds, tokens);
+    }
+
+
+
+    public Map<String, Double> pseudoRelevanceModel(List<String> queryTokens, List<DocumentSnippetsResult> documentSnippetsResults) {
+
+        int[] topRankedDocIds = documentSnippetsResults.stream().mapToInt(DocumentSnippetsResult::getDocId).toArray();
+        List<String> stemmedTokens = documentSnippetsResults.stream()
+                .flatMap(documentSnippetsResult -> documentSnippetsResult.getSnippets().stream())
+                .flatMap(snippet -> PatentDocumentPreprocessor.tokenize(snippet).stream())
+                .map(String::toLowerCase)
+                .map(PatentDocumentPreprocessor::stem)
+                .distinct()
+                .filter(PatentDocumentPreprocessor::isNoStopword)
+                .collect(Collectors.toList());
+
+        return pseudoRelevanceModel(queryTokens, topRankedDocIds, stemmedTokens);
+    }
+
+    public Map<String, Double> pseudoRelevanceModel(List<String> queryTokens, int[] topRankedDocIds, List<String> tokens) {
 
         Map<Integer, Double> queryTokenProbabilities = Arrays.stream(topRankedDocIds)
                 .boxed()
@@ -50,16 +71,13 @@ public class PostingIndexRanker {
                                 .mapToDouble(queryToken -> tokenProbability(queryToken, docId))
                                 .reduce(1, (a, b) -> a * b)));
 
-        Map<String, Double> relevanceModelProbabilities = topCollectionTokens.stream()
+        Map<String, Double> relevanceModelProbabilities = tokens.stream()
                 .collect(Collectors.toMap(Function.identity(), token ->
                                 Arrays.stream(topRankedDocIds)
                                         .mapToDouble(docId ->
                                                 tokenProbability(token, docId) * queryTokenProbabilities.get(docId))
                                         .sum()
                 ));
-
-//        double relevanceModelNormalizer =
-//                relevanceModelProbabilities.values().stream().mapToDouble(a -> a).sum();
 
         return relevanceModelProbabilities.entrySet().stream()
                 .sorted(Comparator.comparingDouble(entry -> -entry.getValue()))
@@ -104,5 +122,13 @@ public class PostingIndexRanker {
 
     public static String getQueryFromRelevanceModel(Map<String, Double> relevanceModel) {
         return String.join(" OR ", relevanceModel.keySet());
+    }
+
+    public static String expandQueryFromRelevanceModel(Map<String, Double> relevanceModel, List<String> queryTokens) {
+        List<String> expandedQueryTokens = Stream.of(relevanceModel.keySet(), queryTokens)
+                .flatMap(Collection::stream)
+                .distinct()
+                .collect(Collectors.toList());
+        return String.join(" OR ", expandedQueryTokens);
     }
 }

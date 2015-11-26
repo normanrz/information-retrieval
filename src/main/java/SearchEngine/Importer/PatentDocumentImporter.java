@@ -60,7 +60,7 @@ public class PatentDocumentImporter {
         ArrayList<String> tokens = new ArrayList<>();
 
         String tokenizableDocument = (doc.title + " " + doc.abstractText).toLowerCase();
-        PatentDocumentPreprocessor.tokenizeWithRegex(tokenizableDocument).stream()
+        PatentDocumentPreprocessor.tokenize(tokenizableDocument).stream()
                 .filter(PatentDocumentPreprocessor::isNoStopword)
                 .forEach(token -> {
                     String stemmedToken = PatentDocumentPreprocessor.stem(token);

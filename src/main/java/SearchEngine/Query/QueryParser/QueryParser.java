@@ -57,9 +57,7 @@ public class QueryParser extends BaseParser<Object> {
                         Whitespace(),
                         BooleanAndSentence()
                 ),
-                Sequence(BooleanPrimarySentence(), Whitespace(), BooleanAndSentence()),
-                BooleanPrimarySentence()
-        );
+                BooleanPrimarySentence());
     }
 
     Rule BooleanOrSentence() {
@@ -70,6 +68,7 @@ public class QueryParser extends BaseParser<Object> {
                         String("OR"),
                         Whitespace(),
                         BooleanOrSentence()),
+                Sequence(BooleanPrimarySentence(), Whitespace(), BooleanAndSentence()),
                 BooleanAndSentence());
     }
 
@@ -99,8 +98,7 @@ public class QueryParser extends BaseParser<Object> {
     Rule Subquery() {
         return FirstOf(
                 BooleanSentence(),
-                MultipleRules(TokenOrPhrase(), Whitespace())
-        );
+                MultipleRules(TokenOrPhrase(), Whitespace()));
     }
 
     Rule Query() {

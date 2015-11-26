@@ -1,11 +1,14 @@
 package SearchEngine.Importer;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -37,15 +40,26 @@ public class PatentDocumentPreprocessor {
         }
     }
 
-    public static List<String> tokenizeWithRegex(String query) {
+    private final static Pattern whitespacePattern = Pattern.compile("[^\\p{L}\\p{Nd}]+");
+    private final static Pattern tokenPattern = Pattern.compile("[\\p{L}\\p{Nd}]+");
 
-        final String tokenizerWithPunctuationMarks = "[^\\p{L}\\p{Nd}_\\-\\\\/]+";
-        final String tokenizer = "[^\\p{L}\\p{Nd}]+";
-
-        return Arrays.stream(query.split(tokenizerWithPunctuationMarks))
-                .flatMap(rawToken -> Arrays.stream(rawToken.split(tokenizer)))
-                .collect(Collectors.toList());
+    public static List<String> tokenize(String query) {
+        return Arrays.asList(whitespacePattern.split(query));
     }
+
+    public static List<Pair<Integer, String>> tokenizeWithOffset(String query) {
+
+        Matcher matcher = tokenPattern.matcher(query);
+        List<Pair<Integer, String>> output = new ArrayList<>();
+
+        while (matcher.find()) {
+            output.add(Pair.of(matcher.start(), matcher.group()));
+        }
+
+        return output;
+    }
+
+
 
     public static boolean isNoStopword(String token) {
         return !stopwords.contains(token);

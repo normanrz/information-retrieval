@@ -3,10 +3,8 @@ package SearchEngine;
 import SearchEngine.Importer.PatentDocumentImporter;
 import SearchEngine.Index.DocumentIndex;
 import SearchEngine.Index.MemoryPostingIndex;
-import SearchEngine.Query.PostingIndexRanker;
-import SearchEngine.Query.PostingIndexSearcher;
 import SearchEngine.Index.disk.DiskPostingIndex;
-import SearchEngine.Query.PostingSearchResult;
+import SearchEngine.Query.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -119,8 +117,9 @@ public class SearchEngineJasperRzepka extends SearchEngine implements AutoClosea
             // Set up
             PostingIndexSearcher searcher = new PostingIndexSearcher(diskIndex);
             PostingIndexRanker ranker = new PostingIndexRanker(diskIndex, docIndex);
+            PostingSnippetGenerator snippetGenerator = new PostingSnippetGenerator(docIndex);
 
-//            searcher.setShouldCorrectSpelling(true);
+            searcher.setShouldCorrectSpelling(true);
 
             // Search
             int[] searchResults = searcher.search(query);
@@ -130,16 +129,24 @@ public class SearchEngineJasperRzepka extends SearchEngine implements AutoClosea
             // Rank first-pass
             List<PostingSearchResult> rankResults = ranker.rank(queryTokens, searchResults);
 
+
+
             if (prf == 0) {
                 return rankResults.stream();
             } else {
+                // Generate snippets
+                List<DocumentSnippetsResult> prfDocumentSnippetsResults = rankResults.stream()
+                        .limit(prf)
+                        .map(result -> new DocumentSnippetsResult(result.getDocId(), snippetGenerator.getSnippets(result.getDocId(), queryTokens)))
+                        .collect(Collectors.toList());
+
+                int[] topRankedDocIds = PostingSearchResult.getDocIds(rankResults.subList(0, Math.min(prf, rankResults.size())));
+
                 // Pseudo relevance feedback model
                 Map<String, Double> relevanceModel =
-                        ranker.pseudoRelevanceModel(queryTokens,
-                                PostingSearchResult.getDocIds(rankResults.subList(0, Math.min(rankResults.size(), prf))));
+                        ranker.pseudoRelevanceModel(queryTokens, topRankedDocIds);
 
-                String newQuery = PostingIndexRanker.getQueryFromRelevanceModel(relevanceModel);
-                System.out.println(newQuery);
+                String newQuery = PostingIndexRanker.expandQueryFromRelevanceModel(relevanceModel, queryTokens);
 
                 // Search and rank again
                 return ranker.rankWithRelevanceModel(searcher.search(newQuery), relevanceModel).stream();

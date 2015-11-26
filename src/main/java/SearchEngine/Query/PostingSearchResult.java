@@ -10,6 +10,8 @@ public class PostingSearchResult implements Comparable<PostingSearchResult> {
     protected final int docId;
     protected final double rank;
 
+    protected String snippet = "";
+
     public PostingSearchResult(int docId, double rank) {
         this.docId = docId;
         this.rank = rank;
@@ -21,6 +23,13 @@ public class PostingSearchResult implements Comparable<PostingSearchResult> {
 
     public double getRank() {
         return rank;
+    }
+
+    public void setSnippet(String snippet) {
+        this.snippet = snippet;
+    }
+    public String getSnippet() {
+        return snippet;
     }
 
     @Override

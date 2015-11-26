@@ -36,7 +36,7 @@ public class PostingIndexSearcher {
     public int[] search(String query) {
 
         // Tokenize query
-        List<String> tokens = PatentDocumentPreprocessor.tokenizeWithRegex(query);
+        List<String> tokens = PatentDocumentPreprocessor.tokenize(query);
         tokens = PatentDocumentPreprocessor.mergeAsteriskTokens(tokens);
 
         // Detect SearchType
