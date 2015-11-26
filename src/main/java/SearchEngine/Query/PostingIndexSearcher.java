@@ -109,11 +109,19 @@ public class PostingIndexSearcher {
     }
 
     private Optional<String> findCorrectSpelledToken(String originalToken) {
+        final int tokenLengthTolerance = 1;
+        final double distanceThreshold = 0.4;
+
         return index.getTokensByPrefix(originalToken.substring(0, 1))
+                .filter(candidateToken ->
+                        originalToken.length() - tokenLengthTolerance < candidateToken.length() &&
+                        candidateToken.length() < originalToken.length() + tokenLengthTolerance)
                 .collect(Collectors.toMap(Function.identity(),
                         candidateToken -> LevenshteinDistance.distance(candidateToken, originalToken)))
                 .entrySet().stream()
+                .filter(entry -> entry.getValue() < distanceThreshold)
                 .sorted(Comparator.comparingDouble(Map.Entry::getValue))
+                .peek(System.out::println)
                 .findFirst()
                 .map(Map.Entry::getKey);
     }
