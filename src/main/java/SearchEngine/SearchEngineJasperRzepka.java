@@ -10,7 +10,6 @@ import SearchEngine.Query.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -110,43 +109,57 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
     }
 
 
-    private Stream<PostingSearchResult> search(String query, int prf) {
+    private SnippetSearchResult createSnippetSearchResult(
+            SearchResult result, XmlDocumentIndex docIndex,
+            SnippetGenerator snippetGenerator, List<String> queryTokens) {
+
+        PatentDocument doc = docIndex.getPatentDocument(result.getDocId()).get();
+        return new SnippetSearchResult(
+                result, doc,
+                snippetGenerator.getSnippets(doc, queryTokens));
+    }
+
+    public Stream<SnippetSearchResult> search(String query, int prf) {
 
         // Set up
         Searcher searcher = new Searcher(index);
         Ranker ranker = new Ranker(index, docIndex);
-        SnippetGenerator snippetGenerator = new SnippetGenerator(docIndex);
+        SnippetGenerator snippetGenerator = new SnippetGenerator();
 
         searcher.setShouldCorrectSpelling(true);
 
         // Search
-        int[] searchResults = searcher.search(query);
-
-        List<String> queryTokens = searcher.getStemmedQueryTokens();
+        SearchResultSet searchResultSet = searcher.search(query);
+        List<String> queryTokens = searchResultSet.getQueryTokens();
 
         // Rank first-pass
-        List<PostingSearchResult> rankResults = ranker.rank(queryTokens, searchResults);
-
+        Stream<SearchResult> rankResults = ranker.rank(searchResultSet);
 
         if (prf == 0) {
-            return rankResults.stream();
+            return rankResults
+                    .map(result -> createSnippetSearchResult(result, docIndex, snippetGenerator, queryTokens));
         } else {
             // Generate snippets
-            List<DocumentSnippetsResult> prfDocumentSnippetsResults = rankResults.stream()
+            List<SnippetSearchResult> prfDocumentSnippetsResults = rankResults
                     .limit(prf)
-                    .map(result -> new DocumentSnippetsResult(result.getDocId(), snippetGenerator.getSnippets(result.getDocId(), queryTokens)))
+                    .map(result -> createSnippetSearchResult(result, docIndex, snippetGenerator, queryTokens))
                     .collect(Collectors.toList());
 
-            int[] topRankedDocIds = PostingSearchResult.getDocIds(rankResults.subList(0, Math.min(prf, rankResults.size())));
-
-            // Pseudo relevance feedback model
+            // Pseudo relevance feedback model with snippets
             Map<String, Double> relevanceModel =
-                    ranker.pseudoRelevanceModel(queryTokens, topRankedDocIds);
+                    ranker.pseudoRelevanceModel(queryTokens, prfDocumentSnippetsResults);
 
-            String newQuery = Ranker.expandQueryFromRelevanceModel(relevanceModel, queryTokens);
+//            // Pseudo relevance feedback model with whole documents
+//            int[] topRankedDocIds = SearchResult.getDocIds(rankResults.subList(0, Math.min(prf, rankResults.size())));
+//            Map<String, Double> relevanceModel =
+//                    ranker.pseudoRelevanceModel(queryTokens, topRankedDocIds);
+
+            List<String> newQueryTokens = Ranker.expandQueryFromRelevanceModel(relevanceModel, queryTokens);
+            String newQuery = String.join(" OR ", newQueryTokens);
 
             // Search and rank again
-            return ranker.rankWithRelevanceModel(searcher.search(newQuery), relevanceModel).stream();
+            return ranker.rankWithRelevanceModel(searcher.search(newQuery).getDocIds(), relevanceModel).stream()
+                    .map(result -> createSnippetSearchResult(result, docIndex, snippetGenerator, newQueryTokens));
         }
 
     }
@@ -155,8 +168,7 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
 
         return search(query, prf)
                 .limit(topK)
-                .map(result -> String.format("%08d\t%s", result.getDocId(),
-                        docIndex.getPatentDocument(result.getDocId()).map(PatentDocument::getTitle).get()))
+                .map(result -> result.toString())
                 .collect(Collectors.toList());
 
     }

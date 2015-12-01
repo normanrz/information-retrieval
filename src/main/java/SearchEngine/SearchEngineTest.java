@@ -58,18 +58,22 @@ public class SearchEngineTest {
             }, "Query Index");
 
 
-            runTimed(() -> {
-                String[] queries = {"asdjlis", "commom", "kontrol", "incluce", "streem", "digital", "rootkits", "network OR access"};
+//            String[] queries = {"asdjlis", "commom", "kontrol", "incluce", "streem", "digital", "rootkits", "network OR access"};
+            String[] queries = {
+                    "access OR control", "computers", "data OR processing", "web OR servers",
+                    "vulnerability OR information", "computer OR readable OR media"};
 
-                for (String query : queries) {
+            for (String query : queries) {
 
+                runTimed(() -> {
                     List<String> results = myEngine.search(query, 100, 2);
                     System.out.println(String.format("Query: %s (%d)", query, results.size()));
                     results.forEach(System.out::println);
 
                     System.out.println();
-                }
-            }, "Query Index");
+                }, "Query Index: " + query);
+
+            }
 
         }
 

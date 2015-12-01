@@ -1,6 +1,5 @@
 package SearchEngine.Query;
 
-import SearchEngine.DocumentIndex.XmlDocumentIndex;
 import SearchEngine.Importer.PatentDocumentPreprocessor;
 import SearchEngine.PatentDocument;
 import SearchEngine.utils.ArrayUtils;
@@ -19,13 +18,7 @@ import java.util.stream.IntStream;
  */
 public class SnippetGenerator {
 
-    private final int defaultTokenMargin = 4;
-    private final XmlDocumentIndex documentIndex;
-
-    public SnippetGenerator(XmlDocumentIndex documentIndex) {
-        this.documentIndex = documentIndex;
-    }
-
+    private static final int defaultTokenMargin = 5;
 
     private int[][] partitionPositions(int[] source, int minOffset) {
 
@@ -125,14 +118,12 @@ public class SnippetGenerator {
     }
 
 
-    public List<String> getSnippets(int docId, List<String> queryTokens) {
-        return getSnippets(docId, queryTokens, defaultTokenMargin);
+    public List<String> getSnippets(PatentDocument doc, List<String> queryTokens) {
+        return getSnippets(doc, queryTokens, defaultTokenMargin);
     }
 
-    public List<String> getSnippets(int docId, List<String> queryTokens, int tokenMargin) {
-        return getSnippets(
-                documentIndex.getPatentDocument(docId).map(PatentDocument::getAbstractText).get(),
-                queryTokens, tokenMargin);
+    public List<String> getSnippets(PatentDocument doc, List<String> queryTokens, int tokenMargin) {
+        return getSnippets(doc.getTokenizableDocument(), queryTokens, tokenMargin);
     }
 
 }

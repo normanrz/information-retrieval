@@ -1,9 +1,9 @@
 package SearchEngine.DocumentIndex;
 
-import SearchEngine.Importer.PatentDocumentPreprocessor;
 import SearchEngine.InvertedIndex.TermReader;
 import SearchEngine.InvertedIndex.TermWriter;
 import SearchEngine.PatentDocument;
+import org.apache.commons.collections4.map.LRUMap;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.*;
@@ -25,6 +25,9 @@ public class XmlDocumentIndex implements DocumentIndex {
     private SortedMap<Integer, XmlDocumentIndexEntry> map = new TreeMap<>();
     private final String directory;
 
+    private final int LRU_CACHE_SIZE = 100;
+    private LRUMap<XmlDocumentIndexEntry, PatentDocument> lruDocumentCache = new LRUMap<>(LRU_CACHE_SIZE);
+
     public XmlDocumentIndex(String directory) {
         this.directory = directory;
     }
@@ -41,18 +44,23 @@ public class XmlDocumentIndex implements DocumentIndex {
 
         return getPatentDocument(docId)
                 .map(Stream::of).orElse(Stream.empty()) // Optional to Stream conversion (will be Optional.stream in JDK 9)
-                .map(doc -> doc.getTitle() + " " + doc.getAbstractText())
-                .map(String::toLowerCase)
-                .filter(PatentDocumentPreprocessor::isNoStopword)
-                .map(PatentDocumentPreprocessor::stem)
+                .flatMap(PatentDocument::getStemmedTokens)
                 .collect(Collectors.toList());
     }
 
     public Optional<PatentDocument> getPatentDocument(int docId) {
-        return get(docId).flatMap(this::readPatentDocument);
+        return get(docId).flatMap(this::loadPatentDocument);
     }
 
-    private Optional<PatentDocument> readPatentDocument(XmlDocumentIndexEntry entry) {
+    public Optional<String> getPatentDocumentTitle(int docId) {
+        return getPatentDocument(docId).map(PatentDocument::getTitle);
+    }
+
+    private Optional<PatentDocument> loadPatentDocument(XmlDocumentIndexEntry entry) {
+        if (lruDocumentCache.containsKey(entry)) {
+            return Optional.ofNullable(lruDocumentCache.get(entry));
+        }
+
         try {
             System.out.println(String.format("[XmlDocumentIndex] Load document %08d from %s at %d",
                     entry.getDocId(), entry.getFilename(), entry.getOffset()));
@@ -62,6 +70,9 @@ public class XmlDocumentIndex implements DocumentIndex {
 
             Optional<PatentDocument> doc = XmlPatentReader.readSingle(inputStream);
             inputStream.close();
+            if (doc.isPresent()) {
+                lruDocumentCache.put(entry, doc.get());
+            }
             return doc;
         } catch (IOException | XMLStreamException e) {
             e.printStackTrace();

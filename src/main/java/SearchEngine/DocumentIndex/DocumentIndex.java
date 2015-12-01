@@ -16,4 +16,6 @@ public interface DocumentIndex {
 
     Optional<PatentDocument> getPatentDocument(int docId);
 
+    Optional<String> getPatentDocumentTitle(int docId);
+
 }

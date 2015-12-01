@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by norman on 05.11.15.
@@ -49,11 +50,16 @@ public class PatentDocumentPreprocessor {
         }
     }
 
+    private final static Pattern whitespaceWithAsteriskPattern = Pattern.compile("[^\\p{L}\\p{Nd}\\*]+");
     private final static Pattern whitespacePattern = Pattern.compile("[^\\p{L}\\p{Nd}]+");
     private final static Pattern tokenPattern = Pattern.compile("[\\p{L}\\p{Nd}]+");
 
     public static List<String> tokenize(String query) {
         return Arrays.asList(whitespacePattern.split(query));
+    }
+
+    public static List<String> tokenizeKeepAsterisks(String query) {
+        return Arrays.asList(whitespaceWithAsteriskPattern.split(query));
     }
 
     public static List<Pair<Integer, String>> tokenizeWithOffset(String query) {
@@ -114,6 +120,13 @@ public class PatentDocumentPreprocessor {
         return tokens.stream()
                 .map(PatentDocumentPreprocessor::stem)
                 .collect(Collectors.toList());
+    }
+
+    public static Stream<String> preprocess(String text) {
+        return PatentDocumentPreprocessor.tokenize(text).stream()
+                .map(String::toLowerCase)
+                .filter(PatentDocumentPreprocessor::isNoStopword)
+                .map(PatentDocumentPreprocessor::stem);
     }
 
 

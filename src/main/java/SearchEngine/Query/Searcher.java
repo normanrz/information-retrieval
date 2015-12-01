@@ -33,10 +33,10 @@ public class Searcher {
         return stemmedQueryTokens;
     }
 
-    public int[] search(String query) {
+    public SearchResultSet search(String query) {
 
         // Tokenize query
-        List<String> tokens = PatentDocumentPreprocessor.tokenize(query);
+        List<String> tokens = PatentDocumentPreprocessor.tokenizeKeepAsterisks(query);
         tokens = PatentDocumentPreprocessor.mergeAsteriskTokens(tokens);
 
         // Detect SearchType
@@ -57,19 +57,28 @@ public class Searcher {
 
         stemmedQueryTokens = PatentDocumentPreprocessor.stemmedTokens(tokens);
 
+        int[] results;
+
         // Execute search
         switch (searchType) {
             case AND:
-                return searchAnd(tokens);
+                results = searchAnd(tokens);
+                break;
             case OR:
-                return searchOr(tokens);
+                results = searchOr(tokens);
+                break;
             case NOT:
-                return searchNot(tokens);
+                results = searchNot(tokens);
+                break;
             case PHRASE:
-                return searchPhrase(tokens);
+                results = searchPhrase(tokens);
+                break;
             default:
-                return new int[]{};
+                results = new int[]{};
+                break;
         }
+
+        return new SearchResultSet(results, getStemmedQueryTokens());
     }
 
 

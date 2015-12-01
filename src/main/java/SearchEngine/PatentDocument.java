@@ -36,13 +36,10 @@ public class PatentDocument {
 
     public String getTokenizableDocument() {
         return (getTitle() + " " + getAbstractText()).toLowerCase();
-
     }
 
     public Stream<String> getStemmedTokens() {
-        return PatentDocumentPreprocessor.tokenize(getTokenizableDocument()).stream()
-                .filter(PatentDocumentPreprocessor::isNoStopword)
-                .map(PatentDocumentPreprocessor::stem);
+        return PatentDocumentPreprocessor.preprocess(getTokenizableDocument());
     }
 
     @Override
