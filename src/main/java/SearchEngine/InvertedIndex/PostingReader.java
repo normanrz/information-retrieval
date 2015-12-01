@@ -1,11 +1,9 @@
-package SearchEngine.Index;
+package SearchEngine.InvertedIndex;
 
-import SearchEngine.DocumentPostings;
-import SearchEngine.Posting;
 import org.apache.commons.collections.primitives.ArrayIntList;
 import org.apache.commons.collections.primitives.IntList;
 
-import java.io.DataInputStream;
+import java.io.DataInput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,14 +14,14 @@ import java.util.List;
 public class PostingReader {
 
     @Deprecated
-    public static Posting readPosting(DataInputStream stream) throws IOException {
+    public static Posting readPosting(DataInput stream) throws IOException {
         int docId = stream.readInt();
         int pos = stream.readInt();
         return new Posting(docId, pos);
     }
 
     @Deprecated
-    public static List<Posting> readPostingsList(DataInputStream stream) throws IOException {
+    public static List<Posting> readPostingsList(DataInput stream) throws IOException {
         int postingsListLength = stream.readInt();
         List<Posting> output = new ArrayList<>(postingsListLength);
 
@@ -40,7 +38,7 @@ public class PostingReader {
         return output;
     }
 
-    public static DocumentPostings readDocumentPostings(DataInputStream stream) throws IOException {
+    public static DocumentPostings readDocumentPostings(DataInput stream) throws IOException {
         int docId = stream.readInt();
         int termFrequency = stream.readInt();
         IntList positions = new ArrayIntList(termFrequency);
@@ -50,7 +48,7 @@ public class PostingReader {
         return new DocumentPostings(docId, positions);
     }
 
-    public static List<DocumentPostings> readDocumentPostingsList(DataInputStream stream) throws IOException {
+    public static List<DocumentPostings> readDocumentPostingsList(DataInput stream) throws IOException {
         int documentPostingsListLength = stream.readInt();
         List<DocumentPostings> output = new ArrayList<>(documentPostingsListLength);
 

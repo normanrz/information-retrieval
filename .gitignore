@@ -5,6 +5,7 @@ information-retrieval.iml
 .metadata/
 .project
 data
+index
 index.bin
 index.bin.gz
 slides

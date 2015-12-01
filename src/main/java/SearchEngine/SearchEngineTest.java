@@ -27,25 +27,19 @@ public class SearchEngineTest {
 
             runTimed(() -> {
 
-                myEngine.indexTest("data/testData.xml", "index.bin.gz");
+                SearchEngineJasperRzepka.indexTest("data/testData.xml", "index");
 
-            }, "Indexing");
+            }, "Build Test Index");
 
-//        runTimed(() -> {
-//            try {
-//                new PostingIndexMerger().mergeCompressed(Arrays.asList(new File[]{
-//                                new File("index.00.gz"), new File("index.01.gz"), new File("index.02.gz"),
-//                                new File("index.03.gz"), new File("index.04.gz"), new File("index.05.gz")}),
-//                        new File("index.bin.gz"));
-//            } catch (IOException e) {
-//                // Empty
-//            }
-//        }, "Merging");
-
+//            runTimed(() -> {
+//
+//                myEngine.index("data");
+//
+//            }, "Build Full Index");
 
             runTimed(() -> {
 
-                myEngine.loadCompressedIndex("index.bin.gz");
+                myEngine.loadIndex("index", "data");
 
             }, "Load Index");
 
@@ -83,6 +77,10 @@ public class SearchEngineTest {
 
 
     public static void runTimed(Runnable action, String label) {
+        System.out.println();
+        System.out.println("-----------------------------------------------------");
+        System.out.println(label);
+
         long start = System.currentTimeMillis();
         try {
             action.run();
@@ -92,7 +90,8 @@ public class SearchEngineTest {
 
         long time = System.currentTimeMillis() - start;
 
-        System.out.print(label + " Time:\t" + time + "\tms\n");
+        System.out.println(String.format("%s Time:\t%d\tms", label, time));
+        System.out.println("-----------------------------------------------------");
     }
 
 }

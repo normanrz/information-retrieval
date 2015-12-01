@@ -1,13 +1,16 @@
 package SearchEngine;
 
+import SearchEngine.DocumentIndex.XmlDocumentIndex;
 import SearchEngine.Importer.PatentDocumentImporter;
-import SearchEngine.Index.DocumentIndex;
-import SearchEngine.Index.MemoryPostingIndex;
-import SearchEngine.Index.disk.DiskPostingIndex;
+import SearchEngine.InvertedIndex.InvertedIndexMerger;
+import SearchEngine.InvertedIndex.disk.DiskInvertedIndex;
+import SearchEngine.InvertedIndex.memory.MemoryInvertedIndex;
 import SearchEngine.Query.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -33,143 +36,132 @@ import java.util.stream.Stream;
  */
 
 
-public class SearchEngineJasperRzepka extends SearchEngine implements AutoCloseable {
+public class SearchEngineJasperRzepka implements AutoCloseable {
 
-    protected static String baseDirectory = "data/";
-    protected static int numberOfThreads = Runtime.getRuntime().availableProcessors();
+    private static final String invertedIndexFileName = "inverted.index";
+    private static final String documentIndexFileName = "document.index";
 
-    protected MemoryPostingIndex index = new MemoryPostingIndex();
-    protected DocumentIndex docIndex = new DocumentIndex("docs");
+    protected DiskInvertedIndex index;
+    protected XmlDocumentIndex docIndex;
 
-    public SearchEngineJasperRzepka() {
-        // This should stay as is! Don't add anything here!
-        super();
-    }
+    public static void index(String dataDirectory, String outputDirectory) {
 
-    @Override
-    void index(String directory) {
-
+        XmlDocumentIndex documentIndex = new XmlDocumentIndex(dataDirectory);
         AtomicInteger subIndexCounter = new AtomicInteger(0);
+        List<File> subIndexFiles = new ArrayList<>();
 
-        File dir = new File(directory);
+        File dir = new File(dataDirectory);
         Stream.of(dir.listFiles()).parallel()
-                .filter(file -> file.getName().endsWith((".xml")))
-                .map(PatentDocumentImporter::readCompressedPatentDocuments)
-                .forEach(patentDocumentStream -> {
-                    MemoryPostingIndex localIndex = new MemoryPostingIndex();
+                .filter(file -> file.getName().endsWith((".xml.gz")))
+                .forEach(file -> {
 
-                    patentDocumentStream.forEach(doc ->
-                            PatentDocumentImporter.importPatentDocument(doc, localIndex, docIndex));
+                    MemoryInvertedIndex localIndex = new MemoryInvertedIndex();
 
+                    PatentDocumentImporter.importPatentDocuments(file, localIndex, documentIndex);
+
+                    File indexFile = new File(outputDirectory,
+                            String.format("%s.%02d", invertedIndexFileName, subIndexCounter.getAndIncrement()));
+                    subIndexFiles.add(indexFile);
+
+                    System.out.println(indexFile.getName());
                     localIndex.printStats();
                     try {
-                        localIndex.save(new File(
-                                String.format("index.%02d.bin.gz", subIndexCounter.getAndIncrement())));
+                        localIndex.save(indexFile);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 });
+
+        try {
+            documentIndex.save(new File(outputDirectory, documentIndexFileName));
+            InvertedIndexMerger.merge(subIndexFiles, new File(outputDirectory, invertedIndexFileName));
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
-    void indexTest(String sourceFile, String outputFile) {
+    public static void indexTest(String sourceFileName, String outputDirectory) {
 
-        final MemoryPostingIndex testIndex = new MemoryPostingIndex();
+        File sourceFile = new File(sourceFileName);
+        XmlDocumentIndex documentIndex = new XmlDocumentIndex(sourceFile.getParent());
+        MemoryInvertedIndex testIndex = new MemoryInvertedIndex();
 
-        PatentDocumentImporter.readPatentDocuments(new File(sourceFile))
-                .forEach(doc ->
-                        PatentDocumentImporter.importPatentDocument(doc, testIndex, docIndex));
+        PatentDocumentImporter.importPatentDocuments(sourceFile, testIndex, documentIndex);
 
         System.out.println("Imported test index");
         testIndex.printStats();
         try {
-            testIndex.save(new File(outputFile));
+            testIndex.save(new File(outputDirectory, invertedIndexFileName));
+            documentIndex.save(new File(outputDirectory, documentIndexFileName));
         } catch (IOException e) {
             e.printStackTrace();
         }
 
     }
 
-    @Override
-    boolean loadIndex(String directory) {
+    public void loadIndex(String indexDirectory, String dataDirectory) {
         try {
-            System.out.println("Load index");
-            index = MemoryPostingIndex.load(new File(directory));
+            docIndex = XmlDocumentIndex.load(dataDirectory, new File(indexDirectory, documentIndexFileName));
+            index = new DiskInvertedIndex(new File(indexDirectory, invertedIndexFileName));
             index.printStats();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return false;
     }
 
-    @Override
-    void compressIndex(String directory) {
-        // Do nothing
-    }
 
-    @Override
-    boolean loadCompressedIndex(String directory) {
-        return loadIndex(directory);
-    }
+    private Stream<PostingSearchResult> search(String query, int prf) {
 
-    Stream<PostingSearchResult> _search(String query, int prf) {
-        try (DiskPostingIndex diskIndex = new DiskPostingIndex("index.bin.gz", docIndex)) {
+        // Set up
+        Searcher searcher = new Searcher(index);
+        Ranker ranker = new Ranker(index, docIndex);
+        SnippetGenerator snippetGenerator = new SnippetGenerator(docIndex);
 
-            // Set up
-            PostingIndexSearcher searcher = new PostingIndexSearcher(diskIndex);
-            PostingIndexRanker ranker = new PostingIndexRanker(diskIndex, docIndex);
-            PostingSnippetGenerator snippetGenerator = new PostingSnippetGenerator(docIndex);
+        searcher.setShouldCorrectSpelling(true);
 
-            searcher.setShouldCorrectSpelling(true);
+        // Search
+        int[] searchResults = searcher.search(query);
 
-            // Search
-            int[] searchResults = searcher.search(query);
+        List<String> queryTokens = searcher.getStemmedQueryTokens();
 
-            List<String> queryTokens = searcher.getStemmedQueryTokens();
-
-            // Rank first-pass
-            List<PostingSearchResult> rankResults = ranker.rank(queryTokens, searchResults);
+        // Rank first-pass
+        List<PostingSearchResult> rankResults = ranker.rank(queryTokens, searchResults);
 
 
+        if (prf == 0) {
+            return rankResults.stream();
+        } else {
+            // Generate snippets
+            List<DocumentSnippetsResult> prfDocumentSnippetsResults = rankResults.stream()
+                    .limit(prf)
+                    .map(result -> new DocumentSnippetsResult(result.getDocId(), snippetGenerator.getSnippets(result.getDocId(), queryTokens)))
+                    .collect(Collectors.toList());
 
-            if (prf == 0) {
-                return rankResults.stream();
-            } else {
-                // Generate snippets
-                List<DocumentSnippetsResult> prfDocumentSnippetsResults = rankResults.stream()
-                        .limit(prf)
-                        .map(result -> new DocumentSnippetsResult(result.getDocId(), snippetGenerator.getSnippets(result.getDocId(), queryTokens)))
-                        .collect(Collectors.toList());
+            int[] topRankedDocIds = PostingSearchResult.getDocIds(rankResults.subList(0, Math.min(prf, rankResults.size())));
 
-                int[] topRankedDocIds = PostingSearchResult.getDocIds(rankResults.subList(0, Math.min(prf, rankResults.size())));
+            // Pseudo relevance feedback model
+            Map<String, Double> relevanceModel =
+                    ranker.pseudoRelevanceModel(queryTokens, topRankedDocIds);
 
-                // Pseudo relevance feedback model
-                Map<String, Double> relevanceModel =
-                        ranker.pseudoRelevanceModel(queryTokens, topRankedDocIds);
+            String newQuery = Ranker.expandQueryFromRelevanceModel(relevanceModel, queryTokens);
 
-                String newQuery = PostingIndexRanker.expandQueryFromRelevanceModel(relevanceModel, queryTokens);
-
-                // Search and rank again
-                return ranker.rankWithRelevanceModel(searcher.search(newQuery), relevanceModel).stream();
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Stream.empty();
+            // Search and rank again
+            return ranker.rankWithRelevanceModel(searcher.search(newQuery), relevanceModel).stream();
         }
+
     }
 
-    @Override
-    List<String> search(String query, int topK, int prf) {
+    public List<String> search(String query, int topK, int prf) {
 
-        return _search(query, prf)
+        return search(query, prf)
                 .limit(topK)
                 .map(result -> String.format("%08d\t%s", result.getDocId(),
-                        docIndex.getPatentDocumentTitle(result.getDocId())))
+                        docIndex.getPatentDocument(result.getDocId()).map(PatentDocument::getTitle).get()))
                 .collect(Collectors.toList());
 
     }
 
-    public void close() {
-        docIndex.close();
+    public void close() throws IOException {
+        index.close();
     }
 }

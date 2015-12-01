@@ -1,10 +1,13 @@
-package SearchEngine.Index;
+package SearchEngine.InvertedIndex.memory;
 
-import SearchEngine.DocumentPostings;
-import SearchEngine.Index.disk.SeekList;
-import SearchEngine.Index.disk.SeekListEntry;
-import SearchEngine.Index.disk.SeekListReader;
-import SearchEngine.Index.disk.SeekListWriter;
+import SearchEngine.InvertedIndex.DocumentPostings;
+import SearchEngine.InvertedIndex.InvertedIndex;
+import SearchEngine.InvertedIndex.PostingReader;
+import SearchEngine.InvertedIndex.PostingWriter;
+import SearchEngine.InvertedIndex.disk.SeekList;
+import SearchEngine.InvertedIndex.disk.SeekListEntry;
+import SearchEngine.InvertedIndex.disk.SeekListReader;
+import SearchEngine.InvertedIndex.disk.SeekListWriter;
 import SearchEngine.PatentDocument;
 import SearchEngine.utils.IntArrayUtils;
 
@@ -19,7 +22,7 @@ import java.util.zip.InflaterInputStream;
 /**
  * Created by norman on 02.11.15.
  */
-public class MemoryPostingIndex extends MemoryIndex<DocumentPostings> implements PostingIndex {
+public class MemoryInvertedIndex extends MemoryIndex<DocumentPostings> implements InvertedIndex {
 
     public Optional<DocumentPostings> get(String token, int docId) {
         return get(token)
@@ -38,7 +41,7 @@ public class MemoryPostingIndex extends MemoryIndex<DocumentPostings> implements
     }
 
     public void putPosting(String token, PatentDocument doc, int pos) {
-        putPosting(token, doc.docId, pos);
+        putPosting(token, doc.getDocId(), pos);
     }
 
     public void putPosting(String token, int docId, int pos) {
@@ -116,26 +119,22 @@ public class MemoryPostingIndex extends MemoryIndex<DocumentPostings> implements
     }
 
 
-    public static MemoryPostingIndex load(File file) throws IOException {
+    public static MemoryInvertedIndex load(File file) throws IOException {
         try (FileInputStream inputStream = new FileInputStream(file)) {
             return load(inputStream);
         }
     }
 
-    public static MemoryPostingIndex load(InputStream inputStream) throws IOException {
-        MemoryPostingIndex newIndex = new MemoryPostingIndex();
+    public static MemoryInvertedIndex load(InputStream inputStream) throws IOException {
+        MemoryInvertedIndex newIndex = new MemoryInvertedIndex();
 
         InputStream fileStream = new BufferedInputStream(inputStream);
         DataInputStream fileDataInput = new DataInputStream(fileStream);
 
         int seekListByteLength = fileDataInput.readInt();
-        fileDataInput.skipBytes(Integer.BYTES);
+        fileDataInput.skipBytes(Integer.BYTES); // Header
 
-        byte[] seekListBuffer = new byte[seekListByteLength];
-        fileDataInput.readFully(seekListBuffer);
-
-        DataInputStream seekListDataInput = new DataInputStream(new InflaterInputStream(new ByteArrayInputStream(seekListBuffer)));
-        SeekList seekList = SeekListReader.readSeekList(seekListDataInput);
+        SeekList seekList = SeekListReader.readSeekListFromFile(fileDataInput, seekListByteLength);
 
         for (SeekListEntry entry : seekList) {
             byte[] postingsBuffer = new byte[entry.getLength()];

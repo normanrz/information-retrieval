@@ -28,6 +28,7 @@ public class PostingSearchResult implements Comparable<PostingSearchResult> {
     public void setSnippet(String snippet) {
         this.snippet = snippet;
     }
+
     public String getSnippet() {
         return snippet;
     }

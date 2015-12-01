@@ -1,4 +1,4 @@
-package SearchEngine.Index;
+package SearchEngine.InvertedIndex.memory;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListMap;

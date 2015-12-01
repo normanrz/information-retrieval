@@ -1,4 +1,4 @@
-package SearchEngine.Index.disk;
+package SearchEngine.InvertedIndex.disk;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -14,22 +14,18 @@ public class SeekList implements Iterable<SeekListEntry> {
         list = new ArrayList<>();
     }
 
-    public SeekList(List<SeekListEntry> initialEntries) {
-        list = new ArrayList<>();
-        list.addAll(initialEntries);
-    }
-
     public void add(SeekListEntry entry) {
         list.add(entry);
     }
 
-    public void insertAndSort(SeekListEntry entry) {
-        add(entry);
-        list.sort(Comparator.<SeekListEntry>naturalOrder());
-    }
 
     public Stream<SeekListEntry> get(String token) {
-        return list.stream().filter(entry -> entry.getToken().equals(token));
+        int index = Collections.binarySearch(list, SeekListEntry.createSearchDummy(token));
+        if (index >= 0) {
+            return Stream.of(list.get(index));
+        } else {
+            return Stream.empty();
+        }
     }
 
     public Stream<SeekListEntry> getByPrefix(String prefixToken) {

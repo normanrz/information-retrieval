@@ -40,6 +40,15 @@ public class PatentDocumentPreprocessor {
         }
     }
 
+    public static String stem2(SnowballStemmer stemmer, String word) {
+        stemmer.setCurrent(word);
+        if (stemmer.stem()) {
+            return stemmer.getCurrent();
+        } else {
+            return word;
+        }
+    }
+
     private final static Pattern whitespacePattern = Pattern.compile("[^\\p{L}\\p{Nd}]+");
     private final static Pattern tokenPattern = Pattern.compile("[\\p{L}\\p{Nd}]+");
 
@@ -58,7 +67,6 @@ public class PatentDocumentPreprocessor {
 
         return output;
     }
-
 
 
     public static boolean isNoStopword(String token) {

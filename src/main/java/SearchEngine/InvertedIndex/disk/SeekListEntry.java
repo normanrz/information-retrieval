@@ -1,4 +1,4 @@
-package SearchEngine.Index.disk;
+package SearchEngine.InvertedIndex.disk;
 
 import java.util.Comparator;
 
@@ -39,5 +39,9 @@ public class SeekListEntry implements Comparable<SeekListEntry> {
 
     public String getToken() {
         return token;
+    }
+
+    public static SeekListEntry createSearchDummy(String token) {
+        return new SeekListEntry(token, 0, 0, 0);
     }
 }

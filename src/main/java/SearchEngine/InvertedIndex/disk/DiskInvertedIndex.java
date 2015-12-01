@@ -1,25 +1,20 @@
-package SearchEngine.Index.disk;
+package SearchEngine.InvertedIndex.disk;
 
-import SearchEngine.DocumentPostings;
-import SearchEngine.Index.DocumentIndex;
-import SearchEngine.Index.PostingIndex;
-import SearchEngine.Index.PostingReader;
+import SearchEngine.InvertedIndex.DocumentPostings;
+import SearchEngine.InvertedIndex.InvertedIndex;
+import SearchEngine.InvertedIndex.PostingReader;
 import SearchEngine.utils.IntArrayUtils;
 import org.apache.commons.collections4.map.LRUMap;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.zip.InflaterInputStream;
 
-public class DiskPostingIndex implements PostingIndex, AutoCloseable {
+public class DiskInvertedIndex implements InvertedIndex, AutoCloseable {
 
 
-    private DocumentIndex docIndex;
     private SeekList seekList;
     private RandomAccessFile file;
     private int seekListByteLength;
@@ -27,9 +22,12 @@ public class DiskPostingIndex implements PostingIndex, AutoCloseable {
 
     private LRUMap<Integer, List<DocumentPostings>> lruDocumentPostingsCache = new LRUMap<>(100);
 
-    public DiskPostingIndex(String indexFile, DocumentIndex docIndex) throws IOException {
+    public DiskInvertedIndex(String indexFileName) throws IOException {
+        this(new File(indexFileName));
+    }
+
+    public DiskInvertedIndex(File indexFile) throws IOException {
         this.file = new RandomAccessFile(indexFile, "r");
-        this.docIndex = docIndex;
         this.seekList = readSeekList(file);
     }
 
@@ -38,11 +36,7 @@ public class DiskPostingIndex implements PostingIndex, AutoCloseable {
         seekListByteLength = indexFile.readInt();
         collectionTokenCount = indexFile.readInt();
 
-        byte[] seekListBuffer = new byte[seekListByteLength];
-        indexFile.readFully(seekListBuffer);
-
-        DataInputStream seekListDataInput = new DataInputStream(new InflaterInputStream(new ByteArrayInputStream(seekListBuffer)));
-        return SeekListReader.readSeekList(seekListDataInput);
+        return SeekListReader.readSeekListFromFile(indexFile, seekListByteLength);
     }
 
     public Optional<DocumentPostings> get(String token, int docId) {
@@ -63,15 +57,13 @@ public class DiskPostingIndex implements PostingIndex, AutoCloseable {
     }
 
     public Stream<DocumentPostings> getInDocs(String token, int[] docIds) {
-        return seekList.get(token)
-                .flatMap(this::loadDocumentPostings)
+        return get(token)
                 .filter(documentPostings ->
                         IntArrayUtils.intArrayContains(docIds, documentPostings.docId()));
     }
 
     public Stream<DocumentPostings> getByPrefixInDocs(String token, int[] docIds) {
-        return seekList.getByPrefix(token)
-                .flatMap(this::loadDocumentPostings)
+        return getByPrefix(token)
                 .filter(documentPostings ->
                         IntArrayUtils.intArrayContains(docIds, documentPostings.docId()));
     }
@@ -81,18 +73,18 @@ public class DiskPostingIndex implements PostingIndex, AutoCloseable {
                 .flatMap(entry -> loadDocumentPostings(entry.offset, entry.length));
     }
 
-    public Stream<String> getTokensByPrefix(String prefixToken) {
+    public Stream<String> allTokens() {
         return seekList.stream()
-                .map(SeekListEntry::getToken)
+                .map(SeekListEntry::getToken);
+    }
+
+    public Stream<String> getTokensByPrefix(String prefixToken) {
+        return allTokens()
                 .filter(token -> token.startsWith(prefixToken));
     }
 
     public int collectionTokenCount() {
         return collectionTokenCount;
-    }
-
-    public int documentTokenCount(int docId) {
-        return docIndex.getPatentDocumentTokens(docId).size();
     }
 
     public int collectionTokenCount(String token) {
@@ -102,9 +94,10 @@ public class DiskPostingIndex implements PostingIndex, AutoCloseable {
     }
 
     public int documentTokenCount(String token, int docId) {
-        return (int) docIndex.getPatentDocumentTokens(docId).stream()
-                .filter(docToken -> docToken.equals(token))
-                .count();
+        return get(token)
+                .filter(documentPostings -> documentPostings.docId() == docId)
+                .mapToInt(DocumentPostings::tokenFrequency)
+                .sum();
     }
 
     private Stream<DocumentPostings> loadDocumentPostings(SeekListEntry entry) {
@@ -118,7 +111,7 @@ public class DiskPostingIndex implements PostingIndex, AutoCloseable {
         }
 
         try {
-//            System.out.println(String.format("Load block %d %d", offset, length));
+            System.out.println(String.format("[DiskInvertedIndex] Load block %d %d", offset, length));
 
             // Move file pointer
             file.seek(2 * Integer.BYTES + seekListByteLength + offset);
@@ -141,7 +134,12 @@ public class DiskPostingIndex implements PostingIndex, AutoCloseable {
 
 
     @Override
-    public void close() throws Exception {
+    public void close() throws IOException {
         file.close();
+    }
+
+    public void printStats() {
+        System.out.println("Terms in index: " + seekList.stream().count());
+        System.out.println("Postings in index: " + collectionTokenCount());
     }
 }

@@ -1,4 +1,4 @@
-package SearchEngine;
+package SearchEngine.InvertedIndex;
 
 
 import org.apache.commons.collections.primitives.ArrayIntList;

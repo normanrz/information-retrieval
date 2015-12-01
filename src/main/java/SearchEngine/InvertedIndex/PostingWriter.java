@@ -1,37 +1,16 @@
-package SearchEngine.Index;
+package SearchEngine.InvertedIndex;
 
-import SearchEngine.DocumentPostings;
-import SearchEngine.Posting;
-
+import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Stream;
+import java.util.zip.DeflaterOutputStream;
 
 /**
  * Created by norman on 03.11.15.
  */
 public class PostingWriter {
-
-    @Deprecated
-    public static void writePosting(DataOutputStream stream, Posting posting) throws IOException {
-        stream.writeInt(posting.docId());
-        stream.writeInt(posting.pos());
-    }
-
-    @Deprecated
-    public static void writePostingsList(DataOutputStream stream, List<Posting> postingsList) throws IOException {
-        stream.writeInt(postingsList.size());
-        Posting lastPosting = null;
-        for (Posting posting : postingsList) {
-            if (lastPosting == null) {
-                writePosting(stream, posting);
-            } else {
-                writePosting(stream, toDelta(posting, lastPosting));
-            }
-            lastPosting = posting;
-        }
-    }
 
     public static int writeDocumentPostings(
             DataOutputStream stream, DocumentPostings documentPostings) throws IOException {
@@ -57,6 +36,15 @@ public class PostingWriter {
             lastDocumentPostings = documentPostings;
         }
         return documentPostingsList.size();
+    }
+
+    public static ByteArrayOutputStream writeDocumentPostingsListToBuffer(
+            List<DocumentPostings> documentPostingsList) throws IOException {
+        ByteArrayOutputStream postingsBuffer = new ByteArrayOutputStream();
+        DataOutputStream postingsDataOutput = new DataOutputStream(new DeflaterOutputStream(postingsBuffer));
+        PostingWriter.writeDocumentPostingsList(postingsDataOutput, documentPostingsList);
+        postingsDataOutput.close();
+        return postingsBuffer;
     }
 
     public static int documentPostingsByteLength(DocumentPostings documentPostings) {

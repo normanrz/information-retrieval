@@ -1,9 +1,9 @@
 package SearchEngine.Query;
 
-import SearchEngine.DocumentPostings;
 import SearchEngine.Importer.PatentDocumentPreprocessor;
-import SearchEngine.Index.PostingIndex;
-import SearchEngine.Posting;
+import SearchEngine.InvertedIndex.DocumentPostings;
+import SearchEngine.InvertedIndex.InvertedIndex;
+import SearchEngine.InvertedIndex.Posting;
 import SearchEngine.utils.IntArrayUtils;
 import SearchEngine.utils.LevenshteinDistance;
 
@@ -12,15 +12,15 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class PostingIndexSearcher {
+public class Searcher {
 
     private final int[] emptyArray = new int[0];
-    private final PostingIndex index;
+    private final InvertedIndex index;
 
     private List<String> stemmedQueryTokens;
     private boolean shouldCorrectSpelling = false;
 
-    public PostingIndexSearcher(PostingIndex index) {
+    public Searcher(InvertedIndex index) {
         this.index = index;
     }
 
@@ -115,13 +115,12 @@ public class PostingIndexSearcher {
         return index.getTokensByPrefix(originalToken.substring(0, 1))
                 .filter(candidateToken ->
                         originalToken.length() - tokenLengthTolerance < candidateToken.length() &&
-                        candidateToken.length() < originalToken.length() + tokenLengthTolerance)
+                                candidateToken.length() < originalToken.length() + tokenLengthTolerance)
                 .collect(Collectors.toMap(Function.identity(),
                         candidateToken -> LevenshteinDistance.distance(candidateToken, originalToken)))
                 .entrySet().stream()
                 .filter(entry -> entry.getValue() < distanceThreshold)
                 .sorted(Comparator.comparingDouble(Map.Entry::getValue))
-                .peek(System.out::println)
                 .findFirst()
                 .map(Map.Entry::getKey);
     }

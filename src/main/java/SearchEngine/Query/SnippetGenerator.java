@@ -1,7 +1,8 @@
 package SearchEngine.Query;
 
+import SearchEngine.DocumentIndex.XmlDocumentIndex;
 import SearchEngine.Importer.PatentDocumentPreprocessor;
-import SearchEngine.Index.DocumentIndex;
+import SearchEngine.PatentDocument;
 import SearchEngine.utils.ArrayUtils;
 import org.apache.commons.collections.primitives.ArrayIntList;
 import org.apache.commons.collections.primitives.IntList;
@@ -10,20 +11,18 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
  * Created by norman on 26.11.15.
  */
-public class PostingSnippetGenerator {
+public class SnippetGenerator {
 
     private final int defaultTokenMargin = 4;
-    private final DocumentIndex documentIndex;
+    private final XmlDocumentIndex documentIndex;
 
-    public PostingSnippetGenerator(DocumentIndex documentIndex) {
+    public SnippetGenerator(XmlDocumentIndex documentIndex) {
         this.documentIndex = documentIndex;
     }
 
@@ -131,7 +130,9 @@ public class PostingSnippetGenerator {
     }
 
     public List<String> getSnippets(int docId, List<String> queryTokens, int tokenMargin) {
-        return getSnippets(documentIndex.getPatentDocumentAbstract(docId), queryTokens, tokenMargin);
+        return getSnippets(
+                documentIndex.getPatentDocument(docId).map(PatentDocument::getAbstractText).get(),
+                queryTokens, tokenMargin);
     }
 
 }

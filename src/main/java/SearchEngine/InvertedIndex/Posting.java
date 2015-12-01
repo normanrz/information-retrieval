@@ -1,11 +1,14 @@
-package SearchEngine;
+package SearchEngine.InvertedIndex;
+
+
+import SearchEngine.PatentDocument;
 
 public class Posting implements Comparable<Posting> {
     private final int docId;
     private final int pos;
 
     public Posting(PatentDocument doc, int pos) {
-        this(doc.docId, pos);
+        this(doc.getDocId(), pos);
     }
 
     public Posting(int doc_id, int pos) {

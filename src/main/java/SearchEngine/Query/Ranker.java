@@ -1,8 +1,8 @@
 package SearchEngine.Query;
 
+import SearchEngine.DocumentIndex.XmlDocumentIndex;
 import SearchEngine.Importer.PatentDocumentPreprocessor;
-import SearchEngine.Index.DocumentIndex;
-import SearchEngine.Index.PostingIndex;
+import SearchEngine.InvertedIndex.InvertedIndex;
 
 import java.util.*;
 import java.util.function.Function;
@@ -12,15 +12,15 @@ import java.util.stream.Stream;
 /**
  * Created by norman on 13.11.15.
  */
-public class PostingIndexRanker {
+public class Ranker {
 
-    private final PostingIndex index;
-    private final DocumentIndex documentIndex;
+    private final InvertedIndex index;
+    private final XmlDocumentIndex documentIndex;
     private int mu = 2000;
     private int numberOfQueryTokens = 10;
 
 
-    public PostingIndexRanker(PostingIndex index, DocumentIndex documentIndex) {
+    public Ranker(InvertedIndex index, XmlDocumentIndex documentIndex) {
         this.index = index;
         this.documentIndex = documentIndex;
     }
@@ -43,7 +43,6 @@ public class PostingIndexRanker {
                 .collect(Collectors.toList());
         return pseudoRelevanceModel(queryTokens, topRankedDocIds, tokens);
     }
-
 
 
     public Map<String, Double> pseudoRelevanceModel(List<String> queryTokens, List<DocumentSnippetsResult> documentSnippetsResults) {
@@ -117,7 +116,7 @@ public class PostingIndexRanker {
     private double tokenProbability(String token, int docId) {
         return (index.documentTokenCount(token, docId) +
                 mu * ((double) index.collectionTokenCount(token) / (double) index.collectionTokenCount())) /
-                (index.documentTokenCount(docId) + mu);
+                (documentIndex.getDocumentTokenCount(docId) + mu);
     }
 
     public static String getQueryFromRelevanceModel(Map<String, Double> relevanceModel) {

@@ -1,6 +1,4 @@
-package SearchEngine.Index;
-
-import SearchEngine.DocumentPostings;
+package SearchEngine.InvertedIndex;
 
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -8,7 +6,7 @@ import java.util.stream.Stream;
 /**
  * Created by norman on 13.11.15.
  */
-public interface PostingIndex {
+public interface InvertedIndex {
 
     Optional<DocumentPostings> get(String token, int docId);
 
@@ -23,8 +21,6 @@ public interface PostingIndex {
     Stream<String> getTokensByPrefix(String token);
 
     int collectionTokenCount();
-
-    int documentTokenCount(int docId);
 
     int collectionTokenCount(String token);
 
