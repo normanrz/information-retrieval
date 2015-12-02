@@ -27,13 +27,13 @@ public class SearchEngineTest {
 
             runTimed(() -> {
 
-                SearchEngineJasperRzepka.indexTest("data/testData.xml", "index");
+                SearchEngineJasperRzepka.index("data_test", "index_test");
 
             }, "Build Test Index");
 
 //            runTimed(() -> {
 //
-//                myEngine.index("data");
+//                SearchEngineJasperRzepka.index("data", "index");
 //
 //            }, "Build Full Index");
 
@@ -66,7 +66,7 @@ public class SearchEngineTest {
             for (String query : queries) {
 
                 runTimed(() -> {
-                    List<String> results = myEngine.search(query, 100, 2);
+                    List<String> results = myEngine.search(query, 20, 0);
                     System.out.println(String.format("Query: %s (%d)", query, results.size()));
                     results.forEach(System.out::println);
 

@@ -1,4 +1,4 @@
-package SearchEngine.DocumentIndex;
+package SearchEngine.Import;
 
 import SearchEngine.PatentDocument;
 import org.codehaus.staxmate.in.SMInputCursor;

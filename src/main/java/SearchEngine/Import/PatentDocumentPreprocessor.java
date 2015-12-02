@@ -1,4 +1,4 @@
-package SearchEngine.Importer;
+package SearchEngine.Import;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.tartarus.snowball.SnowballStemmer;

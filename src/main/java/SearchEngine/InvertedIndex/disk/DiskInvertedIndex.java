@@ -7,6 +7,7 @@ import SearchEngine.utils.IntArrayUtils;
 import org.apache.commons.collections4.map.LRUMap;
 
 import java.io.*;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -14,13 +15,12 @@ import java.util.zip.InflaterInputStream;
 
 public class DiskInvertedIndex implements InvertedIndex, AutoCloseable {
 
-
     private SeekList seekList;
     private RandomAccessFile file;
     private int seekListByteLength;
     private int collectionTokenCount;
 
-    private final int LRU_CACHE_SIZE = 100;
+    private final int LRU_CACHE_SIZE = 500;
     private LRUMap<Integer, List<DocumentPostings>> lruDocumentPostingsCache = new LRUMap<>(LRU_CACHE_SIZE);
 
     public DiskInvertedIndex(String indexFileName) throws IOException {
@@ -40,10 +40,14 @@ public class DiskInvertedIndex implements InvertedIndex, AutoCloseable {
         return SeekListReader.readSeekListFromFile(indexFile, seekListByteLength);
     }
 
+    private Optional<SeekListEntry> getSeekListEntry(String token) {
+        return seekList.get(token).findFirst();
+    }
+
     public Optional<DocumentPostings> get(String token, int docId) {
         return seekList.get(token)
                 .flatMap(this::loadDocumentPostings)
-                .filter(documentPostings -> documentPostings.docId() == docId)
+                .filter(documentPostings -> documentPostings.getDocId() == docId)
                 .findFirst();
     }
 
@@ -60,13 +64,13 @@ public class DiskInvertedIndex implements InvertedIndex, AutoCloseable {
     public Stream<DocumentPostings> getInDocs(String token, int[] docIds) {
         return get(token)
                 .filter(documentPostings ->
-                        IntArrayUtils.intArrayContains(docIds, documentPostings.docId()));
+                        IntArrayUtils.intArrayContains(docIds, documentPostings.getDocId()));
     }
 
     public Stream<DocumentPostings> getByPrefixInDocs(String token, int[] docIds) {
         return getByPrefix(token)
                 .filter(documentPostings ->
-                        IntArrayUtils.intArrayContains(docIds, documentPostings.docId()));
+                        IntArrayUtils.intArrayContains(docIds, documentPostings.getDocId()));
     }
 
     public Stream<DocumentPostings> all() {
@@ -95,20 +99,35 @@ public class DiskInvertedIndex implements InvertedIndex, AutoCloseable {
     }
 
     public int documentTokenCount(String token, int docId) {
-        return get(token)
-                .filter(documentPostings -> documentPostings.docId() == docId)
-                .mapToInt(DocumentPostings::tokenFrequency)
-                .sum();
+        return getSeekListEntry(token)
+                .map(this::loadDocumentPostingsList)
+                .flatMap(documentPostingsList -> {
+                    int i = Collections.binarySearch(documentPostingsList, DocumentPostings.searchDummy(docId));
+                    if (i >= 0) {
+                        return Optional.ofNullable(documentPostingsList.get(i));
+                    } else {
+                        return Optional.empty();
+                    }
+                })
+                .map(DocumentPostings::getTokenCount)
+                .orElse(0);
     }
 
     private Stream<DocumentPostings> loadDocumentPostings(SeekListEntry entry) {
-        return loadDocumentPostings(entry.getOffset(), entry.getLength());
+        return loadDocumentPostingsList(entry).stream();
+    }
+
+    private List<DocumentPostings> loadDocumentPostingsList(SeekListEntry entry) {
+        return loadDocumentPostingsList(entry.getOffset(), entry.getLength());
     }
 
     private synchronized Stream<DocumentPostings> loadDocumentPostings(int offset, int length) {
+        return loadDocumentPostingsList(offset, length).stream();
+    }
 
+    private synchronized List<DocumentPostings> loadDocumentPostingsList(int offset, int length) {
         if (lruDocumentPostingsCache.containsKey(offset)) {
-            return lruDocumentPostingsCache.get(offset).stream();
+            return lruDocumentPostingsCache.get(offset);
         }
 
         try {
@@ -124,13 +143,13 @@ public class DiskInvertedIndex implements InvertedIndex, AutoCloseable {
             List<DocumentPostings> list = PostingReader.readDocumentPostingsList(stream);
             lruDocumentPostingsCache.put(offset, list);
 
-            return list.stream();
+            return list;
 
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        return null;
+        return Collections.emptyList();
     }
 
 

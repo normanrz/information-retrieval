@@ -1,7 +1,7 @@
 package SearchEngine.Query;
 
 import SearchEngine.DocumentIndex.XmlDocumentIndex;
-import SearchEngine.Importer.PatentDocumentPreprocessor;
+import SearchEngine.Import.PatentDocumentPreprocessor;
 import SearchEngine.InvertedIndex.InvertedIndex;
 
 import java.util.*;

@@ -1,5 +1,6 @@
 package SearchEngine.DocumentIndex;
 
+import SearchEngine.Import.XmlPatentReader;
 import SearchEngine.InvertedIndex.TermReader;
 import SearchEngine.InvertedIndex.TermWriter;
 import SearchEngine.PatentDocument;
@@ -25,7 +26,7 @@ public class XmlDocumentIndex implements DocumentIndex {
     private SortedMap<Integer, XmlDocumentIndexEntry> map = new TreeMap<>();
     private final String directory;
 
-    private final int LRU_CACHE_SIZE = 100;
+    private final int LRU_CACHE_SIZE = 300;
     private LRUMap<XmlDocumentIndexEntry, PatentDocument> lruDocumentCache = new LRUMap<>(LRU_CACHE_SIZE);
 
     public XmlDocumentIndex(String directory) {

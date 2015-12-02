@@ -1,6 +1,6 @@
 package SearchEngine.Query;
 
-import SearchEngine.Importer.PatentDocumentPreprocessor;
+import SearchEngine.Import.PatentDocumentPreprocessor;
 import SearchEngine.PatentDocument;
 import SearchEngine.utils.ArrayUtils;
 import org.apache.commons.collections.primitives.ArrayIntList;

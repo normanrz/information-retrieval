@@ -1,4 +1,4 @@
-package SearchEngine.DocumentIndex;
+package SearchEngine.Import;
 
 import SearchEngine.PatentDocument;
 import org.codehaus.staxmate.SMInputFactory;
@@ -7,9 +7,7 @@ import org.codehaus.staxmate.in.SMInputCursor;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Created by norman on 30.11.15.
@@ -51,6 +49,25 @@ public class XmlPatentReader {
             }
         }
         return list;
+    }
+
+    public static SortedMap<Integer, PatentDocument> readMultipleWithIndex(InputStream inputStream) throws XMLStreamException {
+        SMInputCursor reader = createCursor(inputStream).advance().childElementCursor();
+
+        int i = 0;
+        SortedMap<Integer, PatentDocument> map = new TreeMap<>();
+        while (reader.getNext() != null) {
+            if (reader.getLocalName().equals("us-patent-grant")) {
+                Optional<PatentDocument> patentDocumentOptional =
+                        XmlSinglePatentReader.parseSinglePatentDocument(reader.childElementCursor());
+
+                if (patentDocumentOptional.isPresent()) {
+                    map.put(i, patentDocumentOptional.get());
+                }
+            }
+            i++;
+        }
+        return map;
     }
 
 }

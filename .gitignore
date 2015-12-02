@@ -6,6 +6,7 @@ information-retrieval.iml
 .project
 data
 index
+index_test
 index.bin
 index.bin.gz
 slides

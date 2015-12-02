@@ -1,6 +1,6 @@
 package SearchEngine.Query;
 
-import SearchEngine.Importer.PatentDocumentPreprocessor;
+import SearchEngine.Import.PatentDocumentPreprocessor;
 import SearchEngine.InvertedIndex.DocumentPostings;
 import SearchEngine.InvertedIndex.InvertedIndex;
 import SearchEngine.InvertedIndex.Posting;

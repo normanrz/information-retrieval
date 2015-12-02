@@ -57,7 +57,7 @@ public class InvertedIndexMerger {
                         .collect(Collectors.toList());
 
                 int tokenCount = postings.stream()
-                        .mapToInt(DocumentPostings::tokenFrequency)
+                        .mapToInt(DocumentPostings::getTokenCount)
                         .sum();
 
                 ByteArrayOutputStream postingsBuffer =

@@ -28,11 +28,11 @@ public class DocumentPostings implements Comparable<DocumentPostings> {
         }
     }
 
-    public int docId() {
+    public int getDocId() {
         return this.docId;
     }
 
-    public IntList positions() {
+    public IntList getPositions() {
         return this.positions;
     }
 
@@ -40,33 +40,37 @@ public class DocumentPostings implements Comparable<DocumentPostings> {
         this.positions.add(pos);
     }
 
-    public int tokenFrequency() {
+    public int getTokenCount() {
         return this.positions.size();
     }
 
     public List<Posting> toPostings() {
         return Arrays.stream(positions.toArray())
-                .mapToObj(pos -> new Posting(docId(), pos))
+                .mapToObj(pos -> new Posting(getDocId(), pos))
                 .collect(Collectors.toList());
     }
 
     @Override
     public int compareTo(DocumentPostings o) {
-        return Integer.compare(docId(), o.docId());
+        return Integer.compare(getDocId(), o.getDocId());
     }
 
     public static DocumentPostings merge(DocumentPostings a, DocumentPostings b) {
-        if (a.docId() != b.docId()) {
+        if (a.getDocId() != b.getDocId()) {
             return null;
         } else {
-            IntList mergedPositions = new ArrayIntList(a.positions().size() + b.positions().size());
+            IntList mergedPositions = new ArrayIntList(a.getPositions().size() + b.getPositions().size());
 
-            Stream.of(a.positions(), b.positions())
+            Stream.of(a.getPositions(), b.getPositions())
                     .flatMapToInt(value -> Arrays.stream(value.toArray()))
                     .sorted()
                     .forEach(mergedPositions::add);
 
-            return new DocumentPostings(a.docId(), mergedPositions);
+            return new DocumentPostings(a.getDocId(), mergedPositions);
         }
+    }
+
+    public static DocumentPostings searchDummy(int docId) {
+        return new DocumentPostings(docId);
     }
 }

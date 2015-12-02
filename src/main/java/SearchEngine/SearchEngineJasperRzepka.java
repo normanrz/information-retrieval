@@ -1,7 +1,7 @@
 package SearchEngine;
 
 import SearchEngine.DocumentIndex.XmlDocumentIndex;
-import SearchEngine.Importer.PatentDocumentImporter;
+import SearchEngine.Import.PatentDocumentImporter;
 import SearchEngine.InvertedIndex.InvertedIndexMerger;
 import SearchEngine.InvertedIndex.disk.DiskInvertedIndex;
 import SearchEngine.InvertedIndex.memory.MemoryInvertedIndex;
@@ -49,9 +49,11 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
         AtomicInteger subIndexCounter = new AtomicInteger(0);
         List<File> subIndexFiles = new ArrayList<>();
 
+        new File(outputDirectory).mkdirs();
+
         File dir = new File(dataDirectory);
         Stream.of(dir.listFiles()).parallel()
-                .filter(file -> file.getName().endsWith((".xml.gz")))
+                .filter(file -> file.getName().endsWith((".xml")))
                 .forEach(file -> {
 
                     MemoryInvertedIndex localIndex = new MemoryInvertedIndex();
@@ -74,6 +76,7 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
         try {
             documentIndex.save(new File(outputDirectory, documentIndexFileName));
             InvertedIndexMerger.merge(subIndexFiles, new File(outputDirectory, invertedIndexFileName));
+            subIndexFiles.forEach(File::delete);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
@@ -86,6 +89,8 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
         MemoryInvertedIndex testIndex = new MemoryInvertedIndex();
 
         PatentDocumentImporter.importPatentDocuments(sourceFile, testIndex, documentIndex);
+
+        new File(outputDirectory).mkdirs();
 
         System.out.println("Imported test index");
         testIndex.printStats();

@@ -15,12 +15,12 @@ public class PostingWriter {
     public static int writeDocumentPostings(
             DataOutputStream stream, DocumentPostings documentPostings) throws IOException {
 
-        stream.writeInt(documentPostings.docId());
-        stream.writeInt(documentPostings.tokenFrequency());
-        for (int pos : documentPostings.positions().toArray()) {
+        stream.writeInt(documentPostings.getDocId());
+        stream.writeInt(documentPostings.getTokenCount());
+        for (int pos : documentPostings.getPositions().toArray()) {
             stream.writeInt(pos);
         }
-        return documentPostings.positions().size();
+        return documentPostings.getPositions().size();
     }
 
     public static int writeDocumentPostingsList(
@@ -48,7 +48,7 @@ public class PostingWriter {
     }
 
     public static int documentPostingsByteLength(DocumentPostings documentPostings) {
-        return (2 + documentPostings.positions().size()) * Integer.BYTES;
+        return (2 + documentPostings.getPositions().size()) * Integer.BYTES;
     }
 
     public static int documentPostingsListByteLength(Stream<DocumentPostings> documentPostingsStream) {
@@ -61,7 +61,7 @@ public class PostingWriter {
 
 
     private static DocumentPostings toDelta(DocumentPostings a, DocumentPostings b) {
-        return new DocumentPostings(a.docId() - b.docId(), a.positions());
+        return new DocumentPostings(a.getDocId() - b.getDocId(), a.getPositions());
     }
 
     @Deprecated

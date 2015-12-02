@@ -26,18 +26,18 @@ public class MemoryInvertedIndex extends MemoryIndex<DocumentPostings> implement
 
     public Optional<DocumentPostings> get(String token, int docId) {
         return get(token)
-                .filter(documentPostings -> documentPostings.docId() == docId)
+                .filter(documentPostings -> documentPostings.getDocId() == docId)
                 .findFirst();
     }
 
     public Stream<DocumentPostings> getInDocs(String token, int[] docIds) {
         return get(token)
-                .filter(posting -> IntArrayUtils.intArrayContains(docIds, posting.docId()));
+                .filter(posting -> IntArrayUtils.intArrayContains(docIds, posting.getDocId()));
     }
 
     public Stream<DocumentPostings> getByPrefixInDocs(String token, int[] docIds) {
         return getByPrefix(token)
-                .filter(posting -> IntArrayUtils.intArrayContains(docIds, posting.docId()));
+                .filter(posting -> IntArrayUtils.intArrayContains(docIds, posting.getDocId()));
     }
 
     public void putPosting(String token, PatentDocument doc, int pos) {
@@ -60,25 +60,25 @@ public class MemoryInvertedIndex extends MemoryIndex<DocumentPostings> implement
 
 
     public int collectionTokenCount() {
-        return all().mapToInt(DocumentPostings::tokenFrequency)
+        return all().mapToInt(DocumentPostings::getTokenCount)
                 .sum();
     }
 
     public int documentTokenCount(int docId) {
-        return all().filter(documentPostings -> documentPostings.docId() == docId)
-                .mapToInt(DocumentPostings::tokenFrequency)
+        return all().filter(documentPostings -> documentPostings.getDocId() == docId)
+                .mapToInt(DocumentPostings::getTokenCount)
                 .sum();
     }
 
     public int collectionTokenCount(String token) {
         return get(token)
-                .mapToInt(DocumentPostings::tokenFrequency)
+                .mapToInt(DocumentPostings::getTokenCount)
                 .sum();
     }
 
     public int documentTokenCount(String token, int docId) {
         return get(token, docId)
-                .map(DocumentPostings::tokenFrequency)
+                .map(DocumentPostings::getTokenCount)
                 .orElse(0);
     }
 

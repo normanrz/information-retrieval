@@ -68,7 +68,7 @@ public class PostingReader {
 
 
     private static DocumentPostings fromDelta(DocumentPostings a, DocumentPostings b) {
-        return new DocumentPostings(a.docId() + b.docId(), a.positions());
+        return new DocumentPostings(a.getDocId() + b.getDocId(), a.getPositions());
     }
 
     @Deprecated

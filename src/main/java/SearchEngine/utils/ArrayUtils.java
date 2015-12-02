@@ -20,5 +20,4 @@ public class ArrayUtils<T> {
     public static int last(int[] array) {
         return array[array.length - 1];
     }
-
 }

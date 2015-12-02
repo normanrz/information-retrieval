@@ -1,6 +1,6 @@
 package SearchEngine;
 
-import SearchEngine.Importer.PatentDocumentPreprocessor;
+import SearchEngine.Import.PatentDocumentPreprocessor;
 
 import java.util.stream.Stream;
 
