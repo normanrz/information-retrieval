@@ -122,14 +122,11 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
     public Stream<SnippetSearchResult> search(String query, int prf) {
 
         // Set up
-        Searcher searcher = new Searcher(index);
         Ranker ranker = new Ranker(index, docIndex);
         SnippetGenerator snippetGenerator = new SnippetGenerator();
 
-        searcher.setShouldCorrectSpelling(true);
-
         // Search
-        SearchResultSet searchResultSet = searcher.search(query);
+        SearchResultSet searchResultSet = Searcher.search(query, index, true);
         List<String> queryTokens = searchResultSet.getQueryTokens();
 
         // Rank first-pass
@@ -158,7 +155,7 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
             String newQuery = String.join(" OR ", newQueryTokens);
 
             // Search and rank again
-            return ranker.rankWithRelevanceModel(searcher.search(newQuery).getDocIds(), relevanceModel).stream()
+            return ranker.rankWithRelevanceModel(Searcher.search(newQuery, index, false).getDocIds(), relevanceModel).stream()
                     .map(result -> createSnippetSearchResult(result, docIndex, snippetGenerator, newQueryTokens));
         }
 

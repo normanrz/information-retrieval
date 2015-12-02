@@ -238,4 +238,11 @@ public class Searcher {
     }
 
 
+    public static SearchResultSet search(String query, InvertedIndex index, boolean enableSpellingCorrection) {
+        Searcher searcher = new Searcher(index);
+        searcher.setShouldCorrectSpelling(enableSpellingCorrection);
+        return searcher.search(query);
+    }
+
+
 }
