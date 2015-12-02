@@ -31,11 +31,11 @@ public class SearchEngineTest {
 
             }, "Build Test Index");
 
-//            runTimed(() -> {
-//
-//                SearchEngineJasperRzepka.index("data", "index");
-//
-//            }, "Build Full Index");
+            runTimed(() -> {
+
+                SearchEngineJasperRzepka.index("data", "index");
+
+            }, "Build Full Index");
 
             runTimed(() -> {
 
@@ -72,11 +72,8 @@ public class SearchEngineTest {
 
                     System.out.println();
                 }, "Query Index: " + query);
-
             }
-
         }
-
     }
 
 

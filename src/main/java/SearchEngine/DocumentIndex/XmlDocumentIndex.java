@@ -72,6 +72,8 @@ public class XmlDocumentIndex implements DocumentIndex {
             Optional<PatentDocument> doc = XmlPatentReader.readSingle(inputStream);
             inputStream.close();
             if (doc.isPresent()) {
+                assert doc.get().getDocId() == entry.getDocId() :
+                        String.format("%d %d %s", doc.get().getDocId(), entry.getDocId(), entry.getFilename());
                 lruDocumentCache.put(entry, doc.get());
             }
             return doc;

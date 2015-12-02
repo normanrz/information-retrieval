@@ -11,7 +11,6 @@ import javax.xml.stream.XMLStreamException;
 import java.io.*;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPInputStream;
 
@@ -21,12 +20,12 @@ import java.util.zip.GZIPInputStream;
 public class PatentDocumentImporter {
 
 
-    public static Map<Integer, PatentDocument> readPatentDocuments(File xmlFile) {
+    public static List<PatentDocument> readPatentDocuments(File xmlFile) {
         try (InputStream xmlStream = new FileInputStream(xmlFile)) {
             return XmlPatentReader.readMultipleWithIndex(xmlStream);
         } catch (XMLStreamException | IOException e) {
             e.printStackTrace();
-            return Collections.emptyMap();
+            return Collections.emptyList();
         }
     }
 
@@ -65,11 +64,14 @@ public class PatentDocumentImporter {
 
     public static void importPatentDocuments(File file, MemoryInvertedIndex index, XmlDocumentIndex documentIndex) {
         long[] offsets = PatentDocumentImporter.readPatentDocumentOffsets(file);
-        Map<Integer, PatentDocument> patentDocuments = PatentDocumentImporter.readPatentDocuments(file);
+        List<PatentDocument> patentDocuments = PatentDocumentImporter.readPatentDocuments(file);
+
+        assert offsets.length == patentDocuments.size() :
+                String.format("%s %d %d", file, offsets.length, patentDocuments.size());
 
         for (int i = 0; i < offsets.length; i++) {
-            if (patentDocuments.containsKey(i)) {
-                PatentDocument doc = patentDocuments.get(i);
+            PatentDocument doc = patentDocuments.get(i);
+            if (doc != null) {
                 long offset = offsets[i];
 
                 AtomicInteger tokenCounter = new AtomicInteger(0);

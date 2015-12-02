@@ -23,9 +23,6 @@ public class DiskInvertedIndex implements InvertedIndex, AutoCloseable {
     private final int LRU_CACHE_SIZE = 500;
     private LRUMap<Integer, List<DocumentPostings>> lruDocumentPostingsCache = new LRUMap<>(LRU_CACHE_SIZE);
 
-    public DiskInvertedIndex(String indexFileName) throws IOException {
-        this(new File(indexFileName));
-    }
 
     public DiskInvertedIndex(File indexFile) throws IOException {
         this.file = new RandomAccessFile(indexFile, "r");
