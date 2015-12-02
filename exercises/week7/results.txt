@@ -1,0 +1,385 @@
+-----------------------------------------------------
+Query: access OR control (19)
+
+08353044  Methods and systems for computing device remediation
+and systems for computing device remediation  a computer-implemented method for remediation of a computing device attempting to access a network. the method may include detecting that the computing device is attempting to access the network. the method may also include determining that the computing device does not comply with a network-access-control policy of the network. the method may include using a virtualization layer to bring the computing device into compliance with the network-access-control policy. the method may include permitting the computing device to access the network after the computing device is brought into compliance with the network-access-control policy. various other methods, systems, and computer-readable media are also
+
+08353048  Application digital rights management (DRM) and portability using a mobile device for authentication 
+rights management (drm) and portability using a mobile device for authentication   a method, system, and medium are provided for operating a computing device and a mobile device to access computer software with a secure access and to access a packet network, and for operating a computer software on a mobile device with different computing devices. a mobile device is used to authenticate a user's access to computer software. the computer software may reside on the mobile device, the user's computing device, or another computing device. a unique identifier is stored in the mobile device associated with the computer software to enable the
+
+08353051  Image forming apparatus, access control method, access control program and computer readable information recording medium 
+forming apparatus, access control method, access control program and computer readable information recording medium   an image ... an interface for a portable information recording medium, has an access control part carrying out access control, for respective ones of ... forming apparatus has, based on access control information defining whether or not ... user is allowed, wherein the access control part carries out access control based on the access control information stored in the portable information recording medium
+
+08353058  Methods and systems for detecting rootkits
+and systems for detecting rootkits  a computer-implemented method for detecting rootkits is disclosed. the computer-implemented method may include sending periodic security communications ... processor-mode region of a computing device. the computer-implemented method may also include identifying at least one ... the computer-implemented method may further include determining, based on the ... processor-mode region of the computing device has been compromised. various other methods, systems, and computer-readable media are also
+
+08353045  Method and tool for information security assessment that integrates enterprise objectives with vulnerabilities 
+and tool for information security assessment that integrates ... vulnerabilities   in one aspect, a method to assess information security vulnerability of an enterprise includes storing enterprise objectives in a computer system, storing enterprise resources determined using a value criterion, a ... non-substitutability criterion in the computer system and storing enterprise information assets in the computer system. the method also includes mapping the enterprise objectives ... resources and mapping the enterprise information assets with the enterprise resources. the method further includes determining a threat analysis using an attack tree using the enterprise resources and the information assets and determining a risk value using the attack tree
+
+08353050  Mobile device management
+device management  a device management method, is disclosed in which ... features on a slave mobile device are managed (monitored or controlled) by a slave manager module commanded by a master device through secure messages exchanged between the two devices using respective electronic messaging capabilities on the two devices. selection of the features of the slave mobile device to be controlled or monitored is facilitated on the master device through a master manager ... the features that are controlled or monitored may comprise any user-accessible feature incorporated or installed on the slave mobile device and user access to the feature may be prevented according to ... criterion, such as: date of use, time of day of use, number of times of use, originator and recipient. user access to the feature may be prevented access to the user-accessible feature when usage limitations
+
+08353052  Providing services to a guest device in a personal network
+services to a guest device in a personal network  a method may include sending personal network connection information from a mobile device to a guest device; sending authentication credentials from the mobile device to the guest device; receiving the authentication credentials ... personal network from the guest device; authenticating the guest device based on the authentication credentials; and granting access to the guest device to content stored in
+
+08353057  Information processing apparatus, control method, and control program 
+processing apparatus, control method, and control program   an information processing apparatus in which ... the information processing apparatus includes a recording unit to record transfer information indicating that the license data is transferred from the information processing apparatus to a second information processing apparatus, and a prohibition unit to prohibit use in the information processing apparatus of the ... data corresponding to the transfer information when the transfer information indicates that the license ... has been transferred from the information processing apparatus to the second information processing apparatus
+
+08353047  Methods and systems for digital image data tracking
+and systems for digital image data ... of the present invention comprise systems and methods for notification handling in ... processing server and an imaging device
+
+08353046  System and method for delivery of a modular operating system
+and method for delivery of a modular operating system  an operating system and method for use include a core function module ... basic kernel, providing fundamental operating system support and one or ... allow customization of the operating system as desired. add-on modules may provide support or extended capability to the computer including hardware, applications, peripherals, and support. a digital signature may be used to confirm the integrity ... certification may be verified to determine ... withholding certification, a service provider may manage illegal or undesired modifications to a provided computer. digital rights management may be used to enforce terms of use of the add-on
+
+08353053  Computer program product and method for permanently storing data based on whether a device is protected with an encryption mechanism and whether data in a data structure requires encryption 
+program product and method for permanently storing data based on whether a device is protected with an ... encryption   a data loss prevention system, method, and computer program product are provided for determining whether a device is protected with an ... to be stored on a device is identified. additionally, it is determined whether the device is protected with an
+
+08353056  Apparatus and method for detecting program plagiarism through memory access log analysis 
+and method for detecting program plagiarism through memory access log analysis   an apparatus and method for detecting program plagiarism through memory access log analysis is provided. a data extractor extracts an access log of an original program and an access log of a target ... original program from a memory accessed by the programs. ... which are obtained from the access logs extracted from the ... distance between the strings by using an array of the
+
+08353040  Automatic extraction of signatures for malware
+extraction of signatures for malware  method for the automatic generation of malware signatures from computer files. ... a part of the standard computer language used to write computer files which are known ... the functions of a computer file which does contain
+
+08353049  Separating keys and policy for consuming content
+each root policy addenda includes policy identifying when it
+08353055  Method and apparatus for processing rights object
+and apparatus for processing rights object  a method for upgrading a rights object (ro) includes: acquiring, by a digital ... management (drm) agent, ro related information of the ro that ... drm agent, the ro related information to a rights issuer ... drm agent acquires ro related information which is stored on
+
+08353042  Content filtering of remote file-system access protocols
+filtering of remote file-system access protocols  methods and systems for content filtering of remote file-system access protocols are provided. ... collected from a remote file-system access protocol is stored, a ... created within one or more computer-readable media. ... the holding buffers are tracked using the usage table corresponding
+
+08353043  Web firewall and method for automatically checking web server for vulnerabilities 
+firewall and method for automatically checking web ... for automatically checking for vulnerabilities, including: an administrating server scheduling ... web server corresponding to data included in the called vulnerability search database; a vulnerability information deducing part for optimizing ... searching part to deduce vulnerability information; a vulnerability checking part ... results deduced from the vulnerability information deducing part; and a detailed vulnerability information reporting part for reporting detailed information on the checked vulnerabilities
+
+08353041  Secure application streaming
+application streaming  a server includes a scanning module for ... a client includes a module for requesting
+
+08353054  Method for protection of a chip card from unauthorized use, chip card and chip card terminal 
+for protection of a chip card from unauthorized use, chip card and chip card terminal   a method for protection of a chip card from unauthorized use includes: inputting a first identification ... least one first communication parameter using a first symmetric key ... terminal and the chip card, using the communication parameter, transmitting ... attempting to decrypt the cipher using a second symmetric key
+
+Query Index: access OR control Time:  318 ms
+-----------------------------------------------------
+
+-----------------------------------------------------
+Query: computers (19)
+
+08353044  Methods and systems for computing device remediation
+and systems for computing device remediation  a computer-implemented method for remediation of a computing device attempting to access a network. the method may include detecting that the computing device is attempting to access the network. the method may also include determining that the computing device does not comply with a network-access-control policy of the network. the method may include using a virtualization layer to bring the computing device into compliance with the network-access-control policy. the method may include permitting the computing device to access the network after the computing device is brought into compliance with the network-access-control policy. various other methods, systems, and computer-readable media are also
+
+08353048  Application digital rights management (DRM) and portability using a mobile device for authentication 
+rights management (drm) and portability using a mobile device for authentication   a method, system, and medium are provided for operating a computing device and a mobile device to access computer software with a secure access and to access a packet network, and for operating a computer software on a mobile device with different computing devices. a mobile device is used to authenticate a user's access to computer software. the computer software may reside on the mobile device, the user's computing device, or another computing device. a unique identifier is stored in the mobile device associated with the computer software to enable the
+
+08353058  Methods and systems for detecting rootkits
+and systems for detecting rootkits  a computer-implemented method for detecting rootkits is disclosed. the computer-implemented method may include sending periodic security communications ... processor-mode region of a computing device. the computer-implemented method may also include identifying at least one ... the computer-implemented method may further include determining, based on the periodic ... processor-mode region of the computing device has been compromised. various other methods, systems, and computer-readable media are also
+
+08353051  Image forming apparatus, access control method, access control program and computer readable information recording medium 
+forming apparatus, access control method, access control program and computer readable information recording medium ... information recording medium, has an access control part carrying out access control, for respective ones of ... forming apparatus has, based on access control information defining whether or ... user is allowed, wherein the access control part carries out access control based on the access control information stored in the
+
+08353045  Method and tool for information security assessment that integrates enterprise objectives with vulnerabilities 
+and tool for information ... vulnerabilities   in one aspect, a method to assess information security vulnerability of an enterprise includes storing enterprise objectives in a computer system, storing enterprise resources determined using a value criterion, a ... non-substitutability criterion in the computer system and storing enterprise information assets in the computer system. the method also includes mapping the enterprise objectives ... the method further includes determining a threat analysis using an attack tree using the enterprise resources and the information assets and determining a risk value using the attack tree
+
+08353050  Mobile device management
+device management  a device management method, is disclosed in which ... features on a slave mobile device are managed (monitored or controlled) by a slave manager module commanded by a master device through secure messages exchanged between the two devices using respective electronic messaging capabilities on the two devices. selection of the features of the slave mobile device to be controlled or monitored is facilitated on the master device through a master manager ... the features that are controlled or monitored may comprise any user-accessible feature incorporated or installed on the slave mobile device and user access to the feature may be prevented according to ... criterion, such as: date of use, time of day of use, number of times of use, originator and recipient. user access to the feature may be prevented access to the user-accessible feature when usage limitations
+
+08353046  System and method for delivery of a modular operating system
+and method for delivery of a modular operating system  an operating system and method for use include a core function module ... basic kernel, providing fundamental operating system support and one or ... allow customization of the operating system as desired. add-on modules may provide support or extended capability to the computer including hardware, applications, peripherals, and support. a digital signature may be used to confirm the integrity ... certification may be verified to determine if installation of the ... withholding certification, a service provider may manage illegal or undesired modifications to a provided computer. digital rights management may be used to enforce terms of use of the add-on
+
+08353052  Providing services to a guest device in a personal network
+services to a guest device in a personal network  a method may include sending personal network connection information from a mobile device to a guest device; sending authentication credentials from the mobile device to the guest device; receiving the authentication credentials ... personal network from the guest device; authenticating the guest device based on the authentication credentials; and granting access to the guest device to content stored in
+
+08353053  Computer program product and method for permanently storing data based on whether a device is protected with an encryption mechanism and whether data in a data structure requires encryption 
+program product and method for permanently storing data based on whether a device is protected with an ... encryption   a data loss prevention system, method, and computer program product are provided for determining whether a device is protected with an ... to be stored on a device is identified. additionally, it is determined whether the device is protected with an ... conditional reaction, based on the determination
+
+08353047  Methods and systems for digital image data tracking
+and systems for digital image data ... of the present invention comprise systems and methods for notification handling in ... processing server and an imaging device
+
+08353056  Apparatus and method for detecting program plagiarism through memory access log analysis 
+and method for detecting program plagiarism through memory access log analysis   an apparatus and method for detecting program plagiarism through memory access log analysis is provided. a data extractor extracts an access log of an original program and an access log of a target ... original program from a memory accessed by the programs. ... which are obtained from the access logs extracted from the ... distance between the strings by using an array of the detected common strings. a plagiarism determining unit determines that the target program
+
+08353040  Automatic extraction of signatures for malware
+extraction of signatures for malware  method for the automatic generation of malware signatures from computer files. ... a part of the standard computer language used to write computer files which are known ... the functions of a computer file which does contain ... generating the malware signature is determined.
+
+08353057  Information processing apparatus, control method, and control program 
+processing apparatus, control method, and control program   an information processing ... the information processing apparatus includes a recording unit to ... a prohibition unit to prohibit use in the information processing
+
+08353042  Content filtering of remote file-system access protocols
+filtering of remote file-system access protocols  methods and systems for content filtering of remote file-system access protocols are provided. ... collected from a remote file-system access protocol is stored, a ... created within one or more computer-readable media. ... the holding buffers are tracked using the usage table corresponding ... within the holding buffer is determined by performing content filtering
+
+08353049  Separating keys and policy for consuming content
+each root policy addenda includes policy identifying when it
+
+08353041  Secure application streaming
+application streaming  a server includes a scanning module for determining whether an application is ... associated application has already been determined to be free of malware. a client includes a module for requesting ... the associated applications have been determined to be free of
+
+08353055  Method and apparatus for processing rights object
+and apparatus for processing rights object  a method for upgrading a rights object (ro) includes: acquiring, by a digital
+
+08353054  Method for protection of a chip card from unauthorized use, chip card and chip card terminal 
+for protection of a chip card from unauthorized use, chip card and chip card terminal   a method for protection of a chip card from unauthorized use includes: inputting a first identification ... least one first communication parameter using a first symmetric key ... terminal and the chip card, using the communication parameter, transmitting ... attempting to decrypt the cipher using a second symmetric key
+
+08353043  Web firewall and method for automatically checking web server for vulnerabilities 
+firewall and method for automatically checking web ... for automatically checking for vulnerabilities, including: an administrating server scheduling ... web server corresponding to data included in the called vulnerability
+
+Query Index: computers Time:  60  ms
+-----------------------------------------------------
+
+-----------------------------------------------------
+Query: data OR processing (20)
+
+08353044  Methods and systems for computing device remediation
+and systems for computing device remediation  a computer-implemented method for remediation of a computing device attempting to access a network. the method may include detecting that the computing device is attempting to access the network. the method may also include determining that the computing device does not comply with a network-access-control policy of the network. the method may include using a virtualization layer to bring the computing device into compliance with the network-access-control policy. the method may include permitting the computing device to access the network after the computing device is brought into compliance with the network-access-control policy. various other methods, systems, and computer-readable media are also
+
+08353057  Information processing apparatus, control method, and control program 
+processing apparatus, control method, and control program   an information processing apparatus in which an application ... a license based on license data operates. the information processing apparatus includes a recording unit to record transfer information indicating that the license data is transferred from the information processing apparatus to a second information processing apparatus, and a prohibition unit to prohibit use in the information processing apparatus of the license data corresponding to the transfer information when the transfer information indicates that the license data has been transferred from the information processing apparatus to the second information processing apparatus
+
+08353058  Methods and systems for detecting rootkits
+and systems for detecting rootkits  a computer-implemented method for detecting rootkits is disclosed. the computer-implemented method may include sending periodic security communications ... processor-mode region of a computing device. the computer-implemented method may also include identifying at least one ... the computer-implemented method may further include determining, based on the periodic ... processor-mode region of the computing device has been compromised. various other methods, systems, and computer-readable media are also
+
+08353053  Computer program product and method for permanently storing data based on whether a device is protected with an encryption mechanism and whether data in a data structure requires encryption 
+program product and method for permanently storing data based on whether a device is protected with an encryption mechanism and whether data in a data structure requires encryption   a data loss prevention system, method, and computer program product are provided for determining whether a device is protected with an encryption mechanism before storing data thereon. in operation, data to be stored on a device is identified. additionally, it is determined whether the device is protected with an ... conditional reaction, based on the determination
+
+08353048  Application digital rights management (DRM) and portability using a mobile device for authentication 
+and portability using a mobile device for authentication   a method, system, and medium are provided for operating a computing device and a mobile device to access computer software with a secure ... network, and for operating a computer software on a mobile device with different computing devices. a mobile device is used to authenticate a user's access to computer software. the computer software may reside on the mobile device, the user's computing device, or another computing device. a unique identifier is stored in the mobile device associated with the computer software to enable the
+
+08353045  Method and tool for information security assessment that integrates enterprise objectives with vulnerabilities 
+and tool for information security assessment that integrates ... vulnerabilities   in one aspect, a method to assess information security vulnerability of an enterprise includes storing enterprise objectives in a computer system, storing enterprise resources determined using a value criterion ... non-substitutability criterion in the computer system and storing enterprise information assets in the computer system. the method also includes mapping the enterprise objectives ... resources and mapping the enterprise information assets with the enterprise resources. the method further includes determining a threat analysis using ... the enterprise resources and the information assets and determining a risk value using
+
+08353051  Image forming apparatus, access control method, access control program and computer readable information recording medium 
+forming apparatus, access control method, access control program and computer readable information recording medium   an image forming apparatus provided with an interface for a portable information recording medium, has an access control part carrying out access control, for respective ones of ... resources which the image forming apparatus has, based on access control information defining whether or not ... is allowed, wherein the access control part carries out access control based on the access control information stored in the portable information recording medium
+
+08353047  Methods and systems for digital image data tracking
+and systems for digital image data tracking  embodiments of the present invention comprise systems and methods for notification handling in a processing server and an imaging device
+
+08353052  Providing services to a guest device in a personal network
+services to a guest device in a personal network  a method may include sending personal network connection information from a mobile device to a guest device; sending authentication credentials from the mobile device to the guest device; receiving the authentication credentials ... personal network from the guest device; authenticating the guest device based on the authentication ... granting access to the guest device to content stored in
+
+08353046  System and method for delivery of a modular operating system
+and method for delivery of a modular operating system  an operating system and method for use include a core function module ... basic kernel, providing fundamental operating system support and one or ... allow customization of the operating system as desired. ... or extended capability to the computer including hardware, applications, peripherals, and ... certification may be verified to determine if installation of the ... undesired modifications to a provided computer.
+
+08353050  Mobile device management
+device management  a device management method, is disclosed in which ... features on a slave mobile device are managed (monitored or controlled) by a slave manager module commanded by a master device through secure messages exchanged between the two devices using respective electronic messaging capabilities on the two devices. selection of the features of the slave mobile device to be controlled or monitored is facilitated on the master device through a master manager ... the features that are controlled or monitored may comprise ... installed on the slave mobile device and user access to
+
+08353055  Method and apparatus for processing rights object
+and apparatus for processing rights object  a method for upgrading a rights object (ro) includes: acquiring, by a digital ... management (drm) agent, ro related information of the ro that ... drm agent, the ro related information to a rights issuer ... drm agent acquires ro related information which is stored on
+
+08353040  Automatic extraction of signatures for malware
+extraction of signatures for malware  method for the automatic generation of malware signatures from computer files. ... a part of the standard computer language used to write computer files which are known ... the functions of a computer file which does contain ... generating the malware signature is determined.
+
+08353043  Web firewall and method for automatically checking web server for vulnerabilities 
+firewall and method for automatically checking web ... for automatically checking for vulnerabilities, including: an administrating server scheduling ... administrating web server corresponding to data included in the called vulnerability search database; a vulnerability information deducing part for optimizing ... searching part to deduce vulnerability information; a vulnerability checking part ... results deduced from the vulnerability information deducing part; and a detailed vulnerability information reporting part for reporting detailed information on the checked vulnerabilities
+
+08353056  Apparatus and method for detecting program plagiarism through memory access log analysis 
+and method for detecting program plagiarism ... memory access log analysis   an apparatus and method for detecting program plagiarism ... a data extractor extracts an access ... a plagiarism determining unit determines that the target program
+
+08353041  Secure application streaming
+application streaming  a server includes a scanning module for determining whether an application is ... associated application has already been determined to be free of malware. a client includes a module for requesting ... the associated applications have been determined to be free of
+
+08353049  Separating keys and policy for consuming content
+each root policy addenda includes policy identifying when it
+
+08353042  Content filtering of remote file-system access protocols
+filtering of remote file-system access protocols  methods and systems for content filtering of remote file-system access protocols are provided ... embodiment, holding buffers in which data collected from a remote file-system access protocol is stored ... created within one or more computer-readable media. ... within the holding buffer is determined by performing content filtering
+
+08353059  Optical scanning probe
+scanning probe (2) for capturing data from a plurality of ... with separate compartment for the processing means, and an attachable
+
+08353054  Method for protection of a chip card from unauthorized use, chip card and chip card terminal 
+for protection of a ... and chip card terminal   a method for protection of a chip card from unauthorized use includes: inputting a first identification
+
+Query Index: data OR processing Time: 55  ms
+-----------------------------------------------------
+
+-----------------------------------------------------
+Query: web OR servers (20)
+
+08353043  Web firewall and method for automatically checking web server for vulnerabilities 
+firewall and method for automatically checking web server for vulnerabilities   provided is a web firewall for automatically checking for vulnerabilities, including: an administrating server scheduling part for ordering the examination of an administrating web server according to a predetermined examination schedule; a vulnerability search database calling part for calling a vulnerability search database previously stored according to the order of the administrating server scheduling part; a vulnerability searching part for searching for potential vulnerabilities of the administrating web server corresponding to data included in the called vulnerability search database; a vulnerability information deducing part for optimizing the results searched in the vulnerability searching part to deduce vulnerability information; a vulnerability checking part for checking the vulnerabilities of the administrating web server based on the results deduced from the vulnerability information deducing part; and a detailed vulnerability information reporting part for reporting detailed information on the checked vulnerabilities
+
+08353045  Method and tool for information security assessment that integrates enterprise objectives with vulnerabilities 
+and tool for information security assessment that integrates enterprise objectives with vulnerabilities   in one aspect, a method to assess information security vulnerability of an enterprise includes storing enterprise objectives in a computer system, storing enterprise resources determined using a value criterion ... in the computer system and storing enterprise information assets in the computer system. the method also includes mapping the enterprise objectives ... resources and mapping the enterprise information assets with the enterprise resources. the method further includes determining a threat analysis using ... the enterprise resources and the information assets and determining a risk value using
+
+08353057  Information processing apparatus, control method, and control program 
+processing apparatus, control method, and control program   an information processing apparatus in which ... a license based on license data operates. the information processing apparatus includes a recording unit to record transfer information indicating that the license data is transferred from the information processing apparatus to a second information processing apparatus, and a ... to prohibit use in the information processing apparatus of the license data corresponding to the transfer information when the transfer information indicates that the license data has been transferred from the information processing apparatus to the second information processing apparatus
+
+08353053  Computer program product and method for permanently storing data based on whether a device is protected with an encryption mechanism and whether data in a data structure requires encryption 
+program product and method for permanently storing data based on whether a ... an encryption mechanism and whether data in a data structure requires encryption   a data loss prevention system, method, and computer program product are provided for determining whether a device is ... with an encryption mechanism before storing data thereon. in operation, data to be stored on a device is identified. additionally, it is determined whether the device is ... conditional reaction, based on the determination
+
+08353041  Secure application streaming
+application streaming  a server includes a scanning module for determining whether an application is free of malware, a module for packaging the application ... delivery via application streaming, a module for providing the blocks ... client on request, and a module for adding to each ... associated application has already been determined to be free of malware. a client includes a module for requesting blocks of a streamed application from the server. when the client receives a block, it employs a module for verifying that the associated applications have been determined to be free of ... the indication provided by the server. ... any additional blocks from the server
+
+08353047  Methods and systems for digital image data tracking
+and systems for digital image data tracking  embodiments of the present invention comprise systems and methods for notification handling in a processing server and an imaging device
+
+08353044  Methods and systems for computing device remediation
+and systems for computing device remediation  a computer-implemented method for remediation of a ... the method may include detecting that the computing ... the method may also include determining that the computing device ... the method may include using a virtualization layer ... the method may include permitting the computing device ... various other methods, systems, and computer-readable
+
+08353058  Methods and systems for detecting rootkits
+and systems for detecting rootkits  a computer-implemented method for detecting rootkits is disclosed. the computer-implemented method may include sending periodic security communications ... the computer-implemented method may also include identifying at least one ... the computer-implemented method may further include determining, based on the periodic ... various other methods, systems, and computer-readable
+
+08353051  Image forming apparatus, access control method, access control program and computer readable information recording medium 
+forming apparatus, access control method, access control program and computer readable information recording medium   an image ... an interface for a portable information recording medium, has an access control part carrying out access control ... has, based on access control information defining whether or not ... allowed, wherein the access control part carries out access control based on the access control information stored in the portable information recording medium
+
+08353046  System and method for delivery of a modular operating system
+and method for delivery of a ... system  an operating system and method for use include a core function module, or basic kernel, providing ... one or more add-on modules that allow customization of ... add-on modules may provide support or extended capability to the computer including hardware, applications, peripherals, and ... integrity of an add-on module prior to installation. certification may be verified to determine if installation of the add-on module is authorized. ... use of the add-on module in keeping with licensing
+
+08353052  Providing services to a guest device in a personal network
+in a personal network  a method may include sending personal network connection information from a mobile device ... the guest device to content stored in the personal network
+
+08353055  Method and apparatus for processing rights object
+and apparatus for processing rights object  a method for upgrading a rights object (ro) includes: acquiring, by a digital ... management (drm) agent, ro related information of the ro that ... drm agent, the ro related information to a rights issuer ... drm agent acquires ro related information which is stored on the srm and
+
+08353049  Separating keys and policy for consuming content
+each root policy addenda includes policy identifying when it
+
+08353040  Automatic extraction of signatures for malware
+extraction of signatures for malware  method for the automatic generation ... any functions identified as a part of the standard computer ... generating the malware signature is determined.
+
+08353056  Apparatus and method for detecting program plagiarism through memory access log analysis 
+and method for detecting program plagiarism ... log analysis   an apparatus and method for detecting program plagiarism ... a data extractor extracts an access ... a plagiarism determining unit determines that the target program
+
+08353048  Application digital rights management (DRM) and portability using a mobile device for authentication 
+mobile device for authentication   a method, system, and medium are ... a unique identifier is stored in the mobile device
+
+08353059  Optical scanning probe
+scanning probe (2) for capturing data from a plurality of
+
+08353050  Mobile device management
+device management  a device management method, is disclosed in which ... controlled) by a slave manager module commanded by a master ... device through a master manager module resident thereon.
+
+08353042  Content filtering of remote file-system access protocols
+remote file-system access protocols  methods and systems for content ... embodiment, holding buffers in which data collected from a remote file-system access protocol is stored, a holding buffer context ... within the holding buffer is determined by performing content filtering
+
+08353054  Method for protection of a chip card from unauthorized use, chip card and chip card terminal 
+for protection of a ... and chip card terminal   a method for protection of a chip card from unauthorized use includes: inputting a first identification
+
+Query Index: web OR servers Time: 51  ms
+-----------------------------------------------------
+
+-----------------------------------------------------
+Query: vulnerability OR information (20)
+
+08353043  Web firewall and method for automatically checking web server for vulnerabilities 
+firewall and method for automatically checking web server for vulnerabilities   provided is a web firewall for automatically checking for vulnerabilities, including: an administrating server scheduling part for ordering the examination of an administrating web server according to a predetermined examination schedule; a vulnerability search database calling part for calling a vulnerability search database previously stored ... the order of the administrating server scheduling part; a vulnerability searching part for searching for potential vulnerabilities of the administrating web server corresponding to data included in the called vulnerability search database; a vulnerability information deducing part for optimizing the results searched in the vulnerability searching part to deduce vulnerability information; a vulnerability checking part for checking the vulnerabilities of the administrating web server based on the results deduced from the vulnerability information deducing part; and a detailed vulnerability information reporting part for reporting detailed information on the checked vulnerabilities
+
+08353057  Information processing apparatus, control method, and control program 
+processing apparatus, control method, and control program   an information processing apparatus in which an application ... a license based on license data operates. the information processing apparatus includes a recording unit to record transfer information indicating that the license data is transferred from the information processing apparatus to a second information processing apparatus, and a prohibition unit to prohibit use in the information processing apparatus of the license data corresponding to the transfer information when the transfer information indicates that the license data has been transferred from the information processing apparatus to the second information processing apparatus
+
+08353051  Image forming apparatus, access control method, access control program and computer readable information recording medium 
+forming apparatus, access control method, access control program and computer readable information recording medium   an image forming apparatus provided with an interface for a portable information recording medium, has an access control part carrying out access control, for respective ones of ... resources which the image forming apparatus has, based on access control information defining whether or not ... is allowed, wherein the access control part carries out access control based on the access control information stored in the portable information recording medium
+
+08353045  Method and tool for information security assessment that integrates enterprise objectives with vulnerabilities 
+and tool for information security assessment that integrates enterprise objectives with vulnerabilities   in one aspect, a method to assess information security vulnerability of an enterprise includes storing enterprise objectives in ... computer system and storing enterprise information assets in the computer system. the method also includes mapping the enterprise objectives ... resources and mapping the enterprise information assets with the enterprise resources. the method further includes determining a threat analysis ... the enterprise resources and the information assets and determining a
+
+08353047  Methods and systems for digital image data tracking
+and systems for digital image data tracking  embodiments of the present invention comprise systems and methods for notification handling in a processing server and an imaging device
+
+08353044  Methods and systems for computing device remediation
+and systems for computing device remediation  a computer-implemented method for remediation of a ... the method may include detecting that the computing ... the method may also include determining that the computing ... comply with a network-access-control policy of the network. the method may include using a virtualization layer ... compliance with the network-access-control policy. the method may include permitting the computing device ... compliance with the network-access-control policy. various other methods, systems, and computer-readable
+
+08353058  Methods and systems for detecting rootkits
+and systems for detecting rootkits  a computer-implemented method for detecting rootkits is disclosed. the computer-implemented method may include sending periodic security communications ... the computer-implemented method may also include identifying at least one ... the computer-implemented method may further include determining, based on the ... various other methods, systems, and computer-readable
+
+08353053  Computer program product and method for permanently storing data based on whether a device is protected with an encryption mechanism and whether data in a data structure requires encryption 
+program product and method for permanently storing data based on whether a ... an encryption mechanism and whether data in a data structure requires encryption   a data loss prevention system, method, and computer program product ... an encryption mechanism before storing data thereon. in operation, data to be stored on
+
+08353055  Method and apparatus for processing rights object
+and apparatus for processing rights object  a method for upgrading a rights object (ro) includes: acquiring, by a digital ... management (drm) agent, ro related information of the ro that ... drm agent, the ro related information to a rights issuer ... drm agent acquires ro related information which is stored on
+
+08353052  Providing services to a guest device in a personal network
+in a personal network  a method may include sending personal network connection information from a mobile device
+
+08353041  Secure application streaming
+application streaming  a server includes a scanning module for ... a client includes a module for requesting ... a streamed application from the server. ... the indication provided by the server. ... any additional blocks from the server
+
+08353049  Separating keys and policy for consuming content
+each root policy addenda includes policy identifying when it
+
+08353056  Apparatus and method for detecting program plagiarism through memory access log analysis 
+and method for detecting program plagiarism ... memory access log analysis   an apparatus and method for detecting program plagiarism ... a data extractor extracts an access
+
+08353046  System and method for delivery of a modular operating system
+and method for delivery of a ... system  an operating system and method for use include a core function module ... extended capability to the computer including hardware, applications, peripherals, and
+
+08353040  Automatic extraction of signatures for malware
+extraction of signatures for malware  method for the automatic generation ... any functions identified as a part of the standard computer
+
+08353048  Application digital rights management (DRM) and portability using a mobile device for authentication 
+mobile device for authentication   a method, system, and medium are
+
+08353059  Optical scanning probe
+scanning probe (2) for capturing data from a plurality of ... with separate compartment for the processing means, and an attachable
+
+08353050  Mobile device management
+device management  a device management method, is disclosed in which ... device are managed (monitored or controlled) by a slave manager ... slave mobile device to be controlled or monitored is facilitated ... the features that are controlled or monitored may comprise
+
+08353054  Method for protection of a chip card from unauthorized use, chip card and chip card terminal 
+for protection of a ... and chip card terminal   a method for protection of a chip card from unauthorized use includes: inputting a first identification
+
+08353042  Content filtering of remote file-system access protocols
+remote file-system access protocols  methods and systems for content ... embodiment, holding buffers in which data collected from a remote
+
+Query Index: vulnerability OR information Time: 35  ms
+-----------------------------------------------------
+
+-----------------------------------------------------
+Query: computer OR readable OR media (19)
+
+08353044  Methods and systems for computing device remediation
+and systems for computing device remediation  a computer-implemented method for remediation of a computing device attempting to access a network. the method may include detecting that the computing device is attempting to access the network. the method may also include determining that the computing device does not comply with a network-access-control policy of the network. the method may include using a virtualization layer to bring the computing device into compliance with the network-access-control policy. the method may include permitting the computing device to access the network after the computing device is brought into compliance with the network-access-control policy. various other methods, systems, and computer-readable media are also disclosed
+
+08353048  Application digital rights management (DRM) and portability using a mobile device for authentication 
+rights management (drm) and portability using a mobile device for authentication   a method, system, and medium are provided for operating a computing device and a mobile device to access computer software with a secure access and to access a packet network, and for operating a computer software on a mobile device with different computing devices. a mobile device is used to authenticate a user's access to computer software. the computer software may reside on the mobile device, the user's computing device, or another computing device. a unique identifier is stored in the mobile device associated with the computer software to enable the
+
+08353058  Methods and systems for detecting rootkits
+and systems for detecting rootkits  a computer-implemented method for detecting rootkits is disclosed. the computer-implemented method may include sending periodic security communications ... processor-mode region of a computing device. the computer-implemented method may also include identifying at least one ... the computer-implemented method may further include determining, based on the periodic ... processor-mode region of the computing device has been compromised. various other methods, systems, and computer-readable media are also disclosed
+
+08353045  Method and tool for information security assessment that integrates enterprise objectives with vulnerabilities 
+and tool for information ... vulnerabilities   in one aspect, a method to assess information security vulnerability of an enterprise includes storing enterprise objectives in a computer system, storing enterprise resources determined using a value criterion, a ... non-substitutability criterion in the computer system and storing enterprise information assets in the computer system. the method also includes mapping the enterprise objectives ... the method further includes determining a threat analysis using an attack tree using the enterprise resources and the information assets and determining a risk value using the attack tree
+
+08353051  Image forming apparatus, access control method, access control program and computer readable information recording medium 
+forming apparatus, access control method, access control program and computer readable information recording medium   an ... information recording medium, has an access control part carrying out access control, for respective ones of ... forming apparatus has, based on access control information defining whether or ... user is allowed, wherein the access control part carries out access control based on the access control information stored in the
+
+08353050  Mobile device management
+device management  a device management method, is disclosed in which ... features on a slave mobile device are managed (monitored or controlled) by a slave manager module commanded by a master device through secure messages exchanged between the two devices using respective electronic messaging capabilities on the two devices. selection of the features of the slave mobile device to be controlled or monitored is facilitated on the master device through a master manager ... the features that are controlled or monitored may comprise any user-accessible feature incorporated or installed on the slave mobile device and user access to the feature may be prevented according to ... criterion, such as: date of use, time of day of use, number of times of use, originator and recipient. user access to the feature may be prevented access to the user-accessible feature when usage limitations
+
+08353046  System and method for delivery of a modular operating system
+and method for delivery of a modular operating system  an operating system and method for use include a core function module ... basic kernel, providing fundamental operating system support and one or ... allow customization of the operating system as desired. add-on modules may provide support or extended capability to the computer including hardware, applications, peripherals, and support. a digital signature may be used to confirm the integrity ... certification may be verified to determine if installation of the ... withholding certification, a service provider may manage illegal or undesired modifications to a provided computer. digital rights management may be used to enforce terms of use of the add-on
+
+08353052  Providing services to a guest device in a personal network
+services to a guest device in a personal network  a method may include sending personal network connection information from a mobile device to a guest device; sending authentication credentials from the mobile device to the guest device; receiving the authentication credentials ... personal network from the guest device; authenticating the guest device based on the authentication credentials; and granting access to the guest device to content stored in
+
+08353047  Methods and systems for digital image data tracking
+and systems for digital image data ... of the present invention comprise systems and methods for notification handling in ... processing server and an imaging device
+
+08353053  Computer program product and method for permanently storing data based on whether a device is protected with an encryption mechanism and whether data in a data structure requires encryption 
+program product and method for permanently storing data based on whether a device is protected with an ... encryption   a data loss prevention system, method, and computer program product are provided for determining whether a device is protected with an ... to be stored on a device is identified. additionally, it is determined whether the device is protected with an ... conditional reaction, based on the determination
+
+08353056  Apparatus and method for detecting program plagiarism through memory access log analysis 
+and method for detecting program plagiarism through memory access log analysis   an apparatus and method for detecting program plagiarism through memory access log analysis is provided. a data extractor extracts an access log of an original program and an access log of a target ... original program from a memory accessed by the programs. ... which are obtained from the access logs extracted from the ... distance between the strings by using an array of the detected common strings. a plagiarism determining unit determines that the target program
+
+08353040  Automatic extraction of signatures for malware
+extraction of signatures for malware  method for the automatic generation of malware signatures from computer files. ... a part of the standard computer language used to write computer files which are known ... the functions of a computer file which does contain ... generating the malware signature is determined.
+
+08353057  Information processing apparatus, control method, and control program 
+processing apparatus, control method, and control program   an information processing ... the information processing apparatus includes a recording unit to ... a prohibition unit to prohibit use in the information processing
+
+08353042  Content filtering of remote file-system access protocols
+filtering of remote file-system access protocols  methods and systems for content filtering of remote file-system access protocols are provided. ... collected from a remote file-system access protocol is stored, a ... created within one or more computer-readable media. ... the holding buffers are tracked using the usage table corresponding ... within the holding buffer is determined by performing content filtering
+
+08353049  Separating keys and policy for consuming content
+each root policy addenda includes policy identifying when it
+
+08353041  Secure application streaming
+application streaming  a server includes a scanning module for determining whether an application is ... associated application has already been determined to be free of malware. a client includes a module for requesting ... the associated applications have been determined to be free of
+
+08353055  Method and apparatus for processing rights object
+and apparatus for processing rights object  a method for upgrading a rights object (ro) includes: acquiring, by a digital ... updating from a secure removable media (srm) agent; providing, by
+
+08353054  Method for protection of a chip card from unauthorized use, chip card and chip card terminal 
+for protection of a chip card from unauthorized use, chip card and chip card terminal   a method for protection of a chip card from unauthorized use includes: inputting a first identification ... least one first communication parameter using a first symmetric key ... terminal and the chip card, using the communication parameter, transmitting ... attempting to decrypt the cipher using a second symmetric key
+
+08353043  Web firewall and method for automatically checking web server for vulnerabilities 
+firewall and method for automatically checking web ... for automatically checking for vulnerabilities, including: an administrating server scheduling ... web server corresponding to data included in the called vulnerability
+
+Query Index: computer OR readable OR media Time:  50  ms
+-----------------------------------------------------
