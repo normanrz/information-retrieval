@@ -15,11 +15,12 @@ public class XmlDocumentIndexEntryReader {
             DataInput stream, List<String> fileNames) throws IOException {
         short filenameIndex = stream.readShort();
         int docId = stream.readInt();
+        int titleTokenCount = stream.readInt();
         int documentTokenCount = stream.readInt();
         long offset = stream.readLong();
 
         return new XmlDocumentIndexEntry(
-                docId, documentTokenCount, fileNames.get(filenameIndex), offset);
+                docId, titleTokenCount, documentTokenCount, fileNames.get(filenameIndex), offset);
     }
 
     public static List<XmlDocumentIndexEntry> readDocumentIndexEntries(

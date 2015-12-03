@@ -16,8 +16,9 @@ public class Ranker {
 
     private final InvertedIndex index;
     private final XmlDocumentIndex documentIndex;
-    private int mu = 2000;
+    private int mu = 1000;
     private int numberOfQueryTokens = 10;
+    private double titleTokenWeight = 10;
 
 
     public Ranker(InvertedIndex index, XmlDocumentIndex documentIndex) {
@@ -107,16 +108,46 @@ public class Ranker {
 
 
     public double queryLikelihood(List<String> tokens, int docId) {
-        return tokens.stream()
-                .mapToDouble(token -> Math.log(tokenProbability(token, docId)))
-                .sum();
+//        System.out.println(String.format("%.20f %.20f %.20f\t%s\t%s",
+//                tokens.stream()
+//                        .mapToDouble(token -> tokenProbability(token, docId))
+//                        .reduce(1, (a, b) -> a * b),
+//                tokens.stream()
+//                        .mapToDouble(token -> titleTokenProbability(token, docId))
+//                        .reduce(1, (a, b) -> a * b),
+//                tokens.stream()
+//                        .mapToDouble(token -> 0.7 * titleTokenProbability(token, docId) + 0.3 * tokenProbability(token, docId))
+//                        .reduce(1, (a, b) -> a * b),
+//                String.join("+", tokens),
+//                documentIndex.getPatentDocumentTitle(docId).get()));
 
+        return tokens.stream()
+                .mapToDouble(token -> Math.log(0.7 * titleTokenProbability(token, docId) + 0.3 * tokenProbability(token, docId)))
+                .sum();
     }
 
     private double tokenProbability(String token, int docId) {
-        return (index.documentTokenCount(token, docId) +
-                mu * ((double) index.collectionTokenCount(token) / (double) index.collectionTokenCount())) /
+        return (index.getDocumentTokenCount(token, docId) +
+                mu * ((double) index.getCollectionTokenCount(token) / (double) index.getCollectionTokenCount())) /
                 (documentIndex.getDocumentTokenCount(docId) + mu);
+    }
+
+    private double titleTokenProbability(String token, int docId) {
+
+        int docTitleTokenCount = documentIndex.getDocumentTitleTokenCount(docId);
+//        System.out.println(String.format("%d\t%f\t%f\t%s\t%s",
+//                5 * index.getDocumentTitleTokenCount(token, docTitleTokenCount, docId),
+//                (index.getDocumentTitleTokenCount(token, docTitleTokenCount, docId) +
+//                        mu * ((double) index.getCollectionTokenCount(token) / (double) index.getCollectionTokenCount())) /
+//                        (docTitleTokenCount + mu),
+//                mu * ((double) index.getCollectionTokenCount(token) / (double) index.getCollectionTokenCount()),
+//                token,
+//                documentIndex.getPatentDocumentTitle(docId).get()));
+
+        return (5 * index.getDocumentTitleTokenCount(token, docTitleTokenCount, docId) +
+                mu * ((double) index.getCollectionTokenCount(token) / (double) index.getCollectionTokenCount())) /
+                (docTitleTokenCount + mu);
+
     }
 
     public static List<String> expandQueryFromRelevanceModel(Map<String, Double> relevanceModel, List<String> queryTokens) {

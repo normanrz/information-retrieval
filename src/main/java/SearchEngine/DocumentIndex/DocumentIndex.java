@@ -12,6 +12,8 @@ public interface DocumentIndex {
 
     int getDocumentTokenCount(int docId);
 
+    int getDocumentTitleTokenCount(int docId);
+
     List<String> getPatentDocumentTokens(int docId);
 
     Optional<PatentDocument> getPatentDocument(int docId);

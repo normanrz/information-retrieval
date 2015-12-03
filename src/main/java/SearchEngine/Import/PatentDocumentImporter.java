@@ -75,9 +75,15 @@ public class PatentDocumentImporter {
                 long offset = offsets[i];
 
                 AtomicInteger tokenCounter = new AtomicInteger(0);
-                doc.getStemmedTokens().forEachOrdered(token ->
-                        index.putPosting(token, doc.getDocId(), tokenCounter.getAndIncrement()));
-                documentIndex.add(doc.getDocId(), tokenCounter.get(), offset, file.getName());
+                doc.getStemmedTitle().forEachOrdered(token ->
+                        index.putPosting(token, doc.getDocId(), tokenCounter.getAndIncrement())
+                );
+                int titleTokenCount = tokenCounter.get();
+                doc.getStemmedAbstract().forEachOrdered(token ->
+                        index.putPosting(token, doc.getDocId(), tokenCounter.getAndIncrement())
+                );
+
+                documentIndex.add(doc.getDocId(), titleTokenCount, tokenCounter.get(), offset, file.getName());
             }
         }
     }

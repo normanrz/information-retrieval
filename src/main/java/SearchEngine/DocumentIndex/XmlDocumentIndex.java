@@ -41,6 +41,10 @@ public class XmlDocumentIndex implements DocumentIndex {
         return get(docId).map(XmlDocumentIndexEntry::getDocumentTokenCount).orElse(0);
     }
 
+    public int getDocumentTitleTokenCount(int docId) {
+        return get(docId).map(XmlDocumentIndexEntry::getTitleTokenCount).orElse(0);
+    }
+
     public List<String> getPatentDocumentTokens(int docId) {
 
         return getPatentDocument(docId)
@@ -83,8 +87,8 @@ public class XmlDocumentIndex implements DocumentIndex {
         }
     }
 
-    public synchronized void add(int docId, int documentTokenCount, long offset, String fileName) {
-        XmlDocumentIndexEntry entry = new XmlDocumentIndexEntry(docId, documentTokenCount, fileName, offset);
+    public synchronized void add(int docId, int titleTokenCount, int documentTokenCount, long offset, String fileName) {
+        XmlDocumentIndexEntry entry = new XmlDocumentIndexEntry(docId, titleTokenCount, documentTokenCount, fileName, offset);
         map.put(docId, entry);
     }
 

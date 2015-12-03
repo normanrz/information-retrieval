@@ -7,12 +7,14 @@ class XmlDocumentIndexEntry implements Comparable<XmlDocumentIndexEntry> {
 
     private final int docId;
     private final int documentTokenCount;
+    private final int titleTokenCount;
     private final String filename;
     private final long offset;
 
-    public XmlDocumentIndexEntry(int docId, int documentTokenCount, String filename, long offset) {
+    public XmlDocumentIndexEntry(int docId, int documentTokenCount, int titleTokenCount, String filename, long offset) {
         this.docId = docId;
         this.documentTokenCount = documentTokenCount;
+        this.titleTokenCount = titleTokenCount;
         this.filename = filename;
         this.offset = offset;
     }
@@ -23,6 +25,10 @@ class XmlDocumentIndexEntry implements Comparable<XmlDocumentIndexEntry> {
 
     public int getDocumentTokenCount() {
         return documentTokenCount;
+    }
+
+    public int getTitleTokenCount() {
+        return titleTokenCount;
     }
 
     public String getFilename() {

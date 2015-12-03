@@ -20,10 +20,11 @@ public interface InvertedIndex {
 
     Stream<String> getTokensByPrefix(String token);
 
-    int collectionTokenCount();
+    int getCollectionTokenCount();
 
-    int collectionTokenCount(String token);
+    int getCollectionTokenCount(String token);
 
-    int documentTokenCount(String token, int docId);
+    int getDocumentTokenCount(String token, int docId);
 
+    int getDocumentTitleTokenCount(String token, int docTitleTokenCount, int docId);
 }

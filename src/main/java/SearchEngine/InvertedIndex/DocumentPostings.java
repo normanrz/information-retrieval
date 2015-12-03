@@ -44,6 +44,16 @@ public class DocumentPostings implements Comparable<DocumentPostings> {
         return this.positions.size();
     }
 
+    public int getTitleTokenCount(int docTitleTokenCount) {
+        for (int i = 0; i < this.positions.size(); i++) {
+            int position = this.positions.get(i);
+            if (position > docTitleTokenCount) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
     public List<Posting> toPostings() {
         return Arrays.stream(positions.toArray())
                 .mapToObj(pos -> new Posting(getDocId(), pos))

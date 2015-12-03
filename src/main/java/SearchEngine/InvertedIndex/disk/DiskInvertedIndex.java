@@ -6,6 +6,7 @@ import SearchEngine.InvertedIndex.PostingReader;
 import SearchEngine.utils.IntArrayUtils;
 import org.apache.commons.collections4.map.LRUMap;
 
+import javax.print.Doc;
 import java.io.*;
 import java.util.Collections;
 import java.util.List;
@@ -85,17 +86,17 @@ public class DiskInvertedIndex implements InvertedIndex, AutoCloseable {
                 .filter(token -> token.startsWith(prefixToken));
     }
 
-    public int collectionTokenCount() {
+    public int getCollectionTokenCount() {
         return collectionTokenCount;
     }
 
-    public int collectionTokenCount(String token) {
+    public int getCollectionTokenCount(String token) {
         return seekList.get(token)
                 .mapToInt(SeekListEntry::getTokenCount)
                 .sum();
     }
 
-    public int documentTokenCount(String token, int docId) {
+    private Optional<DocumentPostings> getDocumentPostings(String token, int docId) {
         return getSeekListEntry(token)
                 .map(this::loadDocumentPostingsList)
                 .flatMap(documentPostingsList -> {
@@ -105,8 +106,18 @@ public class DiskInvertedIndex implements InvertedIndex, AutoCloseable {
                     } else {
                         return Optional.empty();
                     }
-                })
+                });
+    }
+
+    public int getDocumentTokenCount(String token, int docId) {
+        return getDocumentPostings(token, docId)
                 .map(DocumentPostings::getTokenCount)
+                .orElse(0);
+    }
+
+    public int getDocumentTitleTokenCount(String token, int docTitleTokenCount, int docId) {
+        return getDocumentPostings(token, docId)
+                .map(documentPostings -> documentPostings.getTitleTokenCount(docTitleTokenCount))
                 .orElse(0);
     }
 
@@ -157,6 +168,6 @@ public class DiskInvertedIndex implements InvertedIndex, AutoCloseable {
 
     public void printStats() {
         System.out.println("Terms in index: " + seekList.stream().count());
-        System.out.println("Postings in index: " + collectionTokenCount());
+        System.out.println("Postings in index: " + getCollectionTokenCount());
     }
 }

@@ -14,6 +14,7 @@ public class XmlDocumentIndexEntryWriter {
             DataOutput stream, XmlDocumentIndexEntry entry, List<String> fileNames) throws IOException {
         stream.writeShort(fileNames.indexOf(entry.getFilename()));
         stream.writeInt(entry.getDocId());
+        stream.writeInt(entry.getTitleTokenCount());
         stream.writeInt(entry.getDocumentTokenCount());
         stream.writeLong(entry.getOffset());
     }

@@ -33,6 +33,12 @@ public class SearchEngineTest {
 
             runTimed(() -> {
 
+                myEngine.loadIndex("index_test", "data_test");
+
+            }, "Load Test Index");
+
+            runTimed(() -> {
+
                 SearchEngineJasperRzepka.index("data", "index");
 
             }, "Build Full Index");
@@ -41,7 +47,8 @@ public class SearchEngineTest {
 
                 myEngine.loadIndex("index", "data");
 
-            }, "Load Index");
+            }, "Load Full Index");
+
 
             runTimed(() -> {
                 String[] queriesSamples = {
@@ -60,8 +67,11 @@ public class SearchEngineTest {
 
 //            String[] queries = {"asdjlis", "commom", "kontrol", "incluce", "streem", "digital", "rootkits", "network OR access"};
             String[] queries = {
-                    "access OR control", "computers", "data OR processing", "web OR servers",
-                    "vulnerability OR information", "computer OR readable OR media"};
+//                    "access OR control", "computers", "data OR processing", "web OR servers",
+//                    "vulnerability OR information",
+//                    "computer OR readable OR media"
+                    "access", "control", "image OR data", "program", "vulnerability", "mobile device"
+            };
 
             for (String query : queries) {
 

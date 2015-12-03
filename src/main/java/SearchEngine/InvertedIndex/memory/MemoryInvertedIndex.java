@@ -59,28 +59,29 @@ public class MemoryInvertedIndex extends MemoryIndex<DocumentPostings> implement
     }
 
 
-    public int collectionTokenCount() {
+    public int getCollectionTokenCount() {
         return all().mapToInt(DocumentPostings::getTokenCount)
                 .sum();
     }
 
-    public int documentTokenCount(int docId) {
-        return all().filter(documentPostings -> documentPostings.getDocId() == docId)
-                .mapToInt(DocumentPostings::getTokenCount)
-                .sum();
-    }
-
-    public int collectionTokenCount(String token) {
+    public int getCollectionTokenCount(String token) {
         return get(token)
                 .mapToInt(DocumentPostings::getTokenCount)
                 .sum();
     }
 
-    public int documentTokenCount(String token, int docId) {
+    public int getDocumentTokenCount(String token, int docId) {
         return get(token, docId)
                 .map(DocumentPostings::getTokenCount)
                 .orElse(0);
     }
+
+    public int getDocumentTitleTokenCount(String token, int docTitleTokenCount, int docId) {
+        return get(token, docId)
+                .map(documentPostings -> documentPostings.getTitleTokenCount(docTitleTokenCount))
+                .orElse(0);
+    }
+
 
     public void save(File file) throws IOException {
         try (FileOutputStream outputStream = new FileOutputStream(file)) {
@@ -100,7 +101,7 @@ public class MemoryInvertedIndex extends MemoryIndex<DocumentPostings> implement
             PostingWriter.writeDocumentPostingsList(postingsDataOutput, new ArrayList<>(index.get(token)));
             postingsDataOutput.close();
             int length = postingsBuffer.size();
-            seekList.add(new SeekListEntry(token, byteCounter, length, collectionTokenCount(token)));
+            seekList.add(new SeekListEntry(token, byteCounter, length, getCollectionTokenCount(token)));
             byteCounter += length;
             postingsBuffer.writeTo(buffer);
         }
@@ -112,7 +113,7 @@ public class MemoryInvertedIndex extends MemoryIndex<DocumentPostings> implement
 
         DataOutputStream fileDataOutput = new DataOutputStream(outputStream);
         fileDataOutput.writeInt(seekListBuffer.size());
-        fileDataOutput.writeInt(collectionTokenCount());
+        fileDataOutput.writeInt(getCollectionTokenCount());
 
         seekListBuffer.writeTo(outputStream);
         buffer.writeTo(outputStream);
@@ -151,7 +152,7 @@ public class MemoryInvertedIndex extends MemoryIndex<DocumentPostings> implement
     @Override
     public void printStats() {
         super.printStats();
-        System.out.println("Postings in index: " + collectionTokenCount());
+        System.out.println("Postings in index: " + getCollectionTokenCount());
     }
 
 

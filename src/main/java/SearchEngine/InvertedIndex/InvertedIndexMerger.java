@@ -26,6 +26,11 @@ public class InvertedIndexMerger {
 
     public static void merge(List<File> inputIndexFiles, File outputFile) throws IOException, InterruptedException {
 
+        if (inputIndexFiles.size() == 1) {
+            inputIndexFiles.get(0).renameTo(outputFile);
+            return;
+        }
+
 
         List<DiskInvertedIndex> indexes = new ArrayList<>();
         for (File file : inputIndexFiles) {
@@ -85,7 +90,7 @@ public class InvertedIndexMerger {
         File headerFile = new File(outputFile.getPath() + ".header");
         try (DataOutputStream headerFileStream = new DataOutputStream(new FileOutputStream(headerFile))) {
             headerFileStream.writeInt((int) seekListFile.length());
-            headerFileStream.writeInt(indexes.stream().mapToInt(DiskInvertedIndex::collectionTokenCount).sum());
+            headerFileStream.writeInt(indexes.stream().mapToInt(DiskInvertedIndex::getCollectionTokenCount).sum());
             headerFileStream.close();
         }
 

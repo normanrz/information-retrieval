@@ -38,6 +38,10 @@ public class PatentDocument {
         return (getTitle() + " " + getAbstractText()).toLowerCase();
     }
 
+    public Stream<String> getStemmedTitle() { return PatentDocumentPreprocessor.preprocess(getTitle()); }
+
+    public Stream<String> getStemmedAbstract() { return PatentDocumentPreprocessor.preprocess(getAbstractText()); }
+
     public Stream<String> getStemmedTokens() {
         return PatentDocumentPreprocessor.preprocess(getTokenizableDocument());
     }
