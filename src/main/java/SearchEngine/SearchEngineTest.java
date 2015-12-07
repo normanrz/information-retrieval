@@ -37,11 +37,11 @@ public class SearchEngineTest {
 
             }, "Load Test Index");
 
-            runTimed(() -> {
-
-                SearchEngineJasperRzepka.index("data", "index");
-
-            }, "Build Full Index");
+//            runTimed(() -> {
+//
+//                SearchEngineJasperRzepka.index("data", "index");
+//
+//            }, "Build Full Index");
 
             runTimed(() -> {
 
@@ -76,7 +76,7 @@ public class SearchEngineTest {
             for (String query : queries) {
 
                 runTimed(() -> {
-                    List<String> results = myEngine.search(query, 20, 0);
+                    List<String> results = myEngine.search(query, 20, 2);
                     System.out.println(String.format("Query: %s (%d)", query, results.size()));
                     results.forEach(System.out::println);
 

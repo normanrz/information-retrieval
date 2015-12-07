@@ -20,7 +20,7 @@ public class SnippetGenerator {
 
     private static final int defaultTokenMargin = 5;
 
-    private int[][] partitionPositions(int[] source, int minOffset) {
+    private static int[][] partitionPositions(int[] source, int minOffset) {
 
         List<IntList> output = new ArrayList<>();
 
@@ -53,14 +53,14 @@ public class SnippetGenerator {
 
     }
 
-    private boolean containsQueryToken(List<String> tokens, List<String> queryTokens) {
+    private static boolean containsQueryToken(List<String> tokens, List<String> queryTokens) {
         return tokens.stream()
                 .map(PatentDocumentPreprocessor::stem)
                 .filter(token -> queryTokens.contains(token))
                 .count() > 0;
     }
 
-    private String shortenSnippetByPunctuation(String snippet, List<String> queryTokens, int tokenMargin) {
+    private static String shortenSnippetByPunctuation(String snippet, List<String> queryTokens, int tokenMargin) {
 
         String[] splitSnippet = snippet.split("[\\.!\\?]");
 
@@ -87,7 +87,7 @@ public class SnippetGenerator {
         }
     }
 
-    public List<String> getSnippets(String body, List<String> queryTokens, int tokenMargin) {
+    public static List<String> getSnippets(String body, List<String> queryTokens, int tokenMargin) {
 
         List<Pair<Integer, String>> bodyTokens = PatentDocumentPreprocessor.tokenizeWithOffset(body);
         List<String> bodyStemmedTokens = bodyTokens.stream()
@@ -118,12 +118,20 @@ public class SnippetGenerator {
     }
 
 
-    public List<String> getSnippets(PatentDocument doc, List<String> queryTokens) {
+    public static List<String> getSnippets(PatentDocument doc, List<String> queryTokens) {
         return getSnippets(doc, queryTokens, defaultTokenMargin);
     }
 
-    public List<String> getSnippets(PatentDocument doc, List<String> queryTokens, int tokenMargin) {
+    public static List<String> getSnippets(PatentDocument doc, List<String> queryTokens, int tokenMargin) {
         return getSnippets(doc.getTokenizableDocument(), queryTokens, tokenMargin);
+    }
+
+    public static List<String> getSnippetsFromBody(PatentDocument doc, List<String> queryTokens) {
+        return getSnippetsFromBody(doc, queryTokens, defaultTokenMargin);
+    }
+
+    public static List<String> getSnippetsFromBody(PatentDocument doc, List<String> queryTokens, int tokenMargin) {
+        return getSnippets(doc.getAbstractText(), queryTokens, tokenMargin);
     }
 
 }

@@ -115,20 +115,51 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
 
 
     private SnippetSearchResult createSnippetSearchResult(
-            SearchResult result, XmlDocumentIndex docIndex,
-            SnippetGenerator snippetGenerator, List<String> queryTokens) {
+            SearchResult result, List<String> queryTokens) {
 
         PatentDocument doc = docIndex.getPatentDocument(result.getDocId()).get();
         return new SnippetSearchResult(
                 result, doc,
-                snippetGenerator.getSnippets(doc, queryTokens));
+                SnippetGenerator.getSnippets(doc, queryTokens));
+    }
+    private SnippetSearchResult createSnippetFromBodySearchResult(
+            SearchResult result, List<String> queryTokens) {
+
+        PatentDocument doc = docIndex.getPatentDocument(result.getDocId()).get();
+        return new SnippetSearchResult(
+                result, doc,
+                SnippetGenerator.getSnippetsFromBody(doc, queryTokens));
+    }
+
+    private Map<String, Double> pseudoRelevanceModelWithSnippets(
+            Stream<SearchResult> rankResults, int prf, List<String> queryTokens) {
+
+        Ranker ranker = new Ranker(index, docIndex);
+
+        // Generate snippets
+        List<SnippetSearchResult> prfDocumentSnippetsResults = rankResults
+                .limit(prf)
+                .map(result -> createSnippetSearchResult(result, queryTokens))
+                .collect(Collectors.toList());
+
+        // Pseudo relevance feedback model with snippets
+        return ranker.pseudoRelevanceModel(queryTokens, prfDocumentSnippetsResults);
+    }
+
+    private Map<String, Double> pseudoRelevanceModelWithDocuments(
+            Stream<SearchResult> rankResults, int prf, List<String> queryTokens) {
+
+        Ranker ranker = new Ranker(index, docIndex);
+
+        // Pseudo relevance feedback model with whole documents
+        int[] topRankedDocIds = rankResults.limit(prf).mapToInt(SearchResult::getDocId).toArray();
+        return ranker.pseudoRelevanceModel(queryTokens, topRankedDocIds);
     }
 
     public Stream<SnippetSearchResult> search(String query, int prf) {
 
         // Set up
         Ranker ranker = new Ranker(index, docIndex);
-        SnippetGenerator snippetGenerator = new SnippetGenerator();
 
         // Search
         SearchResultSet searchResultSet = Searcher.search(query, index, true);
@@ -139,29 +170,18 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
 
         if (prf == 0) {
             return rankResults
-                    .map(result -> createSnippetSearchResult(result, docIndex, snippetGenerator, queryTokens));
+                    .map(result -> createSnippetFromBodySearchResult(result, queryTokens));
         } else {
-            // Generate snippets
-            List<SnippetSearchResult> prfDocumentSnippetsResults = rankResults
-                    .limit(prf)
-                    .map(result -> createSnippetSearchResult(result, docIndex, snippetGenerator, queryTokens))
-                    .collect(Collectors.toList());
 
-            // Pseudo relevance feedback model with snippets
-            Map<String, Double> relevanceModel =
-                    ranker.pseudoRelevanceModel(queryTokens, prfDocumentSnippetsResults);
-
-//            // Pseudo relevance feedback model with whole documents
-//            int[] topRankedDocIds = SearchResult.getDocIds(rankResults.subList(0, Math.min(prf, rankResults.size())));
-//            Map<String, Double> relevanceModel =
-//                    ranker.pseudoRelevanceModel(queryTokens, topRankedDocIds);
+            Map<String, Double> relevanceModel = pseudoRelevanceModelWithSnippets(rankResults, prf, queryTokens);
+//            Map<String, Double> relevanceModel = pseudoRelevanceModelWithDocuments(rankResults, prf, queryTokens);
 
             List<String> newQueryTokens = Ranker.expandQueryFromRelevanceModel(relevanceModel, queryTokens);
             String newQuery = String.join(" OR ", newQueryTokens);
 
             // Search and rank again
             return ranker.rankWithRelevanceModel(Searcher.search(newQuery, index, false).getDocIds(), relevanceModel).stream()
-                    .map(result -> createSnippetSearchResult(result, docIndex, snippetGenerator, newQueryTokens));
+                    .map(result -> createSnippetFromBodySearchResult(result, newQueryTokens));
         }
 
     }

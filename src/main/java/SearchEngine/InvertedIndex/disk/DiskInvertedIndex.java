@@ -139,7 +139,7 @@ public class DiskInvertedIndex implements InvertedIndex, AutoCloseable {
         }
 
         try {
-            System.out.println(String.format("[DiskInvertedIndex] Load block %d %d", offset, length));
+//            System.out.println(String.format("[DiskInvertedIndex] Load block %d %d", offset, length));
 
             // Move file pointer
             file.seek(2 * Integer.BYTES + seekListByteLength + offset);

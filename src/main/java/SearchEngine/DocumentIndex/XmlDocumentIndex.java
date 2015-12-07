@@ -67,8 +67,8 @@ public class XmlDocumentIndex implements DocumentIndex {
         }
 
         try {
-            System.out.println(String.format("[XmlDocumentIndex] Load document %08d from %s at %d",
-                    entry.getDocId(), entry.getFilename(), entry.getOffset()));
+//            System.out.println(String.format("[XmlDocumentIndex] Load document %08d from %s at %d",
+//                    entry.getDocId(), entry.getFilename(), entry.getOffset()));
             File xmlFile = new File(directory, entry.getFilename());
             InputStream inputStream = Channels.newInputStream(
                     new FileInputStream(xmlFile).getChannel().position(entry.getOffset()));
