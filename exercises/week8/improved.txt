@@ -1,7 +1,7 @@
 Query: access (7)
-08353051:  Image forming apparatus, access control method, access control program and computer readable information recording medium 
+08353051:  Image forming apparatus, access control method, access control program and computer readable information recording medium
 information recording medium, has an access control part carrying out access control, for respective ones ... forming apparatus has, based on access control information defining whether ... user is allowed, wherein the access control part carries out access control based on the access control information stored in
-08353056:  Apparatus and method for detecting program plagiarism through memory access log analysis 
+08353056:  Apparatus and method for detecting program plagiarism through memory access log analysis
 detecting program plagiarism through memory access log analysis is provided. A data extractor extracts an access log of an original program and an access log of a target ... original program from a memory accessed by the programs. ... which are obtained from the access logs extracted from the
 08353042:  Content filtering of remote file-system access protocols
 filtering of remote file-system access protocols are provided. ... from a remote file-system access protocol is stored, a
@@ -9,41 +9,36 @@ filtering of remote file-system access protocols are provided. ... from a remote
 a computing device attempting to access a network. ... computing device is attempting to access the network. ... not comply with a network-access-control policy of the ... into compliance with the network-access-control policy. ... permitting the computing device to access the network after the ... into compliance with the network-access-control policy.
 08353050:  Mobile device management
 monitored may comprise any user-accessible feature incorporated or installed ... slave mobile device and user access to the feature may ... User access to the feature may be prevented access to the user-accessible feature when usage limitations
-08353048:  Application digital rights management (DRM) and portability using a mobile device for authentication 
+08353048:  Application digital rights management (DRM) and portability using a mobile device for authentication
 and a mobile device to access computer software with a secure access and to access a packet network, and ... to authenticate a user's access to computer software.
 08353052:  Providing services to a guest device in a personal network
 the authentication credentials; and granting access to the guest device
 
 
 Query: control (4)
-08353051:  Image forming apparatus, access control method, access control program and computer readable information recording medium 
+08353051:  Image forming apparatus, access control method, access control program and computer readable information recording medium
 recording medium, has an access control part carrying out access control, for respective ones of ... apparatus has, based on access control information defining whether or ... is allowed, wherein the access control part carries out access control based on the access control information stored in the
 08353044:  Methods and systems for computing device remediation
 comply with a network-access-control policy of the network ... compliance with the network-access-control policy. ... compliance with the network-access-control policy.
 08353050:  Mobile device management
 device are managed (monitored or controlled) by a slave manager ... slave mobile device to be controlled or monitored is facilitated ... The features that are controlled or monitored may comprise
-08353057:  Information processing apparatus, control method, and control program 
+08353057:  Information processing apparatus, control method, and control program
 
 
-Query Index: control Time:  15  ms
------------------------------------------------------
-
------------------------------------------------------
-Query Index: image OR data
 Query: image OR data (8)
-08353053:  Computer program product and method for permanently storing data based on whether a device is protected with an encryption mechanism and whether data in a data structure requires encryption 
+08353053:  Computer program product and method for permanently storing data based on whether a device is protected with an encryption mechanism and whether data in a data structure requires encryption
 data loss prevention system, method ... an encryption mechanism before storing data thereon. In operation, data to be stored on
 08353047:  Methods and systems for digital image data tracking
 a processing server and an imaging device
-08353051:  Image forming apparatus, access control method, access control program and computer readable information recording medium 
+08353051:  Image forming apparatus, access control method, access control program and computer readable information recording medium
 image forming apparatus provided with ... plurality of resources which the image forming apparatus has, based
-08353057:  Information processing apparatus, control method, and control program 
+08353057:  Information processing apparatus, control method, and control program
 a license based on license data operates. ... information indicating that the license data is transferred from the ... processing apparatus of the license data corresponding to the transfer ... information indicates that the license data has been transferred from
 08353059:  Optical scanning probe
 scanning probe (2) for capturing data from a plurality of ... a camera (16) comprising an imaging sensor having an array
-08353056  (-10,072093): Apparatus and method for detecting program plagiarism through memory access log analysis 
+08353056  (-10,072093): Apparatus and method for detecting program plagiarism through memory access log analysis
 A data extractor extracts an access
-08353043  (-10,074668): Web firewall and method for automatically checking web server for vulnerabilities 
+08353043  (-10,074668): Web firewall and method for automatically checking web server for vulnerabilities
 administrating web server corresponding to data included in the called
 08353042  (-10,075916): Content filtering of remote file-system access protocols
 embodiment, holding buffers in which data collected from a remote
@@ -51,26 +46,26 @@ embodiment, holding buffers in which data collected from a remote
 
 
 Query: program (4)
-08353056:  Apparatus and method for detecting program plagiarism through memory access log analysis 
+08353056:  Apparatus and method for detecting program plagiarism through memory access log analysis
 apparatus and method for detecting program plagiarism through memory access ... access log of an original program and an access log of a target program to be compared with the original program from a memory accessed by the programs. ... logs extracted from the original program and the target program, into strings and detects ... unit determines that the target program is plagiarized if the
-08353053:  Computer program product and method for permanently storing data based on whether a device is protected with an encryption mechanism and whether data in a data structure requires encryption 
+08353053:  Computer program product and method for permanently storing data based on whether a device is protected with an encryption mechanism and whether data in a data structure requires encryption
 prevention system, method, and computer program product are provided for
-08353057:  Information processing apparatus, control method, and control program 
+08353057:  Information processing apparatus, control method, and control program
 
-08353051:  Image forming apparatus, access control method, access control program and computer readable information recording medium 
+08353051:  Image forming apparatus, access control method, access control program and computer readable information recording medium
 
 
 
 Query: vulnerability (2)
-08353043:  Web firewall and method for automatically checking web server for vulnerabilities 
+08353043:  Web firewall and method for automatically checking web server for vulnerabilities
 firewall for automatically checking for vulnerabilities, including: an administrating server ... a predetermined examination schedule; a vulnerability search database calling part for calling a vulnerability search database previously stored ... administrating server scheduling part; a vulnerability searching part for searching for potential vulnerabilities of the administrating web ... data included in the called vulnerability search database; a vulnerability information deducing part for ... the results searched in the vulnerability searching part to deduce vulnerability information; a vulnerability checking part for checking the vulnerabilities of the administrating web ... the results deduced from the vulnerability information deducing part; and a detailed vulnerability information reporting part for ... detailed information on the checked vulnerabilities
-08353045:  Method and tool for information security assessment that integrates enterprise objectives with vulnerabilities 
+08353045:  Method and tool for information security assessment that integrates enterprise objectives with vulnerabilities
 method to assess information security vulnerability of an enterprise includes
 
 
 
 Query: mobile device (3)
-08353048:  Application digital rights management (DRM) and portability using a mobile device for authentication 
+08353048:  Application digital rights management (DRM) and portability using a mobile device for authentication
 provided for operating a computing device and a mobile device to access computer software ... a computer software on a mobile device with different computing devices. A mobile device is used to authenticate ... software may reside on the mobile device, the user's computing device, or another computing device. A unique identifier is stored in the mobile device associated with the computer
 08353050:  Mobile device management
 device management method, is disclosed ... available features on a slave mobile device are managed (monitored or ... module commanded by a master device through secure messages exchanged between the two devices using respective electronic messaging capabilities on the two devices. Selection of the features of the slave mobile device to be controlled or ... is facilitated on the master device through a master manager ... or installed on the slave mobile device and user access to
