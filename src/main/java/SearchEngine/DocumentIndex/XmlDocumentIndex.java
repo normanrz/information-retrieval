@@ -3,16 +3,15 @@ package SearchEngine.DocumentIndex;
 import SearchEngine.Import.XmlPatentReader;
 import SearchEngine.InvertedIndex.TermReader;
 import SearchEngine.InvertedIndex.TermWriter;
+import SearchEngine.InvertedIndex.disk.DiskInvertedIndex;
 import SearchEngine.PatentDocument;
 import org.apache.commons.collections4.map.LRUMap;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.*;
 import java.nio.channels.Channels;
-import java.util.List;
-import java.util.Optional;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.nio.file.Files;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
@@ -133,6 +132,22 @@ public class XmlDocumentIndex implements DocumentIndex {
             index.map.put(entry.getDocId(), entry);
         }
         return index;
+    }
+
+    public static void merge(String directory, List<File> inputIndexFiles, File outputFile)
+            throws IOException, InterruptedException {
+
+        if (inputIndexFiles.size() == 1) {
+            Files.copy(inputIndexFiles.get(0).toPath(), outputFile.toPath());
+            return;
+        }
+
+        XmlDocumentIndex index = new XmlDocumentIndex(directory);
+        for (File file : inputIndexFiles) {
+            index.map.putAll(load(directory, file).map);
+        }
+
+        index.save(outputFile);
     }
 
 }

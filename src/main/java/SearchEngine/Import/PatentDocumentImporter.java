@@ -75,12 +75,12 @@ public class PatentDocumentImporter {
                 long offset = offsets[i];
 
                 AtomicInteger tokenCounter = new AtomicInteger(0);
-                doc.getStemmedTitle().forEachOrdered(token ->
-                        index.putPosting(token, doc.getDocId(), tokenCounter.getAndIncrement())
+                PatentDocumentPreprocessor.preprocess(doc.getTitle()).forEachOrdered(token ->
+                                index.putPosting(token, doc.getDocId(), tokenCounter.getAndIncrement())
                 );
                 int titleTokenCount = tokenCounter.get();
-                doc.getStemmedAbstract().forEachOrdered(token ->
-                        index.putPosting(token, doc.getDocId(), tokenCounter.getAndIncrement())
+                PatentDocumentPreprocessor.preprocess(doc.getBody()).forEachOrdered(token ->
+                                index.putPosting(token, doc.getDocId(), tokenCounter.getAndIncrement())
                 );
 
                 documentIndex.add(doc.getDocId(), titleTokenCount, tokenCounter.get(), offset, file.getName());

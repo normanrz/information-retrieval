@@ -17,6 +17,8 @@ import java.util.stream.Stream;
  */
 public class PatentDocumentPreprocessor {
 
+    final private static int MIN_TOKEN_LENGTH = 2;
+
     // http://www.uspto.gov/patft//help/stopword.htm
     protected static List<String> stopwords = Arrays.asList(new String[]{
             "a", "has", "such", "accordance", "have", "suitable", "according", "having", "than", "all", "herein",
@@ -55,11 +57,15 @@ public class PatentDocumentPreprocessor {
     private final static Pattern tokenPattern = Pattern.compile("[\\p{L}\\p{Nd}]+");
 
     public static List<String> tokenize(String query) {
-        return Arrays.asList(whitespacePattern.split(query));
+        return Arrays.stream(whitespacePattern.split(query))
+                .filter(token -> token.length() > MIN_TOKEN_LENGTH)
+                .collect(Collectors.toList());
     }
 
     public static List<String> tokenizeKeepAsterisks(String query) {
-        return Arrays.asList(whitespaceWithAsteriskPattern.split(query));
+        return Arrays.stream(whitespaceWithAsteriskPattern.split(query))
+                .filter(token -> token.length() > MIN_TOKEN_LENGTH)
+                .collect(Collectors.toList());
     }
 
     public static List<Pair<Integer, String>> tokenizeWithOffset(String query) {
@@ -68,7 +74,10 @@ public class PatentDocumentPreprocessor {
         List<Pair<Integer, String>> output = new ArrayList<>();
 
         while (matcher.find()) {
-            output.add(Pair.of(matcher.start(), matcher.group()));
+            String token = matcher.group();
+            if (token.length() > MIN_TOKEN_LENGTH) {
+                output.add(Pair.of(matcher.start(), token));
+            }
         }
 
         return output;

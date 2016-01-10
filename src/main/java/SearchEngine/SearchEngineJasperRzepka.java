@@ -6,13 +6,19 @@ import SearchEngine.InvertedIndex.InvertedIndexMerger;
 import SearchEngine.InvertedIndex.disk.DiskInvertedIndex;
 import SearchEngine.InvertedIndex.memory.MemoryInvertedIndex;
 import SearchEngine.Query.*;
+import SearchEngine.utils.Parallel;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -43,6 +49,28 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
     protected DiskInvertedIndex index;
     protected XmlDocumentIndex docIndex;
 
+
+    public static void indexSingle(
+            String dataDirectory, File inputFile, File outputInvertedIndexFile, File outputDocumentIndexFile) {
+        XmlDocumentIndex documentIndex = new XmlDocumentIndex(dataDirectory);
+
+        System.out.println(inputFile.getName());
+
+        MemoryInvertedIndex localIndex = new MemoryInvertedIndex();
+
+        PatentDocumentImporter.importPatentDocuments(inputFile, localIndex, documentIndex);
+
+        System.out.println(outputInvertedIndexFile.getName());
+        System.out.println(outputDocumentIndexFile.getName());
+        localIndex.printStats();
+        try {
+            localIndex.save(outputInvertedIndexFile);
+            documentIndex.save(outputDocumentIndexFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void index(String dataDirectory, String outputDirectory) {
 
         XmlDocumentIndex documentIndex = new XmlDocumentIndex(dataDirectory);
@@ -52,9 +80,10 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
         new File(outputDirectory).mkdirs();
 
         File dir = new File(dataDirectory);
-        Stream.of(dir.listFiles()).parallel()
+        Stream.of(dir.listFiles())
                 .filter(file -> file.getName().endsWith((".xml")))
                 .forEach(file -> {
+                    System.out.println(file.getName());
 
                     MemoryInvertedIndex localIndex = new MemoryInvertedIndex();
 
@@ -72,6 +101,7 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
                         e.printStackTrace();
                     }
                 });
+
 
         try {
             documentIndex.save(new File(outputDirectory, documentIndexFileName));
@@ -122,6 +152,7 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
                 result, doc,
                 SnippetGenerator.getSnippets(doc, queryTokens));
     }
+
     private SnippetSearchResult createSnippetFromBodySearchResult(
             SearchResult result, List<String> queryTokens) {
 
@@ -198,4 +229,5 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
     public void close() throws IOException {
         index.close();
     }
+
 }

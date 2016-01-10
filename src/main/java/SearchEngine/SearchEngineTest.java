@@ -1,9 +1,6 @@
 package SearchEngine;
 
-import SearchEngine.Query.QueryParser.QueryParser;
-import org.parboiled.Parboiled;
-import org.parboiled.parserunners.ReportingParseRunner;
-import org.parboiled.support.ParsingResult;
+import SearchEngine.Query.QueryParser.QueryParserJS;
 
 import java.util.List;
 
@@ -37,11 +34,11 @@ public class SearchEngineTest {
 
             }, "Load Test Index");
 
-//            runTimed(() -> {
-//
-//                SearchEngineJasperRzepka.index("data", "index");
-//
-//            }, "Build Full Index");
+            runTimed(() -> {
+
+                SearchEngineJasperRzepka.index("data", "index");
+
+            }, "Build Full Index");
 
             runTimed(() -> {
 
@@ -57,10 +54,17 @@ public class SearchEngineTest {
                         "\"data proces*\" NOT processing", "\"data processing\" #2", "\"data proces*\" #4",
                         "\"data processing\" mobile #2", "mobile data #3", "mobile dat* #2"};
 
-                for (String input : queriesSamples) {
-                    QueryParser parser = Parboiled.createParser(QueryParser.class);
-                    ParsingResult<?> result = new ReportingParseRunner(parser.FullQuery()).run(input);
-//                System.out.println(ParseTreeUtils.printNodeTree(result));
+                try {
+                    QueryParserJS queryParserJS = new QueryParserJS();
+                    for (String input : queriesSamples) {
+//                    QueryParser parser = Parboiled.createParser(QueryParser.class);
+//                    ParsingResult<?> result = new ReportingParseRunner(parser.FullQuery()).run(input);
+//                    System.out.println(ParseTreeUtils.printNodeTree(result));
+
+                        System.out.println(queryParserJS.runJS(input));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }, "Query Index");
 
@@ -76,8 +80,8 @@ public class SearchEngineTest {
             for (String query : queries) {
 
                 runTimed(() -> {
-                    List<String> results = myEngine.search(query, 20, 2);
-                    System.out.println(String.format("Query: %s (%d)", query, results.size()));
+                    List<String> results = myEngine.search(query, 20, 0);
+                    System.out.println(String.format("Query: \'%s\' (%d)", query, results.size()));
                     results.forEach(System.out::println);
 
                     System.out.println();

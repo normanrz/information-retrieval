@@ -13,7 +13,9 @@ class XmlSinglePatentReader {
     private boolean isUtilityPatent = false;
     private String inventionAbstract = null;
     private String inventionTitle = null;
-    private String docNumber = null;
+    private String inventionDescription = null;
+    private String inventionClaims = null;
+    private int docId = 0;
 
     private static Pattern whitespacePattern = Pattern.compile("\\s+");
 
@@ -25,10 +27,11 @@ class XmlSinglePatentReader {
         while (cursor.getNext() != null) {
             switch (cursor.getLocalName()) {
                 case "publication-reference":
-                    docNumber = cursor
+                    docId = Integer.parseInt(
+                            cursor
                             .childElementCursor("document-id").advance()
                             .childElementCursor("doc-number").advance()
-                            .collectDescendantText();
+                            .collectDescendantText());
                     break;
                 case "application-reference":
                     isUtilityPatent = cursor.getAttrValue("appl-type").equals("utility");
@@ -49,13 +52,17 @@ class XmlSinglePatentReader {
                 case "abstract":
                     inventionAbstract = cleanText(cursor.collectDescendantText());
                     break;
-            }
-            if (docNumber != null && inventionAbstract != null) {
-                break;
+                case "description":
+                    inventionDescription = cleanText(cursor.collectDescendantText());
+                    break;
+                case "claims":
+                    inventionClaims = cleanText(cursor.collectDescendantText());
+                    break;
             }
         }
         if (isUtilityPatent) {
-            return Optional.of(new PatentDocument(docNumber, inventionTitle, inventionAbstract));
+            return Optional.of(new PatentDocument(
+                    docId, inventionTitle, inventionAbstract, inventionDescription, inventionClaims));
         } else {
             return Optional.empty();
         }
