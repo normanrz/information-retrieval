@@ -6,6 +6,7 @@ import SearchEngine.InvertedIndex.disk.SeekListEntry;
 import SearchEngine.InvertedIndex.disk.SeekListWriter;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
@@ -27,7 +28,7 @@ public class InvertedIndexMerger {
     public static void merge(List<File> inputIndexFiles, File outputFile) throws IOException, InterruptedException {
 
         if (inputIndexFiles.size() == 1) {
-            inputIndexFiles.get(0).renameTo(outputFile);
+            Files.copy(inputIndexFiles.get(0).toPath(), outputFile.toPath());
             return;
         }
 

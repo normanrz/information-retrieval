@@ -11,15 +11,16 @@ public class PatentDocument {
     private final int docId;
     private final String title;
     private final String abstractText;
+    private final String descriptionText;
+    private final String claimsText;
 
-    public PatentDocument(String docId, String title, String abstractText) {
-        this(Integer.parseInt(docId), title, abstractText);
-    }
 
-    public PatentDocument(int docId, String title, String abstractText) {
+    public PatentDocument(int docId, String title, String abstractText, String descriptionText, String claimsText) {
         this.docId = docId;
         this.title = title;
         this.abstractText = abstractText;
+        this.descriptionText = descriptionText;
+        this.claimsText = claimsText;
     }
 
     public int getDocId() {
@@ -34,16 +35,30 @@ public class PatentDocument {
         return abstractText;
     }
 
-    public String getTokenizableDocument() {
-        return (getTitle() + " " + getAbstractText()).toLowerCase();
+    public String getDescriptionText() {
+        return descriptionText;
     }
 
-    public Stream<String> getStemmedTitle() { return PatentDocumentPreprocessor.preprocess(getTitle()); }
+    public String getClaimsText() {
+        return claimsText;
+    }
 
-    public Stream<String> getStemmedAbstract() { return PatentDocumentPreprocessor.preprocess(getAbstractText()); }
+    public String getBody() {
+        return String.join(" ",
+                getAbstractText(),
+                getDescriptionText(),
+                getClaimsText());
+    }
+
+    public String getFulltext() {
+        return String.join(" ",
+                getTitle(),
+                getBody()
+        );
+    }
 
     public Stream<String> getStemmedTokens() {
-        return PatentDocumentPreprocessor.preprocess(getTokenizableDocument());
+        return PatentDocumentPreprocessor.preprocess(getFulltext());
     }
 
     @Override

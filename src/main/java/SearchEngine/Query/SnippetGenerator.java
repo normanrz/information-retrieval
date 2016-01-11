@@ -123,7 +123,7 @@ public class SnippetGenerator {
     }
 
     public static List<String> getSnippets(PatentDocument doc, List<String> queryTokens, int tokenMargin) {
-        return getSnippets(doc.getTokenizableDocument(), queryTokens, tokenMargin);
+        return getSnippets(doc.getFulltext(), queryTokens, tokenMargin);
     }
 
     public static List<String> getSnippetsFromBody(PatentDocument doc, List<String> queryTokens) {
@@ -131,7 +131,7 @@ public class SnippetGenerator {
     }
 
     public static List<String> getSnippetsFromBody(PatentDocument doc, List<String> queryTokens, int tokenMargin) {
-        return getSnippets(doc.getAbstractText(), queryTokens, tokenMargin);
+        return getSnippets(doc.getBody(), queryTokens, tokenMargin);
     }
 
 }
