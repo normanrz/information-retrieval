@@ -1,5 +1,6 @@
 JAVA=java
-CLI=$(JAVA) -cp target/patent-searchengine-1.0-SNAPSHOT-jar-with-dependencies.jar SearchEngine.SearchEngineCli
+JVMOPTS=-Xmx4g
+CLI=$(JAVA) $(JVMOPTS) -cp target/patent-searchengine-1.0-SNAPSHOT-jar-with-dependencies.jar SearchEngine.SearchEngineCli
 DATA_DIR=data
 TMP_DIR=tmp
 OUT_DIR=index
@@ -9,7 +10,7 @@ INTERMEDIATE_FILES=$(INPUT_FILES:$(DATA_DIR)/%=$(TMP_DIR)/%)
 
 $(TMP_DIR)/%/inverted.index: $(DATA_DIR)/%
 	mkdir -p $(@D)
-	$(CLI) index $(DATA_DIR) $< $@/inverted.index $@/document.index
+	$(CLI) index $(DATA_DIR) $< $(@D)/inverted.index $(@D)/document.index
 
 $(TMP_DIR)/%/document.index: $(TMP_DIR)/%/inverted.index
 
