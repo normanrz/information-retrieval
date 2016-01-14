@@ -71,10 +71,11 @@ public class SearchEngineTest {
 
 //            String[] queries = {"asdjlis", "commom", "kontrol", "incluce", "streem", "digital", "rootkits", "network OR access"};
             String[] queries = {
-                    "access OR control", "computers", "data OR processing", "web OR servers",
+//                    "access OR control", "computers", "data OR processing", "web OR servers",
 //                    "vulnerability OR information",
 //                    "computer OR readable OR media"
-                    "cloud OR computing OR security OR issues", "cloud NOT smart", "3-D miniatures", "healthcare AND services"
+//                    "cloud OR computing OR security OR issues", "cloud NOT smart", "3-D miniatures", "healthcare AND services"
+                    "add-on OR module", "digital OR signature", "data OR processing", "scanning"
             };
 
             for (String query : queries) {

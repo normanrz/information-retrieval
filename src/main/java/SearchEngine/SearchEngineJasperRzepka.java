@@ -6,19 +6,13 @@ import SearchEngine.InvertedIndex.InvertedIndexMerger;
 import SearchEngine.InvertedIndex.disk.DiskInvertedIndex;
 import SearchEngine.InvertedIndex.memory.MemoryInvertedIndex;
 import SearchEngine.Query.*;
-import SearchEngine.utils.Parallel;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -219,11 +213,55 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
 
     public List<String> search(String query, int topK, int prf) {
 
-        return search(query, prf)
+        List<Integer> googleIds = new WebFile().getGoogleRanking(query).stream()
+                .map(Integer::parseInt)
                 .limit(topK)
+                .collect(Collectors.toList());
+
+        List<SnippetSearchResult> results = search(query, prf)
+                .limit(topK)
+                .collect(Collectors.toList());
+
+        System.out.println(computeNDCG(googleIds, results, topK));
+
+        return results.stream()
                 .map(result -> result.toString())
                 .collect(Collectors.toList());
 
+    }
+
+    double getGain(List<Integer> goldRanking, int docId) {
+        if (goldRanking.contains(docId)) {
+            return 1 + Math.floor(10 * Math.pow(0.5, 0.1 * (goldRanking.indexOf(docId) + 1)));
+        } else {
+            return 0;
+        }
+    }
+
+    public double computeNDCG(List<Integer> goldRanking, List<SnippetSearchResult> results, int p) {
+        AtomicInteger i = new AtomicInteger(1);
+        double dcg = results.stream()
+                .limit(p)
+                .mapToDouble(result -> {
+                    double value = getGain(goldRanking, result.getDocId()) / ((i.get() == 1) ? 1 : Math.log(i.get()));
+                    i.incrementAndGet();
+                    return value;
+                })
+                .sum();
+
+        AtomicInteger j = new AtomicInteger(1);
+        double idcg = results.stream()
+                .limit(p)
+                .mapToDouble(result -> -getGain(goldRanking, result.getDocId()))
+                .sorted()
+                .map(gain -> -gain / ((j.get() == 1) ? 1 : Math.log(j.get())))
+                .sum();
+
+        if (idcg == 0) {
+            return 0;
+        } else {
+            return dcg / idcg;
+        }
     }
 
     public void close() throws IOException {
