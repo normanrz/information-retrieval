@@ -11,6 +11,7 @@ import javax.xml.stream.XMLStreamException;
 import java.io.*;
 import java.nio.channels.Channels;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -138,7 +139,7 @@ public class XmlDocumentIndex implements DocumentIndex {
             throws IOException, InterruptedException {
 
         if (inputIndexFiles.size() == 1) {
-            Files.copy(inputIndexFiles.get(0).toPath(), outputFile.toPath());
+            Files.copy(inputIndexFiles.get(0).toPath(), outputFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
             return;
         }
 

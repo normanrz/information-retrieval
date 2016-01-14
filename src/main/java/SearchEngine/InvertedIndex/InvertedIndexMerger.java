@@ -6,7 +6,9 @@ import SearchEngine.InvertedIndex.disk.SeekListEntry;
 import SearchEngine.InvertedIndex.disk.SeekListWriter;
 
 import java.io.*;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
@@ -28,7 +30,7 @@ public class InvertedIndexMerger {
     public static void merge(List<File> inputIndexFiles, File outputFile) throws IOException, InterruptedException {
 
         if (inputIndexFiles.size() == 1) {
-            Files.copy(inputIndexFiles.get(0).toPath(), outputFile.toPath());
+            Files.copy(inputIndexFiles.get(0).toPath(), outputFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
             return;
         }
 
@@ -54,7 +56,7 @@ public class InvertedIndexMerger {
         // Write postings
         File postingsFile = new File(outputFile.getPath() + ".postings");
         try (OutputStream postingsFileStream = new FileOutputStream(postingsFile)) {
-            int byteCounter = 0;
+            long byteCounter = 0;
             for (String token : tokenMap.keySet()) {
                 // Assumption: One document is only present in strictly one input index
                 List<DocumentPostings> postings = tokenMap.get(token).stream()

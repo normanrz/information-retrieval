@@ -10,6 +10,10 @@ import java.util.stream.Stream;
 public class SeekList implements Iterable<SeekListEntry> {
     protected final List<SeekListEntry> list;
 
+    public SeekList(int seekListCapacity) {
+        list = new ArrayList<>(seekListCapacity);
+    }
+
     public SeekList() {
         list = new ArrayList<>();
     }
@@ -18,6 +22,9 @@ public class SeekList implements Iterable<SeekListEntry> {
         list.add(entry);
     }
 
+    public int getLength() {
+        return list.size();
+    }
 
     public Stream<SeekListEntry> get(String token) {
         int index = Collections.binarySearch(list, SeekListEntry.createSearchDummy(token));

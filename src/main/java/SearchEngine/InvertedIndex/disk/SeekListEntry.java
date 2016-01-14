@@ -4,11 +4,11 @@ import java.util.Comparator;
 
 public class SeekListEntry implements Comparable<SeekListEntry> {
     protected final String token;
-    protected final int offset;
+    protected final long offset;
     protected int length;
     protected int tokenCount;
 
-    public SeekListEntry(String token, int offset, int length, int tokenCount) {
+    public SeekListEntry(String token, long offset, int length, int tokenCount) {
         this.token = token;
         this.offset = offset;
         this.length = length;
@@ -25,7 +25,7 @@ public class SeekListEntry implements Comparable<SeekListEntry> {
                 .compare(this, o);
     }
 
-    public int getOffset() {
+    public long getOffset() {
         return offset;
     }
 

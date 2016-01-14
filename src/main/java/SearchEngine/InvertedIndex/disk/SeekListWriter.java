@@ -11,13 +11,14 @@ import java.io.IOException;
 public class SeekListWriter {
 
     public static void writeSeekListEntry(DataOutput stream, SeekListEntry entry) throws IOException {
-        stream.writeInt(entry.getOffset());
+        stream.writeLong(entry.getOffset());
         stream.writeInt(entry.getLength());
         stream.writeInt(entry.getTokenCount());
         TermWriter.writeTerm(stream, entry.getToken());
     }
 
     public static void writeSeekList(DataOutput stream, SeekList list) throws IOException {
+        stream.writeInt(list.getLength());
         for (SeekListEntry entry : list) {
             writeSeekListEntry(stream, entry);
         }

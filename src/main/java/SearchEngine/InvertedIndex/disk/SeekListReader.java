@@ -11,7 +11,7 @@ import java.util.zip.InflaterInputStream;
 public class SeekListReader {
 
     public static SeekListEntry readSeekListEntry(DataInput stream) throws IOException {
-        int offset = stream.readInt();
+        long offset = stream.readLong();
         int length = stream.readInt();
         int tokenCount = stream.readInt();
         String token = TermReader.readTerm(stream);
@@ -19,7 +19,8 @@ public class SeekListReader {
     }
 
     public static SeekList readSeekList(DataInput stream) throws IOException {
-        SeekList seekList = new SeekList();
+        int seekListLength = stream.readInt();
+        SeekList seekList = new SeekList(seekListLength);
         while (true) {
             try {
                 seekList.add(readSeekListEntry(stream));
@@ -27,6 +28,7 @@ public class SeekListReader {
                 break;
             }
         }
+        System.out.println(seekList.getLength());
         return seekList;
     }
 

@@ -94,7 +94,7 @@ public class MemoryInvertedIndex extends MemoryIndex<DocumentPostings> implement
         SeekList seekList = new SeekList();
 
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        int byteCounter = 0;
+        long byteCounter = 0;
         for (String token : index.navigableKeySet()) {
             ByteArrayOutputStream postingsBuffer = new ByteArrayOutputStream();
             DataOutputStream postingsDataOutput = new DataOutputStream(new DeflaterOutputStream(postingsBuffer));

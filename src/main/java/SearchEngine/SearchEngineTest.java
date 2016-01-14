@@ -34,17 +34,17 @@ public class SearchEngineTest {
 
             }, "Load Test Index");
 
-            runTimed(() -> {
+//            runTimed(() -> {
+//
+//                SearchEngineJasperRzepka.index("data", "index");
+//
+//            }, "Build Full Index");
 
-                SearchEngineJasperRzepka.index("data", "index");
-
-            }, "Build Full Index");
-
-            runTimed(() -> {
-
-                myEngine.loadIndex("index", "data");
-
-            }, "Load Full Index");
+//            runTimed(() -> {
+//
+//                myEngine.loadIndex("index", "data");
+//
+//            }, "Load Full Index");
 
 
             runTimed(() -> {
@@ -71,10 +71,10 @@ public class SearchEngineTest {
 
 //            String[] queries = {"asdjlis", "commom", "kontrol", "incluce", "streem", "digital", "rootkits", "network OR access"};
             String[] queries = {
-//                    "access OR control", "computers", "data OR processing", "web OR servers",
+                    "access OR control", "computers", "data OR processing", "web OR servers",
 //                    "vulnerability OR information",
 //                    "computer OR readable OR media"
-                    "access", "control", "image OR data", "program", "vulnerability", "mobile device"
+                    "cloud OR computing OR security OR issues", "cloud NOT smart", "3-D miniatures", "healthcare AND services"
             };
 
             for (String query : queries) {

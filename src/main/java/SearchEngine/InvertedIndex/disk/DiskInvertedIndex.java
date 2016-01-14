@@ -22,7 +22,7 @@ public class DiskInvertedIndex implements InvertedIndex, AutoCloseable {
     private int collectionTokenCount;
 
     private final int LRU_CACHE_SIZE = 500;
-    private LRUMap<Integer, List<DocumentPostings>> lruDocumentPostingsCache = new LRUMap<>(LRU_CACHE_SIZE);
+    private LRUMap<Long, List<DocumentPostings>> lruDocumentPostingsCache = new LRUMap<>(LRU_CACHE_SIZE);
 
 
     public DiskInvertedIndex(File indexFile) throws IOException {
@@ -129,11 +129,11 @@ public class DiskInvertedIndex implements InvertedIndex, AutoCloseable {
         return loadDocumentPostingsList(entry.getOffset(), entry.getLength());
     }
 
-    private synchronized Stream<DocumentPostings> loadDocumentPostings(int offset, int length) {
+    private synchronized Stream<DocumentPostings> loadDocumentPostings(long offset, int length) {
         return loadDocumentPostingsList(offset, length).stream();
     }
 
-    private synchronized List<DocumentPostings> loadDocumentPostingsList(int offset, int length) {
+    private synchronized List<DocumentPostings> loadDocumentPostingsList(long offset, int length) {
         if (lruDocumentPostingsCache.containsKey(offset)) {
             return lruDocumentPostingsCache.get(offset);
         }

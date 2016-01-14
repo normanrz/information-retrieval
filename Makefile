@@ -5,7 +5,7 @@ DATA_DIR=data
 TMP_DIR=tmp
 OUT_DIR=index
 
-INPUT_FILES=$(shell find $(DATA_DIR) -name "*.xml")
+INPUT_FILES=$(shell find $(DATA_DIR)/ -name "*.xml")
 INTERMEDIATE_FILES=$(INPUT_FILES:$(DATA_DIR)/%=$(TMP_DIR)/%)
 
 $(TMP_DIR)/%/inverted.index: $(DATA_DIR)/%
