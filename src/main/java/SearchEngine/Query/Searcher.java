@@ -7,6 +7,8 @@ import SearchEngine.InvertedIndex.Posting;
 import SearchEngine.utils.IntArrayUtils;
 import SearchEngine.utils.LevenshteinDistance;
 
+import javax.print.Doc;
+import javax.swing.text.Document;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -88,7 +90,7 @@ public class Searcher {
             return emptyArray;
         } else {
             int tokenCount = 0;
-            List<Posting> results = null;
+            List<DocumentPostings> results = null;
             for (String token : tokens) {
                 if (results == null) {
                     // First token
@@ -97,23 +99,33 @@ public class Searcher {
 
                     // Subsequent tokens
                     final int finalTokenCount = tokenCount;
-                    final int[] docIds = postingsDocIds(results);
-                    List<Posting> tokenResults = searchTokenInDocs(token, docIds);
+                    final int[] docIds = docIds(results);
+                    List<DocumentPostings> tokenResults = searchTokenInDocs(token, docIds);
+                    final int[] tokenDocIds = docIds(tokenResults);
 
                     // Shrink result set based on subsequent token matches
                     results = results.stream()
-                            .filter(posting ->
-                                            tokenResults.stream()
-                                                    // Current token is in same document
-                                                    .filter(posting1 -> posting1.docId() == posting.docId())
-                                                            // Current token position matches expected position
-                                                    .anyMatch(posting1 -> posting1.pos() == posting.pos() + finalTokenCount)
+                            .filter(documentPostings -> IntArrayUtils.intArrayContains(tokenDocIds, documentPostings.getDocId()))
+                            .filter(documentPostings -> tokenResults.stream()
+                                            // Current token is in same document
+                                            .filter(posting1 -> posting1.getDocId() == documentPostings.getDocId())
+                                            // Current token position matches expected position
+                                            .anyMatch(posting1 -> {
+                                                for (int pos1 : documentPostings.getPositions().toArray()) {
+                                                    for (int pos2 : posting1.getPositions().toArray()) {
+                                                        if (pos1 + finalTokenCount == pos2) {
+                                                            return true;
+                                                        }
+                                                    }
+                                                }
+                                                return false;
+                                            })
                             )
                             .collect(Collectors.toList());
                 }
                 tokenCount += 1;
             }
-            return postingsDocIds(results);
+            return docIds(results);
         }
     }
 
@@ -135,7 +147,7 @@ public class Searcher {
     }
 
 
-    private List<Posting> searchToken(String token) {
+    private List<DocumentPostings> searchToken(String token) {
         Stream<DocumentPostings> results;
         if (token.endsWith("*")) {
             // Prefix search (no stemming)
@@ -160,12 +172,10 @@ public class Searcher {
                 results = tmpResults.stream();
             }
         }
-        return results
-                .flatMap(documentPostings -> documentPostings.toPostings().stream())
-                .collect(Collectors.toList());
+        return results.collect(Collectors.toList());
     }
 
-    private List<Posting> searchTokenInDocs(String token, int[] docIds) {
+    private List<DocumentPostings> searchTokenInDocs(String token, int[] docIds) {
         Stream<DocumentPostings> results;
         if (token.endsWith("*")) {
             // Prefix search (no stemming)
@@ -177,18 +187,15 @@ public class Searcher {
             String stemmedToken = PatentDocumentPreprocessor.stem(token);
             results = index.getInDocs(stemmedToken, docIds);
         }
-        return results
-                .flatMap(documentPostings -> documentPostings.toPostings().stream())
-                .collect(Collectors.toList());
+        return results.collect(Collectors.toList());
 
     }
 
 
     private int[] searchOr(List<String> tokens) {
-        return postingsDocIds(tokens.stream()
+        return docIds(tokens.stream()
                 .map(this::searchToken)
-                .flatMap(postings -> postings.stream())
-                .collect(Collectors.toList()));
+                .flatMap(list -> list.stream()));
     }
 
     private int[] searchAnd(List<String> tokens) {
@@ -200,10 +207,10 @@ public class Searcher {
             for (String token : tokens) {
                 if (results == null) {
                     // First token
-                    results = postingsDocIds(searchToken(token));
+                    results = docIds(searchToken(token));
                 } else {
                     // Subsequent tokens in intersecting documents
-                    results = postingsDocIds(searchTokenInDocs(token, results));
+                    results = docIds(searchTokenInDocs(token, results));
                 }
 
                 if (results.length == 0) {
@@ -220,8 +227,8 @@ public class Searcher {
         } else {
 
             // Remove intersecting documents
-            int[] docIds0 = postingsDocIds(searchToken(tokens.get(0)));
-            int[] docIds1 = postingsDocIds(searchTokenInDocs(tokens.get(1), docIds0));
+            int[] docIds0 = docIds(searchToken(tokens.get(0)));
+            int[] docIds1 = docIds(searchTokenInDocs(tokens.get(1), docIds0));
 
             return Arrays.stream(docIds0)
                     .filter(docId -> !IntArrayUtils.intArrayContains(docIds1, docId))
@@ -232,8 +239,17 @@ public class Searcher {
 
     private int[] postingsDocIds(List<Posting> postings) {
         return postings.stream()
-                .mapToInt(posting -> posting.docId())
+                .mapToInt(Posting::docId)
                 .distinct()
+                .toArray();
+    }
+    private int[] docIds(List<DocumentPostings> documentPostings) {
+        return docIds(documentPostings.stream());
+    }
+
+    private int[] docIds(Stream<DocumentPostings> documentPostingsStream) {
+        return documentPostingsStream
+                .mapToInt(DocumentPostings::getDocId)
                 .toArray();
     }
 

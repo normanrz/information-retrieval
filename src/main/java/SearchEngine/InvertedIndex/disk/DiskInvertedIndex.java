@@ -21,7 +21,7 @@ public class DiskInvertedIndex implements InvertedIndex, AutoCloseable {
     private int seekListByteLength;
     private int collectionTokenCount;
 
-    private final int LRU_CACHE_SIZE = 500;
+    private final int LRU_CACHE_SIZE = 20;
     private LRUMap<Long, List<DocumentPostings>> lruDocumentPostingsCache = new LRUMap<>(LRU_CACHE_SIZE);
 
 
@@ -146,7 +146,8 @@ public class DiskInvertedIndex implements InvertedIndex, AutoCloseable {
             byte[] buffer = new byte[length];
             file.readFully(buffer);
 
-            DataInputStream stream = new DataInputStream(new InflaterInputStream(new ByteArrayInputStream(buffer)));
+            DataInputStream stream = new DataInputStream(
+                    new BufferedInputStream(new InflaterInputStream(new ByteArrayInputStream(buffer))));
 
             List<DocumentPostings> list = PostingReader.readDocumentPostingsList(stream);
             lruDocumentPostingsCache.put(offset, list);
@@ -167,7 +168,7 @@ public class DiskInvertedIndex implements InvertedIndex, AutoCloseable {
     }
 
     public void printStats() {
-        System.out.println("Terms in index: " + seekList.stream().count());
+        System.out.println("Terms in index: " + seekList.getLength());
         System.out.println("Postings in index: " + getCollectionTokenCount());
     }
 }

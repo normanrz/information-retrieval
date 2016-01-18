@@ -36,7 +36,8 @@ public class SeekListReader {
         byte[] seekListBuffer = new byte[seekListByteLength];
         stream.readFully(seekListBuffer);
 
-        DataInputStream seekListDataInput = new DataInputStream(new InflaterInputStream(new ByteArrayInputStream(seekListBuffer)));
+        DataInputStream seekListDataInput = new DataInputStream(
+                new BufferedInputStream(new InflaterInputStream(new ByteArrayInputStream(seekListBuffer))));
         return SeekListReader.readSeekList(seekListDataInput);
     }
 

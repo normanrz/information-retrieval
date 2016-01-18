@@ -161,17 +161,17 @@ public class WebFile {
     }
 
     // returns at most 100 patent IDs
-    public ArrayList <String> getGoogleRanking(String query) {
+    public ArrayList <Integer> getGoogleRanking(String query) {
 
 
         // only US : &tbs=ptso:us
         // only US grants : &tbs=ptso:us,ptss:g
         // only US utility grants : &tbs=ptso:us,ptss:g,ptst:u
 
-        String minID = "7861317"; // 2011
-        String maxID = "8984661"; // 2015
+        int minID = 7861317; // 2011
+        int maxID = 8984661; // 2015
 
-        ArrayList <String> ranking = new ArrayList <>();
+        ArrayList <Integer> ranking = new ArrayList <>();
         int safeNumber = 100;  // to get enough US utility patents and exclude others
         try {
             // issue the query
@@ -190,15 +190,15 @@ public class WebFile {
                 Element link = Jsoup.parse(textMatched).select("a").first();
                 String url = link.attr("href");
                 //  System.out.print(url + "\n");
-                Pattern patentPattern = Pattern.compile("https://www.google.de/patents/US(.*?)?dq=");
+                Pattern patentPattern = Pattern.compile("/patents/US(\\d+)\\?dq=");
                 Matcher patentMatcher = patentPattern.matcher(url);
-                String patentNumber = "";
+                int patentNumber = -1;
                 while (patentMatcher.find()) {
-                    patentNumber = patentMatcher.group(1); // get the ID
+                    patentNumber = Integer.parseInt(patentMatcher.group(1)); // get the ID
                     //   System.out.print("patentNumber " + patentNumber + "\n");
                 }
-                if(patentNumber!= null && patentNumber.compareTo(minID) > 0 && patentNumber.compareTo(maxID) < 0) {
-                    ranking.add(patentNumber.replace("?", "")); // without the zero infront of the ID
+                if(patentNumber != -1 && patentNumber > minID && patentNumber < maxID) {
+                    ranking.add(patentNumber); // .replace("?", "")); // without the zero infront of the ID
                     //   System.out.print(patentNumber + "\n");
                 }
             }

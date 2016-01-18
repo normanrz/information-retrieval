@@ -187,7 +187,7 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
         Ranker ranker = new Ranker(index, docIndex);
 
         // Search
-        SearchResultSet searchResultSet = Searcher.search(query, index, true);
+        SearchResultSet searchResultSet = Searcher.search(query, index, false);
         List<String> queryTokens = searchResultSet.getQueryTokens();
 
         // Rank first-pass
@@ -214,7 +214,6 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
     public List<String> search(String query, int topK, int prf) {
 
         List<Integer> googleIds = new WebFile().getGoogleRanking(query).stream()
-                .map(Integer::parseInt)
                 .limit(topK)
                 .collect(Collectors.toList());
 
