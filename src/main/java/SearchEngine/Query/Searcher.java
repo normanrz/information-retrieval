@@ -7,8 +7,6 @@ import SearchEngine.InvertedIndex.Posting;
 import SearchEngine.utils.IntArrayUtils;
 import SearchEngine.utils.LevenshteinDistance;
 
-import javax.print.Doc;
-import javax.swing.text.Document;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -109,7 +107,7 @@ public class Searcher {
                             .filter(documentPostings -> tokenResults.stream()
                                             // Current token is in same document
                                             .filter(posting1 -> posting1.getDocId() == documentPostings.getDocId())
-                                            // Current token position matches expected position
+                                                    // Current token position matches expected position
                                             .anyMatch(posting1 -> {
                                                 for (int pos1 : documentPostings.getPositions().toArray()) {
                                                     for (int pos2 : posting1.getPositions().toArray()) {
@@ -243,6 +241,7 @@ public class Searcher {
                 .distinct()
                 .toArray();
     }
+
     private int[] docIds(List<DocumentPostings> documentPostings) {
         return docIds(documentPostings.stream());
     }

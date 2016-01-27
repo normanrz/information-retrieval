@@ -3,6 +3,7 @@ package SearchEngine.Query;
 import SearchEngine.PatentDocument;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -35,16 +36,12 @@ public class SnippetSearchResult extends SearchResult {
         return snippets;
     }
 
-    public String getText() {
-        return getTitle() + "\n" + String.join("\n", getSnippets());
-    }
-
     public Stream<String> getTokens() {
         return getPatentDocument().getStemmedTokens();
     }
 
     public String getCombinedSnippet() {
-        return String.join(" ... ", getSnippets());
+        return getSnippets().stream().limit(5).collect(Collectors.joining(" ... "));
     }
 
     @Override

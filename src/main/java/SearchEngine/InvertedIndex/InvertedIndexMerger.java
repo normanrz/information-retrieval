@@ -1,20 +1,16 @@
 package SearchEngine.InvertedIndex;
 
 import SearchEngine.InvertedIndex.disk.DiskInvertedIndex;
-import SearchEngine.InvertedIndex.disk.SeekList;
-import SearchEngine.InvertedIndex.disk.SeekListEntry;
-import SearchEngine.InvertedIndex.disk.SeekListWriter;
+import SearchEngine.InvertedIndex.seeklist.EntryListSeekList;
+import SearchEngine.InvertedIndex.seeklist.SeekListEntry;
+import SearchEngine.InvertedIndex.seeklist.SeekListWriter;
 
 import java.io.*;
-import java.nio.file.CopyOption;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
-import java.util.zip.DeflaterOutputStream;
 
 /**
  * Created by norman on 03.11.15.
@@ -29,10 +25,10 @@ public class InvertedIndexMerger {
 
     public static void merge(List<File> inputIndexFiles, File outputFile) throws IOException, InterruptedException {
 
-        if (inputIndexFiles.size() == 1) {
-            Files.copy(inputIndexFiles.get(0).toPath(), outputFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            return;
-        }
+//        if (inputIndexFiles.size() == 1) {
+//            Files.copy(inputIndexFiles.get(0).toPath(), outputFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+//            return;
+//        }
 
 
         List<DiskInvertedIndex> indexes = new ArrayList<>();
@@ -40,7 +36,7 @@ public class InvertedIndexMerger {
             indexes.add(new DiskInvertedIndex(file));
         }
 
-        SeekList seekList = new SeekList();
+        EntryListSeekList seekList = new EntryListSeekList();
 
         SortedMap<String, List<DiskInvertedIndex>> tokenMap = new TreeMap<>();
         for (DiskInvertedIndex index : indexes) {
@@ -79,12 +75,10 @@ public class InvertedIndexMerger {
         }
 
 
-        // Write SeekList
+        // Write EntryListSeekList
         File seekListFile = new File(outputFile.getPath() + ".seeklist");
         try (DataOutputStream seekListFileStream =
-                     new DataOutputStream(
-                             new DeflaterOutputStream(
-                                     new FileOutputStream(seekListFile)))) {
+                     new DataOutputStream(new FileOutputStream(seekListFile))) {
             SeekListWriter.writeSeekList(seekListFileStream, seekList);
             seekListFileStream.close();
         }

@@ -4,10 +4,10 @@ import SearchEngine.InvertedIndex.DocumentPostings;
 import SearchEngine.InvertedIndex.InvertedIndex;
 import SearchEngine.InvertedIndex.PostingReader;
 import SearchEngine.InvertedIndex.PostingWriter;
-import SearchEngine.InvertedIndex.disk.SeekList;
-import SearchEngine.InvertedIndex.disk.SeekListEntry;
-import SearchEngine.InvertedIndex.disk.SeekListReader;
-import SearchEngine.InvertedIndex.disk.SeekListWriter;
+import SearchEngine.InvertedIndex.seeklist.EntryListSeekList;
+import SearchEngine.InvertedIndex.seeklist.SeekListEntry;
+import SearchEngine.InvertedIndex.seeklist.SeekListReader;
+import SearchEngine.InvertedIndex.seeklist.SeekListWriter;
 import SearchEngine.PatentDocument;
 import SearchEngine.utils.IntArrayUtils;
 
@@ -91,7 +91,7 @@ public class MemoryInvertedIndex extends MemoryIndex<DocumentPostings> implement
 
     public void save(OutputStream outputStream) throws IOException {
 
-        SeekList seekList = new SeekList();
+        EntryListSeekList seekList = new EntryListSeekList();
 
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         long byteCounter = 0;
@@ -107,7 +107,7 @@ public class MemoryInvertedIndex extends MemoryIndex<DocumentPostings> implement
         }
 
         ByteArrayOutputStream seekListBuffer = new ByteArrayOutputStream();
-        DataOutputStream seekListDataOutput = new DataOutputStream(new DeflaterOutputStream(seekListBuffer));
+        DataOutputStream seekListDataOutput = new DataOutputStream(seekListBuffer);
         SeekListWriter.writeSeekList(seekListDataOutput, seekList);
         seekListDataOutput.close();
 
@@ -135,7 +135,7 @@ public class MemoryInvertedIndex extends MemoryIndex<DocumentPostings> implement
         int seekListByteLength = fileDataInput.readInt();
         fileDataInput.skipBytes(Integer.BYTES); // Header
 
-        SeekList seekList = SeekListReader.readSeekListFromFile(fileDataInput, seekListByteLength);
+        EntryListSeekList seekList = SeekListReader.readSeekListFromFile(fileDataInput, seekListByteLength);
 
         for (SeekListEntry entry : seekList) {
             byte[] postingsBuffer = new byte[entry.getLength()];

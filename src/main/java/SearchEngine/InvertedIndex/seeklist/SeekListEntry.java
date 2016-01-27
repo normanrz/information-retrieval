@@ -1,4 +1,4 @@
-package SearchEngine.InvertedIndex.disk;
+package SearchEngine.InvertedIndex.seeklist;
 
 import java.util.Comparator;
 

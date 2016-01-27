@@ -5,6 +5,7 @@ import SearchEngine.Import.PatentDocumentImporter;
 import SearchEngine.InvertedIndex.InvertedIndexMerger;
 import SearchEngine.InvertedIndex.disk.DiskInvertedIndex;
 import SearchEngine.InvertedIndex.memory.MemoryInvertedIndex;
+import SearchEngine.LinkIndex.LinkIndex;
 import SearchEngine.Query.*;
 
 import java.io.File;
@@ -39,27 +40,32 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
 
     private static final String invertedIndexFileName = "inverted.index";
     private static final String documentIndexFileName = "document.index";
+    private static final String linkIndexFileName = "link.index";
 
     protected DiskInvertedIndex index;
     protected XmlDocumentIndex docIndex;
+    protected LinkIndex linkIndex;
 
 
     public static void indexSingle(
-            String dataDirectory, File inputFile, File outputInvertedIndexFile, File outputDocumentIndexFile) {
+            String dataDirectory, File inputFile, File outputInvertedIndexFile, File outputDocumentIndexFile, File outputLinkIndexFile) {
         XmlDocumentIndex documentIndex = new XmlDocumentIndex(dataDirectory);
+        LinkIndex linkIndex = new LinkIndex();
 
         System.out.println(inputFile.getName());
 
         MemoryInvertedIndex localIndex = new MemoryInvertedIndex();
 
-        PatentDocumentImporter.importPatentDocuments(inputFile, localIndex, documentIndex);
+        PatentDocumentImporter.importPatentDocuments(inputFile, localIndex, documentIndex, linkIndex);
 
         System.out.println(outputInvertedIndexFile.getName());
         System.out.println(outputDocumentIndexFile.getName());
+        System.out.println(outputLinkIndexFile.getName());
         localIndex.printStats();
         try {
             localIndex.save(outputInvertedIndexFile);
             documentIndex.save(outputDocumentIndexFile);
+            linkIndex.save(outputLinkIndexFile);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -68,20 +74,21 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
     public static void index(String dataDirectory, String outputDirectory) {
 
         XmlDocumentIndex documentIndex = new XmlDocumentIndex(dataDirectory);
+        LinkIndex linkIndex = new LinkIndex();
         AtomicInteger subIndexCounter = new AtomicInteger(0);
         List<File> subIndexFiles = new ArrayList<>();
 
         new File(outputDirectory).mkdirs();
 
         File dir = new File(dataDirectory);
-        Stream.of(dir.listFiles())
+        Stream.of(dir.listFiles()).parallel()
                 .filter(file -> file.getName().endsWith((".xml")))
                 .forEach(file -> {
                     System.out.println(file.getName());
 
                     MemoryInvertedIndex localIndex = new MemoryInvertedIndex();
 
-                    PatentDocumentImporter.importPatentDocuments(file, localIndex, documentIndex);
+                    PatentDocumentImporter.importPatentDocuments(file, localIndex, documentIndex, linkIndex);
 
                     File indexFile = new File(outputDirectory,
                             String.format("%s.%02d", invertedIndexFileName, subIndexCounter.getAndIncrement()));
@@ -96,8 +103,8 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
                     }
                 });
 
-
         try {
+            linkIndex.save(new File(outputDirectory, linkIndexFileName));
             documentIndex.save(new File(outputDirectory, documentIndexFileName));
             InvertedIndexMerger.merge(subIndexFiles, new File(outputDirectory, invertedIndexFileName));
             subIndexFiles.forEach(File::delete);
@@ -106,32 +113,13 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
         }
     }
 
-    public static void indexTest(String sourceFileName, String outputDirectory) {
-
-        File sourceFile = new File(sourceFileName);
-        XmlDocumentIndex documentIndex = new XmlDocumentIndex(sourceFile.getParent());
-        MemoryInvertedIndex testIndex = new MemoryInvertedIndex();
-
-        PatentDocumentImporter.importPatentDocuments(sourceFile, testIndex, documentIndex);
-
-        new File(outputDirectory).mkdirs();
-
-        System.out.println("Imported test index");
-        testIndex.printStats();
-        try {
-            testIndex.save(new File(outputDirectory, invertedIndexFileName));
-            documentIndex.save(new File(outputDirectory, documentIndexFileName));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
 
     public void loadIndex(String indexDirectory, String dataDirectory) {
         try {
-            docIndex = XmlDocumentIndex.load(dataDirectory, new File(indexDirectory, documentIndexFileName));
+            linkIndex = LinkIndex.load(new File(indexDirectory, linkIndexFileName));
             index = new DiskInvertedIndex(new File(indexDirectory, invertedIndexFileName));
             index.printStats();
+            docIndex = XmlDocumentIndex.load(dataDirectory, new File(indexDirectory, documentIndexFileName));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -213,15 +201,15 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
 
     public List<String> search(String query, int topK, int prf) {
 
-        List<Integer> googleIds = new WebFile().getGoogleRanking(query).stream()
-                .limit(topK)
-                .collect(Collectors.toList());
+//        List<Integer> googleIds = new WebFile().getGoogleRanking(query).stream()
+//                .limit(topK)
+//                .collect(Collectors.toList());
 
         List<SnippetSearchResult> results = search(query, prf)
                 .limit(topK)
                 .collect(Collectors.toList());
 
-        System.out.println(computeNDCG(googleIds, results, topK));
+//        System.out.println(computeNDCG(googleIds, results, topK));
 
         return results.stream()
                 .map(result -> result.toString())
@@ -249,11 +237,14 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
                 .sum();
 
         AtomicInteger j = new AtomicInteger(1);
-        double idcg = results.stream()
+        double idcg = goldRanking.stream()
                 .limit(p)
-                .mapToDouble(result -> -getGain(goldRanking, result.getDocId()))
-                .sorted()
-                .map(gain -> -gain / ((j.get() == 1) ? 1 : Math.log(j.get())))
+                .mapToDouble(docId -> getGain(goldRanking, docId))
+                .map(gain -> {
+                    double value = gain / ((j.get() == 1) ? 1 : Math.log(j.get()));
+                    j.incrementAndGet();
+                    return value;
+                })
                 .sum();
 
         if (idcg == 0) {

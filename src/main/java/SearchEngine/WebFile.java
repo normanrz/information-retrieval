@@ -1,5 +1,7 @@
-
 package SearchEngine;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -7,8 +9,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Element;
 
 /*
 * use the function 'ArrayList <String> getGoogleRanking(String query)' to get the gold rankings from google for a given query and compute NDCG later on
@@ -90,7 +90,8 @@ public class WebFile {
     private Object readStream(int length, java.io.InputStream stream)
             throws java.io.IOException {
         final int buflen = Math.max(1024, Math.max(length, stream.available()));
-        byte[] buf = new byte[buflen];;
+        byte[] buf = new byte[buflen];
+        ;
         byte[] bytes = null;
 
         for (int nRead = stream.read(buf); nRead != -1; nRead = stream.read(buf)) {
@@ -161,7 +162,7 @@ public class WebFile {
     }
 
     // returns at most 100 patent IDs
-    public ArrayList <Integer> getGoogleRanking(String query) {
+    public ArrayList<Integer> getGoogleRanking(String query) {
 
 
         // only US : &tbs=ptso:us
@@ -171,7 +172,7 @@ public class WebFile {
         int minID = 7861317; // 2011
         int maxID = 8984661; // 2015
 
-        ArrayList <Integer> ranking = new ArrayList <>();
+        ArrayList<Integer> ranking = new ArrayList<>();
         int safeNumber = 100;  // to get enough US utility patents and exclude others
         try {
             // issue the query
@@ -197,7 +198,7 @@ public class WebFile {
                     patentNumber = Integer.parseInt(patentMatcher.group(1)); // get the ID
                     //   System.out.print("patentNumber " + patentNumber + "\n");
                 }
-                if(patentNumber != -1 && patentNumber > minID && patentNumber < maxID) {
+                if (patentNumber != -1 && patentNumber > minID && patentNumber < maxID) {
                     ranking.add(patentNumber); // .replace("?", "")); // without the zero infront of the ID
                     //   System.out.print(patentNumber + "\n");
                 }
@@ -209,7 +210,6 @@ public class WebFile {
         }
         return ranking;
     }
-
 
 
 }

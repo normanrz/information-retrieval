@@ -3,10 +3,10 @@ package SearchEngine.InvertedIndex.disk;
 import SearchEngine.InvertedIndex.DocumentPostings;
 import SearchEngine.InvertedIndex.InvertedIndex;
 import SearchEngine.InvertedIndex.PostingReader;
+import SearchEngine.InvertedIndex.seeklist.*;
 import SearchEngine.utils.IntArrayUtils;
 import org.apache.commons.collections4.map.LRUMap;
 
-import javax.print.Doc;
 import java.io.*;
 import java.util.Collections;
 import java.util.List;
@@ -35,8 +35,21 @@ public class DiskInvertedIndex implements InvertedIndex, AutoCloseable {
         seekListByteLength = indexFile.readInt();
         collectionTokenCount = indexFile.readInt();
 
-        return SeekListReader.readSeekListFromFile(indexFile, seekListByteLength);
+        return readByteArraySeekList(indexFile);
     }
+
+    private ByteArraySeekList readByteArraySeekList(RandomAccessFile indexFile) throws IOException {
+        byte[] seekListByteArray = new byte[seekListByteLength];
+        indexFile.readFully(seekListByteArray);
+        return ByteArraySeekList.read(new DataInputStream(new ByteArrayInputStream(seekListByteArray)));
+    }
+
+    private EntryListSeekList readEntryListSeekList(RandomAccessFile indexFile) throws IOException {
+        return SeekListReader.readSeekListFromFile(
+                new DataInputStream(new BufferedInputStream(new FileInputStream(indexFile.getFD()))),
+                seekListByteLength);
+    }
+
 
     private Optional<SeekListEntry> getSeekListEntry(String token) {
         return seekList.get(token).findFirst();
@@ -71,19 +84,14 @@ public class DiskInvertedIndex implements InvertedIndex, AutoCloseable {
                         IntArrayUtils.intArrayContains(docIds, documentPostings.getDocId()));
     }
 
-    public Stream<DocumentPostings> all() {
-        return seekList.stream()
-                .flatMap(entry -> loadDocumentPostings(entry.offset, entry.length));
-    }
-
     public Stream<String> allTokens() {
         return seekList.stream()
                 .map(SeekListEntry::getToken);
     }
 
     public Stream<String> getTokensByPrefix(String prefixToken) {
-        return allTokens()
-                .filter(token -> token.startsWith(prefixToken));
+        return seekList.getByPrefix(prefixToken)
+                .map(SeekListEntry::getToken);
     }
 
     public int getCollectionTokenCount() {

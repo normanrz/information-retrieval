@@ -10,10 +10,12 @@ import java.util.List;
  */
 public class TermReader {
     public static String readTerm(DataInput stream) throws IOException {
-        int termLength = stream.readInt();
-        byte[] termBytes = new byte[termLength];
-        stream.readFully(termBytes);
-        return new String(termBytes, "UTF8");
+//        int termLength = stream.readInt();
+//        byte[] termBytes = new byte[termLength];
+//        stream.readFully(termBytes);
+//        return new String(termBytes, "UTF8");
+        return stream.readUTF();
+
     }
 
     public static List<String> readTerms(DataInput stream) throws IOException {

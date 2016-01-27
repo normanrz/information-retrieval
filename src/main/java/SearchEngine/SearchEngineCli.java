@@ -2,6 +2,7 @@ package SearchEngine;
 
 import SearchEngine.DocumentIndex.XmlDocumentIndex;
 import SearchEngine.InvertedIndex.InvertedIndexMerger;
+import SearchEngine.LinkIndex.LinkIndex;
 
 import java.io.File;
 import java.util.Arrays;
@@ -18,7 +19,7 @@ public class SearchEngineCli {
         } else {
             switch (args[0]) {
                 case "index":
-                    if (args.length < 5) {
+                    if (args.length < 6) {
                         printUsage();
                     } else {
                         index(args);
@@ -38,6 +39,13 @@ public class SearchEngineCli {
                         mergeDocumentIndex(args);
                     }
                     break;
+                case "merge-link":
+                    if (args.length < 3) {
+                        printUsage();
+                    } else {
+                        mergeLinkIndex(args);
+                    }
+                    break;
                 default:
                     printUsage();
                     break;
@@ -46,9 +54,10 @@ public class SearchEngineCli {
     }
 
     static void printUsage() {
-        System.out.println("search-engine-cli index <data directory> <input xmlfile> <output inv-index> <output doc-index>");
+        System.out.println("search-engine-cli index <data directory> <input xmlfile> <output inv-index> <output doc-index> <output link-index>");
         System.out.println("search-engine-cli merge-inv <input index1> <input index2> ... <output index>");
         System.out.println("search-engine-cli merge-doc <data directory> <input index1> <input index2> ... <output index>");
+        System.out.println("search-engine-cli merge-link <input index1> <input index2> ... <output index>");
     }
 
     static void index(String args[]) {
@@ -56,9 +65,11 @@ public class SearchEngineCli {
         File inputFile = new File(args[2]);
         File outputInvertedIndexFile = new File(args[3]);
         File outputDocumentIndexFile = new File(args[4]);
+        File outputLinkIndexFile = new File(args[5]);
 
         System.out.println("Start indexing");
-        SearchEngineJasperRzepka.indexSingle(dataDirectory, inputFile, outputInvertedIndexFile, outputDocumentIndexFile);
+        SearchEngineJasperRzepka.indexSingle(
+                dataDirectory, inputFile, outputInvertedIndexFile, outputDocumentIndexFile, outputLinkIndexFile);
         System.out.println("Finish indexing");
 
     }
@@ -96,5 +107,22 @@ public class SearchEngineCli {
             e.printStackTrace();
         }
         System.out.println("Finish merging document indexes");
+    }
+
+    static void mergeLinkIndex(String args[]) {
+        File outputFile = new File(args[args.length - 1]);
+        List<File> inputFiles = Arrays.stream(args)
+                .skip(1)
+                .limit(args.length - 2)
+                .map(File::new)
+                .collect(Collectors.toList());
+
+        System.out.println("Start merging link indexes");
+        try {
+            LinkIndex.merge(inputFiles, outputFile);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("Finish merging link indexes");
     }
 }

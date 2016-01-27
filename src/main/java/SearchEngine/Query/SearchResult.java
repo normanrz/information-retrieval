@@ -34,6 +34,7 @@ public class SearchResult implements Comparable<SearchResult> {
 
     @Override
     public String toString() {
-        return String.format("%08d\t(%8f)", getDocId(), getRank());
+        return String.format("%08d", getDocId());
+//        return String.format("%08d\t(%8f)", getDocId(), getRank());
     }
 }

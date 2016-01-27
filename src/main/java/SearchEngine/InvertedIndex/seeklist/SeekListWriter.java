@@ -1,4 +1,4 @@
-package SearchEngine.InvertedIndex.disk;
+package SearchEngine.InvertedIndex.seeklist;
 
 import SearchEngine.InvertedIndex.TermWriter;
 
@@ -9,6 +9,8 @@ import java.io.IOException;
  * Created by norman on 18.11.15.
  */
 public class SeekListWriter {
+
+    private SeekListWriter() {}
 
     public static void writeSeekListEntry(DataOutput stream, SeekListEntry entry) throws IOException {
         stream.writeLong(entry.getOffset());

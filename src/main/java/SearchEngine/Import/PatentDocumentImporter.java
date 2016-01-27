@@ -2,6 +2,7 @@ package SearchEngine.Import;
 
 import SearchEngine.DocumentIndex.XmlDocumentIndex;
 import SearchEngine.InvertedIndex.memory.MemoryInvertedIndex;
+import SearchEngine.LinkIndex.LinkIndex;
 import SearchEngine.PatentDocument;
 import com.twitter.elephantbird.util.StreamSearcher;
 import org.apache.commons.collections.primitives.ArrayLongList;
@@ -62,7 +63,8 @@ public class PatentDocumentImporter {
     }
 
 
-    public static void importPatentDocuments(File file, MemoryInvertedIndex index, XmlDocumentIndex documentIndex) {
+    public static void importPatentDocuments(
+            File file, MemoryInvertedIndex index, XmlDocumentIndex documentIndex, LinkIndex linkIndex) {
         long[] offsets = PatentDocumentImporter.readPatentDocumentOffsets(file);
         List<PatentDocument> patentDocuments = PatentDocumentImporter.readPatentDocuments(file);
 
@@ -84,6 +86,9 @@ public class PatentDocumentImporter {
                 );
 
                 documentIndex.add(doc.getDocId(), titleTokenCount, tokenCounter.get(), offset, file.getName());
+                for (int citation : doc.getCitations()) {
+                    linkIndex.add(citation, doc.getDocId());
+                }
             }
         }
     }

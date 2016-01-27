@@ -1,8 +1,11 @@
 package SearchEngine;
 
 import SearchEngine.Query.QueryParser.QueryParserJS;
+import SearchEngine.utils.IntArrayUtils;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -70,7 +73,7 @@ public class SearchEngineTest {
 
 
             String[] queries = {
-                    "graph editor", "social trend", "fossil OR hydrocarbons", "physiological AND saline", "tires NOT pressure"
+                    "revie*", "review OR guidelines", "on-chip OR OCV",
             };
 
             for (String query : queries) {
@@ -83,6 +86,28 @@ public class SearchEngineTest {
                     System.out.println();
                 }, "Query Index: " + query);
             }
+
+
+            for (int docId : new int [] { 7920906, 7904949, 8078787 }) {
+                System.out.println(docId);
+                System.out.println(Arrays.stream(myEngine.linkIndex.get(docId)).mapToObj(Integer::toString).collect(Collectors.joining(", ")));
+                System.out.println();
+            }
+
+            System.out.println(7865308 + " AND " + 7925708);
+            System.out.println(Arrays.stream(
+                    IntArrayUtils.intersection(myEngine.linkIndex.get(7865308), myEngine.linkIndex.get(7925708)))
+                        .mapToObj(Integer::toString)
+                        .collect(Collectors.joining(", ")));
+            System.out.println();
+
+            System.out.println(7947864 + " AND " + 7947142);
+            System.out.println(Arrays.stream(
+                    IntArrayUtils.intersection(myEngine.linkIndex.get(7947864), myEngine.linkIndex.get(7947142)))
+                        .mapToObj(Integer::toString)
+                    .collect(Collectors.joining(", ")));
+            System.out.println();
+
         }
     }
 

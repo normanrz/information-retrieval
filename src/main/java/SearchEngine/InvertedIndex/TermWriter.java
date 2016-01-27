@@ -2,7 +2,6 @@ package SearchEngine.InvertedIndex;
 
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 
 /**
@@ -11,9 +10,10 @@ import java.util.Collection;
 public class TermWriter {
 
     public static void writeTerm(DataOutput stream, String term) throws IOException {
-        byte[] termBytes = term.getBytes("UTF8");
-        stream.writeInt(termBytes.length);
-        stream.write(termBytes);
+//        byte[] termBytes = term.getBytes("UTF8");
+//        stream.writeInt(termBytes.length);
+//        stream.write(termBytes);
+        stream.writeUTF(term);
     }
 
     public static void writeTerms(DataOutput stream, Collection<String> terms) throws IOException {
@@ -21,14 +21,5 @@ public class TermWriter {
         for (String term : terms) {
             TermWriter.writeTerm(stream, term);
         }
-    }
-
-    public static int termByteLength(String term) {
-        try {
-            return Integer.BYTES + term.getBytes("UTF8").length;
-        } catch (UnsupportedEncodingException e) {
-            return 0;
-        }
-
     }
 }
