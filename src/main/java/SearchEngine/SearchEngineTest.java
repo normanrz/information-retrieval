@@ -23,26 +23,6 @@ public class SearchEngineTest {
 
     public static void main(String args[]) throws Exception {
 
-        runTimed(() -> {
-            String[] queriesSamples = {
-                    "data AND info OR mobile", "data linkTo:07920906", "data AND (info OR mobile)",
-                    "data info", "data AND information", "mobile OR \"data processing\"", "data NOT info*",
-                    "\"data proces*\" NOT processing", "\"data processing\" #2", "\"data proces*\" #4",
-                    "\"data processing\" mobile #2", "mobile data #3", "mobile dat* #2"};
-
-            try {
-                for (String input : queriesSamples) {
-//                    QueryParser parser = Parboiled.createParser(QueryParser.class);
-//                    ParsingResult<?> result = new ReportingParseRunner(parser.FullQuery()).run(input);
-//                    System.out.println(ParseTreeUtils.printNodeTree(result));
-
-                    System.out.println(QueryParserJS.parse(input));
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }, "Query Index");
-
         try (SearchEngineJasperRzepka myEngine = new SearchEngineJasperRzepka()) {
 
             runTimed(() -> {
@@ -71,7 +51,7 @@ public class SearchEngineTest {
 
 
             String[] queries = {
-                    "revie*", "review OR guidelines", "on-chip OR OCV",
+                    "reviewboa*", "review OR guidelines", "on-chip OR OCV"
             };
 
             for (String query : queries) {

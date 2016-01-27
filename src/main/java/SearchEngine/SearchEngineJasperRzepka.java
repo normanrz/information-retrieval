@@ -118,6 +118,9 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
 
     public void loadIndex(String indexDirectory, String dataDirectory) {
         try {
+            // Warm up query parser
+            QueryParserJS.parse("linkTo:1234567 OR test* AND review NOT test1 #2");
+            // Load stuff
             linkIndex = LinkIndex.load(new File(indexDirectory, linkIndexFileName));
             index = new DiskInvertedIndex(new File(indexDirectory, invertedIndexFileName));
             index.printStats();
