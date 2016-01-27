@@ -7,6 +7,8 @@ import SearchEngine.InvertedIndex.disk.DiskInvertedIndex;
 import SearchEngine.InvertedIndex.memory.MemoryInvertedIndex;
 import SearchEngine.LinkIndex.LinkIndex;
 import SearchEngine.Query.*;
+import SearchEngine.Query.QueryParser.QueryParserJS;
+import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
 import java.io.File;
 import java.io.IOException;
@@ -174,8 +176,12 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
         // Set up
         Ranker ranker = new Ranker(index, docIndex);
 
+        // Parse query
+        ScriptObjectMirror queryObj = QueryParserJS.parse(query);
+        prf = (Integer) queryObj.get("prf");
+
         // Search
-        SearchResultSet searchResultSet = Searcher.search(query, index, false);
+        SearchResultSet searchResultSet = SearcherJS.search(queryObj, index, linkIndex, false);
         List<String> queryTokens = searchResultSet.getQueryTokens();
 
         // Rank first-pass
