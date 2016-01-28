@@ -11,11 +11,9 @@ import java.io.*;
 import java.nio.channels.Channels;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.List;
-import java.util.Optional;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -25,17 +23,53 @@ import java.util.zip.GZIPOutputStream;
  */
 public class XmlDocumentIndex implements DocumentIndex {
 
-    private SortedMap<Integer, XmlDocumentIndexEntry> map = new TreeMap<>();
     private final String directory;
-
     private final int LRU_CACHE_SIZE = 300;
+    private SortedMap<Integer, XmlDocumentIndexEntry> map = new TreeMap<>();
     private LRUMap<XmlDocumentIndexEntry, PatentDocument> lruDocumentCache = new LRUMap<>(LRU_CACHE_SIZE);
 
     public XmlDocumentIndex(String directory) {
         this.directory = directory;
     }
 
-    private Optional<XmlDocumentIndexEntry> get(int docId) {
+    private static List<XmlDocumentIndexEntry> loadEntries(InputStream inputStream) throws IOException {
+        DataInputStream dataInput = new DataInputStream(inputStream);
+
+        List<String> fileNames = TermReader.readTerms(dataInput);
+        return XmlDocumentIndexEntryReader.readDocumentIndexEntries(dataInput, fileNames);
+    }
+
+    public static XmlDocumentIndex load(String directory, File inputFile) throws IOException {
+        try (InputStream inputStream = new GZIPInputStream(new FileInputStream(inputFile))) {
+            return load(directory, inputStream);
+        }
+    }
+
+    public static XmlDocumentIndex load(String directory, InputStream inputStream) throws IOException {
+        XmlDocumentIndex index = new XmlDocumentIndex(directory);
+        for (XmlDocumentIndexEntry entry : loadEntries(inputStream)) {
+            index.map.put(entry.getDocId(), entry);
+        }
+        return index;
+    }
+
+    public static void merge(String directory, List<File> inputIndexFiles, File outputFile)
+            throws IOException, InterruptedException {
+
+        if (inputIndexFiles.size() == 1) {
+            Files.copy(inputIndexFiles.get(0).toPath(), outputFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            return;
+        }
+
+        XmlDocumentIndex index = new XmlDocumentIndex(directory);
+        for (File file : inputIndexFiles) {
+            index.map.putAll(load(directory, file).map);
+        }
+
+        index.save(outputFile);
+    }
+
+    public Optional<XmlDocumentIndexEntry> get(int docId) {
         return Optional.ofNullable(map.get(docId));
     }
 
@@ -45,6 +79,10 @@ public class XmlDocumentIndex implements DocumentIndex {
 
     public int getDocumentTitleTokenCount(int docId) {
         return get(docId).map(XmlDocumentIndexEntry::getTitleTokenCount).orElse(0);
+    }
+
+    public double getDocumentPageRank(int docId) {
+        return get(docId).map(XmlDocumentIndexEntry::getPageRank).orElse(0.0);
     }
 
     public List<String> getPatentDocumentTokens(int docId) {
@@ -89,11 +127,32 @@ public class XmlDocumentIndex implements DocumentIndex {
         }
     }
 
-    public synchronized void add(int docId, int titleTokenCount, int documentTokenCount, long offset, String fileName) {
-        XmlDocumentIndexEntry entry = new XmlDocumentIndexEntry(docId, titleTokenCount, documentTokenCount, fileName, offset);
-        map.put(docId, entry);
+    public int getDocumentCount() {
+        return map.size();
     }
 
+    public String getDirectory() {
+        return directory;
+    }
+
+    public IntStream allDocIds() {
+        return map.keySet().stream().mapToInt(Integer::intValue);
+    }
+
+    public Stream<Map.Entry<Integer, XmlDocumentIndexEntry>> allEntries() {
+        return map.entrySet().stream();
+    }
+
+    public void add(int docId, int titleTokenCount, int documentTokenCount, long offset, String fileName) {
+        add(docId, titleTokenCount, documentTokenCount, offset, fileName, 0);
+    }
+
+    public synchronized void add(
+            int docId, int titleTokenCount, int documentTokenCount, long offset, String fileName, double pageRank) {
+        XmlDocumentIndexEntry entry =
+                new XmlDocumentIndexEntry(docId, titleTokenCount, documentTokenCount, fileName, offset, pageRank);
+        map.put(docId, entry);
+    }
 
     public void save(File outputFile) throws IOException {
         try (OutputStream outputStream = new GZIPOutputStream(new FileOutputStream(outputFile))) {
@@ -114,43 +173,6 @@ public class XmlDocumentIndex implements DocumentIndex {
         TermWriter.writeTerms(dataOutput, fileNames);
 
         XmlDocumentIndexEntryWriter.writeDocumentIndexEntries(dataOutput, map.values(), fileNames);
-    }
-
-    private static List<XmlDocumentIndexEntry> loadEntries(InputStream inputStream) throws IOException {
-        DataInputStream dataInput = new DataInputStream(inputStream);
-
-        List<String> fileNames = TermReader.readTerms(dataInput);
-        return XmlDocumentIndexEntryReader.readDocumentIndexEntries(dataInput, fileNames);
-    }
-
-    public static XmlDocumentIndex load(String directory, File inputFile) throws IOException {
-        try (InputStream inputStream = new GZIPInputStream(new FileInputStream(inputFile))) {
-            return load(directory, inputStream);
-        }
-    }
-
-    public static XmlDocumentIndex load(String directory, InputStream inputStream) throws IOException {
-        XmlDocumentIndex index = new XmlDocumentIndex(directory);
-        for (XmlDocumentIndexEntry entry : loadEntries(inputStream)) {
-            index.map.put(entry.getDocId(), entry);
-        }
-        return index;
-    }
-
-    public static void merge(String directory, List<File> inputIndexFiles, File outputFile)
-            throws IOException, InterruptedException {
-
-        if (inputIndexFiles.size() == 1) {
-            Files.copy(inputIndexFiles.get(0).toPath(), outputFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            return;
-        }
-
-        XmlDocumentIndex index = new XmlDocumentIndex(directory);
-        for (File file : inputIndexFiles) {
-            index.map.putAll(load(directory, file).map);
-        }
-
-        index.save(outputFile);
     }
 
 }

@@ -16,12 +16,11 @@ import java.util.zip.InflaterInputStream;
 
 public class DiskInvertedIndex implements InvertedIndex, AutoCloseable {
 
+    private final int LRU_CACHE_SIZE = 20;
     private SeekList seekList;
     private RandomAccessFile file;
     private int seekListByteLength;
     private int collectionTokenCount;
-
-    private final int LRU_CACHE_SIZE = 20;
     private LRUMap<Long, List<DocumentPostings>> lruDocumentPostingsCache = new LRUMap<>(LRU_CACHE_SIZE);
 
 

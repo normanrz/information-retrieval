@@ -24,6 +24,34 @@ import java.util.zip.InflaterInputStream;
  */
 public class MemoryInvertedIndex extends MemoryIndex<DocumentPostings> implements InvertedIndex {
 
+    public static MemoryInvertedIndex load(File file) throws IOException {
+        try (FileInputStream inputStream = new FileInputStream(file)) {
+            return load(inputStream);
+        }
+    }
+
+    public static MemoryInvertedIndex load(InputStream inputStream) throws IOException {
+        MemoryInvertedIndex newIndex = new MemoryInvertedIndex();
+
+        InputStream fileStream = new BufferedInputStream(inputStream);
+        DataInputStream fileDataInput = new DataInputStream(fileStream);
+
+        int seekListByteLength = fileDataInput.readInt();
+        fileDataInput.skipBytes(Integer.BYTES); // Header
+
+        EntryListSeekList seekList = SeekListReader.readSeekListFromFile(fileDataInput, seekListByteLength);
+
+        for (SeekListEntry entry : seekList) {
+            byte[] postingsBuffer = new byte[entry.getLength()];
+            fileDataInput.readFully(postingsBuffer);
+            DataInputStream postingsDataInput = new DataInputStream(new InflaterInputStream(new ByteArrayInputStream(postingsBuffer)));
+            PostingReader.readDocumentPostingsList(postingsDataInput)
+                    .forEach(documentPostings -> newIndex.put(entry.getToken(), documentPostings));
+        }
+
+        return newIndex;
+    }
+
     public Optional<DocumentPostings> get(String token, int docId) {
         return get(token)
                 .filter(documentPostings -> documentPostings.getDocId() == docId)
@@ -58,7 +86,6 @@ public class MemoryInvertedIndex extends MemoryIndex<DocumentPostings> implement
         }
     }
 
-
     public int getCollectionTokenCount() {
         return all().mapToInt(DocumentPostings::getTokenCount)
                 .sum();
@@ -81,7 +108,6 @@ public class MemoryInvertedIndex extends MemoryIndex<DocumentPostings> implement
                 .map(documentPostings -> documentPostings.getTitleTokenCount(docTitleTokenCount))
                 .orElse(0);
     }
-
 
     public void save(File file) throws IOException {
         try (FileOutputStream outputStream = new FileOutputStream(file)) {
@@ -118,36 +144,6 @@ public class MemoryInvertedIndex extends MemoryIndex<DocumentPostings> implement
         seekListBuffer.writeTo(outputStream);
         buffer.writeTo(outputStream);
     }
-
-
-    public static MemoryInvertedIndex load(File file) throws IOException {
-        try (FileInputStream inputStream = new FileInputStream(file)) {
-            return load(inputStream);
-        }
-    }
-
-    public static MemoryInvertedIndex load(InputStream inputStream) throws IOException {
-        MemoryInvertedIndex newIndex = new MemoryInvertedIndex();
-
-        InputStream fileStream = new BufferedInputStream(inputStream);
-        DataInputStream fileDataInput = new DataInputStream(fileStream);
-
-        int seekListByteLength = fileDataInput.readInt();
-        fileDataInput.skipBytes(Integer.BYTES); // Header
-
-        EntryListSeekList seekList = SeekListReader.readSeekListFromFile(fileDataInput, seekListByteLength);
-
-        for (SeekListEntry entry : seekList) {
-            byte[] postingsBuffer = new byte[entry.getLength()];
-            fileDataInput.readFully(postingsBuffer);
-            DataInputStream postingsDataInput = new DataInputStream(new InflaterInputStream(new ByteArrayInputStream(postingsBuffer)));
-            PostingReader.readDocumentPostingsList(postingsDataInput)
-                    .forEach(documentPostings -> newIndex.put(entry.getToken(), documentPostings));
-        }
-
-        return newIndex;
-    }
-
 
     @Override
     public void printStats() {

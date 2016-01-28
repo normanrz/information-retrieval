@@ -3,7 +3,6 @@ package SearchEngine.InvertedIndex.seeklist;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 /**
@@ -19,8 +18,23 @@ public class ByteArraySeekList implements SeekList {
         this.tokenOffsets = tokenOffsets;
     }
 
+    public static ByteArraySeekList read(DataInputStream buffer) throws IOException {
+        int tokenCount = buffer.readInt();
+        int[] tokenOffsets = new int[tokenCount];
+        int position = Integer.BYTES;
+        for (int i = 0; i < tokenCount; i++) {
+            tokenOffsets[i] = position;
+            buffer.skipBytes(Long.BYTES + 2 * Integer.BYTES);
+            int stringLength = buffer.readUnsignedShort();
+            buffer.skipBytes(stringLength);
+            position += Long.BYTES + 2 * Integer.BYTES + Short.BYTES + stringLength;
+        }
+        return new ByteArraySeekList(buffer, tokenOffsets);
+    }
+
     private Optional<SeekListEntry> getSingle(String token) {
         try {
+            // From: http://algs4.cs.princeton.edu/11model/BinarySearch.java.html
             int lo = 0;
             int hi = getLength() - 1;
             while (lo <= hi) {
@@ -44,6 +58,7 @@ public class ByteArraySeekList implements SeekList {
 
     private int indexOf(String token) {
         try {
+            // From: http://algs4.cs.princeton.edu/11model/BinarySearch.java.html
             int lo = 0;
             int hi = getLength() - 1;
             while (lo <= hi) {
@@ -116,20 +131,6 @@ public class ByteArraySeekList implements SeekList {
         return Arrays.stream(tokenOffsets)
                 .mapToObj(this::getAtOffset)
                 .flatMap(opt -> opt.map(Stream::of).orElseGet(Stream::empty));
-    }
-
-    public static ByteArraySeekList read(DataInputStream buffer) throws IOException {
-        int tokenCount = buffer.readInt();
-        int[] tokenOffsets = new int[tokenCount];
-        int position = Integer.BYTES;
-        for (int i = 0; i < tokenCount; i++) {
-            tokenOffsets[i] = position;
-            buffer.skipBytes(Long.BYTES + 2 * Integer.BYTES);
-            int stringLength = buffer.readUnsignedShort();
-            buffer.skipBytes(stringLength);
-            position += Long.BYTES + 2 * Integer.BYTES + Short.BYTES + stringLength;
-        }
-        return new ByteArraySeekList(buffer, tokenOffsets);
     }
 
     @Override

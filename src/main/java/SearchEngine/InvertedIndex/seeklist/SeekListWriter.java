@@ -10,7 +10,8 @@ import java.io.IOException;
  */
 public class SeekListWriter {
 
-    private SeekListWriter() {}
+    private SeekListWriter() {
+    }
 
     public static void writeSeekListEntry(DataOutput stream, SeekListEntry entry) throws IOException {
         stream.writeLong(entry.getOffset());

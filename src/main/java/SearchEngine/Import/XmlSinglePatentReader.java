@@ -12,6 +12,10 @@ import java.util.regex.Pattern;
 
 class XmlSinglePatentReader {
 
+    private static final Pattern whitespacePattern = Pattern.compile("\\s+");
+    private static final Pattern docIdPattern = Pattern.compile("^\\d{3,8}$");
+    private static final int minDocId = 7861317;
+    private static final int maxDocId = 8984661;
     private boolean isUtilityPatent = false;
     private String inventionAbstract = null;
     private String inventionTitle = null;
@@ -20,11 +24,9 @@ class XmlSinglePatentReader {
     private IntList inventionCitations = new ArrayIntList();
     private int docId = 0;
 
-    private static final Pattern whitespacePattern = Pattern.compile("\\s+");
-    private static final Pattern docIdPattern = Pattern.compile("^\\d{3,8}$");
-    private static final int minDocId = 7861317;
-    private static final int maxDocId = 8984661;
-
+    public static Optional<PatentDocument> parseSinglePatentDocument(SMInputCursor cursor) throws XMLStreamException {
+        return new XmlSinglePatentReader().parsePatentDocument(cursor);
+    }
 
     private String cleanText(String text) {
         return whitespacePattern.matcher(text).replaceAll(" ");
@@ -120,11 +122,6 @@ class XmlSinglePatentReader {
         } else {
             return Optional.empty();
         }
-    }
-
-
-    public static Optional<PatentDocument> parseSinglePatentDocument(SMInputCursor cursor) throws XMLStreamException {
-        return new XmlSinglePatentReader().parsePatentDocument(cursor);
     }
 
 }

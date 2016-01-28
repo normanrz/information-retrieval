@@ -3,9 +3,7 @@ package SearchEngine.Query;
 import SearchEngine.Import.PatentDocumentPreprocessor;
 import SearchEngine.InvertedIndex.DocumentPostings;
 import SearchEngine.InvertedIndex.InvertedIndex;
-import SearchEngine.InvertedIndex.Posting;
 import SearchEngine.LinkIndex.LinkIndex;
-import SearchEngine.Query.QueryParser.QueryParserJS;
 import SearchEngine.utils.IntArrayUtils;
 import SearchEngine.utils.LevenshteinDistance;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
@@ -30,10 +28,16 @@ public class SearcherJS {
         this.linkIndex = linkIndex;
     }
 
+    public static SearchResultSet search(
+            ScriptObjectMirror query, InvertedIndex index, LinkIndex linkIndex, boolean enableSpellingCorrection) {
+        SearcherJS searcher = new SearcherJS(index, linkIndex);
+        searcher.setShouldCorrectSpelling(enableSpellingCorrection);
+        return searcher.search(query);
+    }
+
     public void setShouldCorrectSpelling(boolean state) {
         shouldCorrectSpelling = state;
     }
-
 
     public List<String> getStemmedQueryTokens() {
         return stemmedQueryTokens;
@@ -57,7 +61,7 @@ public class SearcherJS {
             int tokenCount = 0;
             List<DocumentPostings> results = null;
             for (Object _tokenObj : values) {
-                ScriptObjectMirror tokenObj = (ScriptObjectMirror)_tokenObj;
+                ScriptObjectMirror tokenObj = (ScriptObjectMirror) _tokenObj;
                 if (results == null) {
                     // First token
                     results = execTokenWithPostings(tokenObj);
@@ -75,7 +79,7 @@ public class SearcherJS {
                             .filter(documentPostings -> tokenResults.stream()
                                             // Current token is in same document
                                             .filter(posting1 -> posting1.getDocId() == documentPostings.getDocId())
-                                            // Current token position matches expected position
+                                                    // Current token position matches expected position
                                             .anyMatch(posting1 -> {
                                                 for (int pos1 : documentPostings.getPositions().toArray()) {
                                                     for (int pos2 : posting1.getPositions().toArray()) {
@@ -171,7 +175,6 @@ public class SearcherJS {
         return emptyArray;
     }
 
-
     private Optional<String> findCorrectSpelledToken(String originalToken) {
         final int tokenLengthTolerance = 1;
         final double distanceThreshold = 0.4;
@@ -189,15 +192,14 @@ public class SearcherJS {
                 .map(Map.Entry::getKey);
     }
 
-
     private int[] execNot(Collection<Object> values, int[] docIds0) {
 
-            // Remove intersecting documents
-            int[] docIds1 = execOr(values);
+        // Remove intersecting documents
+        int[] docIds1 = execOr(values);
 
-            return Arrays.stream(docIds0)
-                    .filter(docId -> !IntArrayUtils.intArrayContains(docIds1, docId))
-                    .toArray();
+        return Arrays.stream(docIds0)
+                .filter(docId -> !IntArrayUtils.intArrayContains(docIds1, docId))
+                .toArray();
     }
 
     private int[] docIds(List<DocumentPostings> documentPostings) {
@@ -208,14 +210,6 @@ public class SearcherJS {
         return documentPostingsStream
                 .mapToInt(DocumentPostings::getDocId)
                 .toArray();
-    }
-
-
-    public static SearchResultSet search(
-            ScriptObjectMirror query, InvertedIndex index, LinkIndex linkIndex, boolean enableSpellingCorrection) {
-        SearcherJS searcher = new SearcherJS(index, linkIndex);
-        searcher.setShouldCorrectSpelling(enableSpellingCorrection);
-        return searcher.search(query);
     }
 
 

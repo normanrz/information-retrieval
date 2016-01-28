@@ -28,6 +28,25 @@ public class DocumentPostings implements Comparable<DocumentPostings> {
         }
     }
 
+    public static DocumentPostings merge(DocumentPostings a, DocumentPostings b) {
+        if (a.getDocId() != b.getDocId()) {
+            return null;
+        } else {
+            IntList mergedPositions = new ArrayIntList(a.getPositions().size() + b.getPositions().size());
+
+            Stream.of(a.getPositions(), b.getPositions())
+                    .flatMapToInt(value -> Arrays.stream(value.toArray()))
+                    .sorted()
+                    .forEach(mergedPositions::add);
+
+            return new DocumentPostings(a.getDocId(), mergedPositions);
+        }
+    }
+
+    public static DocumentPostings searchDummy(int docId) {
+        return new DocumentPostings(docId);
+    }
+
     public int getDocId() {
         return this.docId;
     }
@@ -63,24 +82,5 @@ public class DocumentPostings implements Comparable<DocumentPostings> {
     @Override
     public int compareTo(DocumentPostings o) {
         return Integer.compare(getDocId(), o.getDocId());
-    }
-
-    public static DocumentPostings merge(DocumentPostings a, DocumentPostings b) {
-        if (a.getDocId() != b.getDocId()) {
-            return null;
-        } else {
-            IntList mergedPositions = new ArrayIntList(a.getPositions().size() + b.getPositions().size());
-
-            Stream.of(a.getPositions(), b.getPositions())
-                    .flatMapToInt(value -> Arrays.stream(value.toArray()))
-                    .sorted()
-                    .forEach(mergedPositions::add);
-
-            return new DocumentPostings(a.getDocId(), mergedPositions);
-        }
-    }
-
-    public static DocumentPostings searchDummy(int docId) {
-        return new DocumentPostings(docId);
     }
 }

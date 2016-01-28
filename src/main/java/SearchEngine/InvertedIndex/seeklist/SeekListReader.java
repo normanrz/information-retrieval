@@ -11,7 +11,8 @@ import java.io.IOException;
  */
 public class SeekListReader {
 
-    private SeekListReader() {}
+    private SeekListReader() {
+    }
 
     public static SeekListEntry readSeekListEntry(DataInput stream) throws IOException {
         long offset = stream.readLong();

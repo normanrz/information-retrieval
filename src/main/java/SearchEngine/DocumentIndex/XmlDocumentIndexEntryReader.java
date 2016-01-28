@@ -18,9 +18,10 @@ public class XmlDocumentIndexEntryReader {
         int titleTokenCount = stream.readInt();
         int documentTokenCount = stream.readInt();
         long offset = stream.readLong();
+        double pageRank = stream.readDouble();
 
         return new XmlDocumentIndexEntry(
-                docId, titleTokenCount, documentTokenCount, fileNames.get(filenameIndex), offset);
+                docId, titleTokenCount, documentTokenCount, fileNames.get(filenameIndex), offset, pageRank);
     }
 
     public static List<XmlDocumentIndexEntry> readDocumentIndexEntries(

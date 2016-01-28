@@ -17,6 +17,7 @@ public class XmlDocumentIndexEntryWriter {
         stream.writeInt(entry.getTitleTokenCount());
         stream.writeInt(entry.getDocumentTokenCount());
         stream.writeLong(entry.getOffset());
+        stream.writeDouble(entry.getPageRank());
     }
 
     public static void writeDocumentIndexEntries(

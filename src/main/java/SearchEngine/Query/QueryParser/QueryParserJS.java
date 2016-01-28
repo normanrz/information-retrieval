@@ -1,16 +1,11 @@
 package SearchEngine.Query.QueryParser;
 
-import SearchEngine.InvertedIndex.DocumentPostings;
-import SearchEngine.utils.IntArrayUtils;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.stream.Stream;
 
 /**
  * Created by norman on 07.12.15.
@@ -69,7 +64,7 @@ public class QueryParserJS {
             "        peg$c7 = { type: \"literal\", value: \"NOT\", description: \"\\\"NOT\\\"\" },\n" +
             "        peg$c8 = /^[a-zA-Z0-9\\-]/,\n" +
             "        peg$c9 = { type: \"class\", value: \"[a-zA-Z0-9\\\\-]\", description: \"[a-zA-Z0-9\\\\-]\" },\n" +
-            "        peg$c10 = function() { return text().replace(/\\-/g, \"\"); },\n" +
+            "        peg$c10 = function() { return text(); },\n" +
             "        peg$c11 = /^[0-9]/,\n" +
             "        peg$c12 = { type: \"class\", value: \"[0-9]\", description: \"[0-9]\" },\n" +
             "        peg$c13 = function() { return parseInt(text()); },\n" +
@@ -1009,9 +1004,6 @@ public class QueryParserJS {
             "  };\n" +
             "})();\n\n\nfunction parse(str) { return module.parse(str); }" +
             "";
-
-    private QueryParserJS() {}
-
     static ScriptEngine engine;
 
     static {
@@ -1021,6 +1013,9 @@ public class QueryParserJS {
         } catch (ScriptException e) {
             e.printStackTrace();
         }
+    }
+
+    private QueryParserJS() {
     }
 
     public static ScriptObjectMirror parse(String query) {

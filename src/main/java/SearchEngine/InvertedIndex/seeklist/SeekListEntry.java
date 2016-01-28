@@ -19,6 +19,10 @@ public class SeekListEntry implements Comparable<SeekListEntry> {
         this(token, offset, length, 0);
     }
 
+    public static SeekListEntry createSearchDummy(String token) {
+        return new SeekListEntry(token, 0, 0, 0);
+    }
+
     public int compareTo(SeekListEntry o) {
         return Comparator
                 .comparing((SeekListEntry s) -> s.token)
@@ -39,9 +43,5 @@ public class SeekListEntry implements Comparable<SeekListEntry> {
 
     public String getToken() {
         return token;
-    }
-
-    public static SeekListEntry createSearchDummy(String token) {
-        return new SeekListEntry(token, 0, 0, 0);
     }
 }

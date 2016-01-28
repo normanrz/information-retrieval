@@ -67,8 +67,8 @@ public class SnippetGenerator {
         if (splitSnippet.length > 1) {
             String firstSplit = ArrayUtils.first(splitSnippet);
             String lastSplit = ArrayUtils.last(splitSnippet);
-            List<String> firstSplitTokens = PatentDocumentPreprocessor.tokenize(firstSplit);
-            List<String> lastSplitTokens = PatentDocumentPreprocessor.tokenize(lastSplit);
+            List<String> firstSplitTokens = PatentDocumentPreprocessor.tokenizeAsList(firstSplit);
+            List<String> lastSplitTokens = PatentDocumentPreprocessor.tokenizeAsList(lastSplit);
 
             int startIndex = 0;
             int endIndex = snippet.length();

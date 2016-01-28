@@ -1,11 +1,7 @@
 package SearchEngine;
 
-import SearchEngine.Query.QueryParser.QueryParserJS;
-import SearchEngine.utils.IntArrayUtils;
-
-import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 /**
@@ -49,9 +45,13 @@ public class SearchEngineTest {
 
             }, "Load Full Index");
 
+//            myEngine.index.allTokens()
+//                    .sorted(Comparator.comparingInt(token -> -myEngine.index.getCollectionTokenCount(token)))
+//                    .limit(50)
+//                    .forEach(token -> System.out.println(token + ": " + myEngine.index.getCollectionTokenCount(token)));
 
             String[] queries = {
-                    "reviewboa*", "review OR guidelines", "on-chip OR OCV"
+                    "linkTo:08365115", "reviewboa*", "review OR guidelines", "on-chip OR OCV"
             };
 
             for (String query : queries) {
@@ -64,6 +64,7 @@ public class SearchEngineTest {
                     System.out.println();
                 }, "Query Index: " + query);
             }
+
 
         }
     }

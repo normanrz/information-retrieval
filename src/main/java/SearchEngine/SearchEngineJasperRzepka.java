@@ -6,8 +6,8 @@ import SearchEngine.InvertedIndex.InvertedIndexMerger;
 import SearchEngine.InvertedIndex.disk.DiskInvertedIndex;
 import SearchEngine.InvertedIndex.memory.MemoryInvertedIndex;
 import SearchEngine.LinkIndex.LinkIndex;
-import SearchEngine.Query.*;
 import SearchEngine.Query.QueryParser.QueryParserJS;
+import SearchEngine.Query.*;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
 import java.io.File;
@@ -66,8 +66,10 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
         localIndex.printStats();
         try {
             localIndex.save(outputInvertedIndexFile);
-            documentIndex.save(outputDocumentIndexFile);
             linkIndex.save(outputLinkIndexFile);
+            PageRankComputer.injectIntoDocumentIndex(
+                    documentIndex, PageRankComputer.computePageRank(documentIndex, linkIndex))
+                    .save(outputDocumentIndexFile);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -107,7 +109,9 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
 
         try {
             linkIndex.save(new File(outputDirectory, linkIndexFileName));
-            documentIndex.save(new File(outputDirectory, documentIndexFileName));
+            PageRankComputer.injectIntoDocumentIndex(
+                    documentIndex, PageRankComputer.computePageRank(documentIndex, linkIndex))
+                    .save(new File(outputDirectory, documentIndexFileName));
             InvertedIndexMerger.merge(subIndexFiles, new File(outputDirectory, invertedIndexFileName));
             subIndexFiles.forEach(File::delete);
         } catch (IOException | InterruptedException e) {
@@ -199,10 +203,11 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
 //            Map<String, Double> relevanceModel = pseudoRelevanceModelWithDocuments(rankResults, prf, queryTokens);
 
             List<String> newQueryTokens = Ranker.expandQueryFromRelevanceModel(relevanceModel, queryTokens);
-            String newQuery = String.join(" OR ", newQueryTokens);
+            ScriptObjectMirror newQueryObj = QueryParserJS.parse(String.join(" OR ", newQueryTokens));
 
             // Search and rank again
-            return ranker.rankWithRelevanceModel(Searcher.search(newQuery, index, false).getDocIds(), relevanceModel).stream()
+            int[] newResults = SearcherJS.search(newQueryObj, index, linkIndex, false).getDocIds();
+            return ranker.rankWithRelevanceModel(newResults, relevanceModel).stream()
                     .map(result -> createSnippetFromBodySearchResult(result, newQueryTokens));
         }
 

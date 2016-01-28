@@ -17,10 +17,15 @@ import java.util.stream.Stream;
  */
 public class PatentDocumentPreprocessor {
 
+    protected static final SnowballStemmer stemmer = new englishStemmer();
     final private static int MIN_TOKEN_LENGTH = 2;
+    private final static Pattern whitespacePattern = Pattern.compile("[^\\p{L}\\p{Nd}\\-]+");
+    private final static Pattern tokenPattern = Pattern.compile("[\\p{L}\\p{Nd}\\-]+");
 
-    // http://www.uspto.gov/patft//help/stopword.htm
     protected static List<String> stopwords = Arrays.asList(new String[]{
+            // Own selection
+            "may", "one", "first", "can",
+            // From: http://www.uspto.gov/patft//help/stopword.htm
             "a", "has", "such", "accordance", "have", "suitable", "according", "having", "than", "all", "herein",
             "that", "also", "however", "the", "an", "if", "their", "and", "in", "then", "another", "into", "there",
             "are", "invention", "thereby", "as", "is", "therefore", "at", "it", "thereof", "be", "its", "thereto",
@@ -32,8 +37,6 @@ public class PatentDocumentPreprocessor {
             "should", "will", "generally", "since", "with", "had", "some", "would"
     });
 
-    protected static final SnowballStemmer stemmer = new englishStemmer();
-
     public static synchronized String stem(String word) {
         stemmer.setCurrent(word);
         if (stemmer.stem()) {
@@ -43,30 +46,20 @@ public class PatentDocumentPreprocessor {
         }
     }
 
-    public static String stem2(SnowballStemmer stemmer, String word) {
-        stemmer.setCurrent(word);
-        if (stemmer.stem()) {
-            return stemmer.getCurrent();
-        } else {
-            return word;
-        }
+    public static String cleanToken(String token) {
+        return token;
     }
 
-    private final static Pattern whitespaceWithAsteriskPattern = Pattern.compile("[^\\p{L}\\p{Nd}\\*]+");
-    private final static Pattern whitespacePattern = Pattern.compile("[^\\p{L}\\p{Nd}]+");
-    private final static Pattern tokenPattern = Pattern.compile("[\\p{L}\\p{Nd}]+");
+    public static List<String> tokenizeAsList(String query) {
+        return tokenize(query).collect(Collectors.toList());
+    }
 
-    public static List<String> tokenize(String query) {
+    public static Stream<String> tokenize(String query) {
         return Arrays.stream(whitespacePattern.split(query))
                 .filter(token -> token.length() > MIN_TOKEN_LENGTH)
-                .collect(Collectors.toList());
+                .map(PatentDocumentPreprocessor::cleanToken);
     }
 
-    public static List<String> tokenizeKeepAsterisks(String query) {
-        return Arrays.stream(whitespaceWithAsteriskPattern.split(query))
-                .filter(token -> token.length() > MIN_TOKEN_LENGTH)
-                .collect(Collectors.toList());
-    }
 
     public static List<Pair<Integer, String>> tokenizeWithOffset(String query) {
 
@@ -83,56 +76,12 @@ public class PatentDocumentPreprocessor {
         return output;
     }
 
-
     public static boolean isNoStopword(String token) {
         return !stopwords.contains(token);
     }
 
-    public static List<String> mergeAsteriskTokens(List<String> tokens) {
-        List<String> outputTokens = new ArrayList<>();
-        int i = 0;
-        for (String token : tokens) {
-            if (token.equals("*")) {
-                if (i > 0) {
-                    outputTokens.set(i - 1, outputTokens.get(i - 1) + "*");
-                }
-            } else {
-                outputTokens.add(token);
-                i++;
-            }
-
-        }
-        return outputTokens;
-    }
-
-    public static List<String> removeAsteriskTokens(List<String> tokens) {
-        return tokens.stream()
-                .filter(token -> !token.equals("*"))
-                .collect(Collectors.toList());
-    }
-
-
-    public static List<String> removeStopwords(List<String> tokens) {
-        return tokens.stream()
-                .filter(PatentDocumentPreprocessor::isNoStopword)
-                .collect(Collectors.toList());
-    }
-
-
-    public static List<String> lowerCaseTokens(List<String> tokens) {
-        return tokens.stream()
-                .map(String::toLowerCase)
-                .collect(Collectors.toList());
-    }
-
-    public static List<String> stemmedTokens(List<String> tokens) {
-        return tokens.stream()
-                .map(PatentDocumentPreprocessor::stem)
-                .collect(Collectors.toList());
-    }
-
     public static Stream<String> preprocess(String text) {
-        return PatentDocumentPreprocessor.tokenize(text).stream()
+        return PatentDocumentPreprocessor.tokenize(text)
                 .map(String::toLowerCase)
                 .filter(PatentDocumentPreprocessor::isNoStopword)
                 .map(PatentDocumentPreprocessor::stem);

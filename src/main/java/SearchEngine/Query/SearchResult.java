@@ -15,6 +15,10 @@ public class SearchResult implements Comparable<SearchResult> {
         this.rank = rank;
     }
 
+    public static int[] getDocIds(List<? extends SearchResult> results) {
+        return results.stream().mapToInt(SearchResult::getDocId).toArray();
+    }
+
     public int getDocId() {
         return docId;
     }
@@ -26,10 +30,6 @@ public class SearchResult implements Comparable<SearchResult> {
     @Override
     public int compareTo(SearchResult o) {
         return -Double.compare(rank, o.rank);
-    }
-
-    public static int[] getDocIds(List<? extends SearchResult> results) {
-        return results.stream().mapToInt(SearchResult::getDocId).toArray();
     }
 
     @Override

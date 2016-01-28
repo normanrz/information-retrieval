@@ -27,6 +27,13 @@ public class Ranker {
         this.documentIndex = documentIndex;
     }
 
+    public static List<String> expandQueryFromRelevanceModel(Map<String, Double> relevanceModel, List<String> queryTokens) {
+        return Stream.of(relevanceModel.keySet(), queryTokens)
+                .flatMap(Collection::stream)
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
     public Map<String, Double> pseudoRelevanceModel(List<String> queryTokens, int[] topRankedDocIds) {
         List<String> tokens = Arrays.stream(topRankedDocIds)
                 .mapToObj(documentIndex::getPatentDocumentTokens)
@@ -36,7 +43,6 @@ public class Ranker {
                 .collect(Collectors.toList());
         return pseudoRelevanceModel(queryTokens, topRankedDocIds, tokens);
     }
-
 
     public Map<String, Double> pseudoRelevanceModel(List<String> queryTokens, List<SnippetSearchResult> snippetSearchResults) {
 
@@ -86,7 +92,6 @@ public class Ranker {
                 .collect(Collectors.toList());
     }
 
-
     public Stream<SearchResult> rank(SearchResultSet searchResultSet) {
         return rank(searchResultSet.getQueryTokens(), searchResultSet.getDocIds());
     }
@@ -94,10 +99,14 @@ public class Ranker {
     public Stream<SearchResult> rank(List<String> queryTokens, int[] docIds) {
 
         return Arrays.stream(docIds)
-                .mapToObj(docId -> new SearchResult(docId, queryLikelihood(queryTokens, docId)))
+                .mapToObj(docId -> {
+                    double pageRank = Math.log(documentIndex.getDocumentPageRank(docId));
+                    double docQueryLikelihood = queryLikelihood(queryTokens, docId);
+//                    System.out.println(docId + ": " + pageRank + " " + docQueryLikelihood);
+                    return new SearchResult(docId, pageRank + docQueryLikelihood);
+                })
                 .sorted(SearchResult::compareTo);
     }
-
 
     public double queryLikelihood(List<String> queryTokens, int docId) {
         return queryTokens.stream()
@@ -117,18 +126,10 @@ public class Ranker {
     }
 
     private double titleTokenProbability(String token, int docId) {
-
         int docTitleTokenCount = documentIndex.getDocumentTitleTokenCount(docId);
         return (5 * index.getDocumentTitleTokenCount(token, docTitleTokenCount, docId) +
                 mu * ((double) index.getCollectionTokenCount(token) / (double) index.getCollectionTokenCount())) /
                 (docTitleTokenCount + mu);
 
-    }
-
-    public static List<String> expandQueryFromRelevanceModel(Map<String, Double> relevanceModel, List<String> queryTokens) {
-        return Stream.of(relevanceModel.keySet(), queryTokens)
-                .flatMap(Collection::stream)
-                .distinct()
-                .collect(Collectors.toList());
     }
 }

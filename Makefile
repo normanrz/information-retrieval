@@ -19,9 +19,9 @@ $(OUT_DIR)/inverted.index: $(INTERMEDIATE_FILES:%=%/inverted.index)
 	mkdir -p $(@D)
 	$(CLI) merge-inv $(INTERMEDIATE_FILES:%=%/inverted.index) $@
 
-$(OUT_DIR)/document.index: $(INTERMEDIATE_FILES:%=%/document.index)
+$(OUT_DIR)/document.index: $(INTERMEDIATE_FILES:%=%/document.index) $(OUT_DIR)/link.index
 	mkdir -p $(@D)
-	$(CLI) merge-doc $(DATA_DIR) $(INTERMEDIATE_FILES:%=%/document.index) $@
+	$(CLI) merge-doc $(DATA_DIR) $(OUT_DIR)/link.index $(INTERMEDIATE_FILES:%=%/document.index) $@
 
 $(OUT_DIR)/link.index: $(INTERMEDIATE_FILES:%=%/link.index)
 	mkdir -p $(@D)

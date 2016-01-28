@@ -7,6 +7,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * Created by norman on 25.01.16.
@@ -22,27 +23,6 @@ public class LinkIndex {
 
     public LinkIndex(SortedMap<Integer, IntList> list) {
         this.list = list;
-    }
-
-    public synchronized void add(int docId, int citedByDocId) {
-        Optional<IntList> entryOption = getEntry(docId);
-        if (entryOption.isPresent()) {
-            entryOption.get().add(citedByDocId);
-        } else {
-            IntList intList = new ArrayIntList();
-            intList.add(citedByDocId);
-            list.put(docId, intList);
-        }
-    }
-
-    Optional<IntList> getEntry(int docId) {
-        return Optional.ofNullable(list.get(docId));
-    }
-
-    public synchronized int[] get(int docId) {
-        return getEntry(docId)
-                .map(IntList::toArray)
-                .orElse(emptyIntArray);
     }
 
     public static LinkIndex load(File file) throws IOException {
@@ -69,6 +49,47 @@ public class LinkIndex {
         return new LinkIndex(list);
     }
 
+    public static void merge(List<File> inputIndexFiles, File outputFile)
+            throws IOException, InterruptedException {
+
+        if (inputIndexFiles.size() == 1) {
+            Files.copy(inputIndexFiles.get(0).toPath(), outputFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            return;
+        }
+
+        LinkIndex index = new LinkIndex();
+        for (File file : inputIndexFiles) {
+            index.list.putAll(load(file).list);
+        }
+
+        index.save(outputFile);
+    }
+
+    public synchronized void add(int docId, int citedByDocId) {
+        Optional<IntList> entryOption = getEntry(docId);
+        if (entryOption.isPresent()) {
+            entryOption.get().add(citedByDocId);
+        } else {
+            IntList intList = new ArrayIntList();
+            intList.add(citedByDocId);
+            list.put(docId, intList);
+        }
+    }
+
+    private Optional<IntList> getEntry(int docId) {
+        return Optional.ofNullable(list.get(docId));
+    }
+
+    public synchronized int[] get(int docId) {
+        return getEntry(docId)
+                .map(IntList::toArray)
+                .orElse(emptyIntArray);
+    }
+
+    public Stream<Map.Entry<Integer, IntList>> all() {
+        return list.entrySet().stream();
+    }
+
     public void save(File file) throws IOException {
         try (FileOutputStream outputStream = new FileOutputStream(file)) {
             save(outputStream);
@@ -86,21 +107,5 @@ public class LinkIndex {
                 fileDataOutput.writeInt(citedBy);
             }
         }
-    }
-
-    public static void merge(List<File> inputIndexFiles, File outputFile)
-            throws IOException, InterruptedException {
-
-        if (inputIndexFiles.size() == 1) {
-            Files.copy(inputIndexFiles.get(0).toPath(), outputFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            return;
-        }
-
-        LinkIndex index = new LinkIndex();
-        for (File file : inputIndexFiles) {
-            index.list.putAll(load(file).list);
-        }
-
-        index.save(outputFile);
     }
 }

@@ -33,7 +33,7 @@ public class SearchEngineCli {
                     }
                     break;
                 case "merge-doc":
-                    if (args.length < 4) {
+                    if (args.length < 5) {
                         printUsage();
                     } else {
                         mergeDocumentIndex(args);
@@ -56,7 +56,7 @@ public class SearchEngineCli {
     static void printUsage() {
         System.out.println("search-engine-cli index <data directory> <input xmlfile> <output inv-index> <output doc-index> <output link-index>");
         System.out.println("search-engine-cli merge-inv <input index1> <input index2> ... <output index>");
-        System.out.println("search-engine-cli merge-doc <data directory> <input index1> <input index2> ... <output index>");
+        System.out.println("search-engine-cli merge-doc <data directory> <link-index> <input index1> <input index2> ... <output index>");
         System.out.println("search-engine-cli merge-link <input index1> <input index2> ... <output index>");
     }
 
@@ -93,20 +93,26 @@ public class SearchEngineCli {
 
     static void mergeDocumentIndex(String args[]) {
         String directory = args[1];
+        String linkIndexFileName = args[2];
         File outputFile = new File(args[args.length - 1]);
         List<File> inputFiles = Arrays.stream(args)
-                .skip(2)
-                .limit(args.length - 3)
+                .skip(3)
+                .limit(args.length - 4)
                 .map(File::new)
                 .collect(Collectors.toList());
 
-        System.out.println("Start merging document indexes");
+        System.out.println("Start merging document indexes + PageRank");
         try {
+            LinkIndex linkIndex = LinkIndex.load(new File(linkIndexFileName));
             XmlDocumentIndex.merge(directory, inputFiles, outputFile);
+            XmlDocumentIndex documentIndex = XmlDocumentIndex.load(directory, outputFile);
+            PageRankComputer.injectIntoDocumentIndex(
+                    documentIndex, PageRankComputer.computePageRank(documentIndex, linkIndex))
+                    .save(outputFile);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println("Finish merging document indexes");
+        System.out.println("Finish merging document indexes + PageRank");
     }
 
     static void mergeLinkIndex(String args[]) {
