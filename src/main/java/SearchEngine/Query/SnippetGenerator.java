@@ -111,7 +111,7 @@ public class SnippetGenerator {
                 .filter(pos -> pos > 0 && pos < bodyStemmedTokens.size())
                 .toArray(), 1);
 
-        return Arrays.stream(partitions)
+        List<String> snippets = Arrays.stream(partitions)
                 .map(partition -> {
                     Pair<Integer, String> first = bodyTokens.get(ArrayUtils.first(partition));
                     Pair<Integer, String> last = bodyTokens.get(ArrayUtils.last(partition));
@@ -119,6 +119,12 @@ public class SnippetGenerator {
                 })
                 .map(snippet -> shortenSnippetByPunctuation(snippet, queryTokens, tokenMargin))
                 .collect(Collectors.toList());
+
+        if (snippets.size() == 0) {
+            return Arrays.asList(body.substring(1, Math.min(body.length(), 1000)));
+        } else {
+            return snippets;
+        }
     }
 
 

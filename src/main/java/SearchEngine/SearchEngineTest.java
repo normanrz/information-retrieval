@@ -1,5 +1,7 @@
 package SearchEngine;
 
+import SearchEngine.utils.RunUtils;
+
 import java.util.List;
 
 
@@ -20,25 +22,25 @@ public class SearchEngineTest {
 
         try (SearchEngineJasperRzepka myEngine = new SearchEngineJasperRzepka()) {
 
-            runTimed(() -> {
+            RunUtils.runTimedBlock(() -> {
 
                 SearchEngineJasperRzepka.index("data_test", "index_test");
 
             }, "Build Test Index");
 
-            runTimed(() -> {
+            RunUtils.runTimedBlock(() -> {
 
                 myEngine.loadIndex("index_test", "data_test");
 
             }, "Load Test Index");
 
-//            runTimed(() -> {
+//            RunUtils.runTimedBlock(() -> {
 //
 //                SearchEngineJasperRzepka.index("data", "index");
 //
 //            }, "Build Full Index");
 
-            runTimed(() -> {
+            RunUtils.runTimedBlock(() -> {
 
                 myEngine.loadIndex("index", "data");
 
@@ -50,12 +52,12 @@ public class SearchEngineTest {
 //                    .forEach(token -> System.out.println(token + ": " + myEngine.index.getCollectionTokenCount(token)));
 
             String[] queries = {
-                    "linkTo:08365115", "reviewboa*", "review guidelines", "on-chip OR OCV"
+                    "linkTo:07920906", "reviewboa*", "review guidelines", "on-chip OR OCV"
             };
 
             for (String query : queries) {
 
-                runTimed(() -> {
+                RunUtils.runTimedBlock(() -> {
                     List<String> results = myEngine.search(query, 20, 0);
                     System.out.println(String.format("Query: \'%s\' (%d)", query, results.size()));
                     results.forEach(System.out::println);
@@ -66,25 +68,6 @@ public class SearchEngineTest {
 
 
         }
-    }
-
-
-    public static void runTimed(Runnable action, String label) {
-        System.out.println();
-        System.out.println("-----------------------------------------------------");
-        System.out.println(label);
-
-        long start = System.currentTimeMillis();
-        try {
-            action.run();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        long time = System.currentTimeMillis() - start;
-
-        System.out.println(String.format("%s Time:\t%d\tms", label, time));
-        System.out.println("-----------------------------------------------------");
     }
 
 }

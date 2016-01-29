@@ -8,6 +8,7 @@ import SearchEngine.InvertedIndex.memory.MemoryInvertedIndex;
 import SearchEngine.LinkIndex.LinkIndex;
 import SearchEngine.Query.QueryParser.QueryParserJS;
 import SearchEngine.Query.*;
+import SearchEngine.utils.RunUtils;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
 import java.io.File;
@@ -184,22 +185,22 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
         Ranker ranker = new Ranker(index, docIndex);
 
         // Parse query
-        ScriptObjectMirror queryObj = QueryParserJS.parse(query);
-        prf = (Integer) queryObj.get("prf");
+        ScriptObjectMirror queryObj = RunUtils.runTimed(() -> QueryParserJS.parse(query), "Parse");
 
         // Search
-        SearchResultSet searchResultSet = SearcherJS.search(queryObj, index, linkIndex, false);
+        SearchResultSet searchResultSet = RunUtils.runTimed(() -> SearcherJS.search(queryObj, index, linkIndex, false), "Search");
         List<String> queryTokens = searchResultSet.getQueryTokens();
+        System.out.println("Search results: " + searchResultSet.getDocIds().length);
 
         // Rank first-pass
-        Stream<SearchResult> rankResults = ranker.rank(searchResultSet);
+        List<SearchResult> rankResults = RunUtils.runTimed(() -> ranker.rank(searchResultSet).collect(Collectors.toList()), "Rank");
 
         if (prf == 0) {
-            return rankResults
+            return rankResults.stream()
                     .map(result -> createSnippetFromBodySearchResult(result, queryTokens));
         } else {
 
-            Map<String, Double> relevanceModel = pseudoRelevanceModelWithSnippets(rankResults, prf, queryTokens);
+            Map<String, Double> relevanceModel = pseudoRelevanceModelWithSnippets(rankResults.stream(), prf, queryTokens);
 
             List<String> newQueryTokens = Ranker.expandQueryFromRelevanceModel(relevanceModel, queryTokens);
             ScriptObjectMirror newQueryObj = QueryParserJS.parse(String.join(" OR ", newQueryTokens));
