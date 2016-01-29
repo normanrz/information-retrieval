@@ -11,6 +11,9 @@ import java.util.List;
  */
 public class XmlDocumentIndexEntryReader {
 
+    private XmlDocumentIndexEntryReader() {
+    }
+
     public static XmlDocumentIndexEntry readDocumentIndexEntry(
             DataInput stream, List<String> fileNames) throws IOException {
         short filenameIndex = stream.readShort();

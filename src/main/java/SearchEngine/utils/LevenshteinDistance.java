@@ -5,6 +5,9 @@ package SearchEngine.utils;
  */
 public class LevenshteinDistance {
 
+    private LevenshteinDistance() {
+    }
+
     public static double distance(String a, String b) {
         a = a.toLowerCase();
         b = b.toLowerCase();

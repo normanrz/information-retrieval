@@ -1,28 +1,24 @@
 package SearchEngine.Import;
 
+import SearchEngine.utils.RegexUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
+import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * Created by norman on 05.11.15.
- */
 public class PatentDocumentPreprocessor {
 
-    protected static final SnowballStemmer stemmer = new englishStemmer();
-    final private static int MIN_TOKEN_LENGTH = 2;
-    private final static Pattern whitespacePattern = Pattern.compile("[^\\p{L}\\p{Nd}\\-]+");
-    private final static Pattern tokenPattern = Pattern.compile("[\\p{L}\\p{Nd}\\-]+");
+    private final static SnowballStemmer stemmer = new englishStemmer();
+    private final static int MIN_TOKEN_LENGTH = 2;
+    private final static Pattern tokenPattern = Pattern.compile("[\\p{L}]+(?:\\-[\\p{L}]+)*");
 
-    protected static List<String> stopwords = Arrays.asList(new String[]{
+    private static List<String> stopwords = Arrays.asList(new String[]{
             // Own selection
             "may", "one", "first", "can",
             // From: http://www.uspto.gov/patft//help/stopword.htm
@@ -37,6 +33,9 @@ public class PatentDocumentPreprocessor {
             "should", "will", "generally", "since", "with", "had", "some", "would"
     });
 
+    private PatentDocumentPreprocessor() {
+    }
+
     public static synchronized String stem(String word) {
         stemmer.setCurrent(word);
         if (stemmer.stem()) {
@@ -46,34 +45,21 @@ public class PatentDocumentPreprocessor {
         }
     }
 
-    public static String cleanToken(String token) {
-        return token;
+    public static Stream<String> tokenize(String query) {
+        return RegexUtils.matches(tokenPattern, query)
+                .map(MatchResult::group)
+                .filter(token -> token.length() > MIN_TOKEN_LENGTH);
+    }
+
+
+    public static Stream<Pair<Integer, String>> tokenizeWithOffset(String query) {
+        return RegexUtils.matches(tokenPattern, query)
+                .map(matchResult -> Pair.of(matchResult.start(), matchResult.group()))
+                .filter(pair -> pair.getValue().length() > MIN_TOKEN_LENGTH);
     }
 
     public static List<String> tokenizeAsList(String query) {
         return tokenize(query).collect(Collectors.toList());
-    }
-
-    public static Stream<String> tokenize(String query) {
-        return Arrays.stream(whitespacePattern.split(query))
-                .filter(token -> token.length() > MIN_TOKEN_LENGTH)
-                .map(PatentDocumentPreprocessor::cleanToken);
-    }
-
-
-    public static List<Pair<Integer, String>> tokenizeWithOffset(String query) {
-
-        Matcher matcher = tokenPattern.matcher(query);
-        List<Pair<Integer, String>> output = new ArrayList<>();
-
-        while (matcher.find()) {
-            String token = matcher.group();
-            if (token.length() > MIN_TOKEN_LENGTH) {
-                output.add(Pair.of(matcher.start(), token));
-            }
-        }
-
-        return output;
     }
 
     public static boolean isNoStopword(String token) {

@@ -10,6 +10,9 @@ import java.util.List;
  */
 public class XmlDocumentIndexEntryWriter {
 
+    private XmlDocumentIndexEntryWriter() {
+    }
+
     public static void writeDocumentIndexEntry(
             DataOutput stream, XmlDocumentIndexEntry entry, List<String> fileNames) throws IOException {
         stream.writeShort(fileNames.indexOf(entry.getFilename()));

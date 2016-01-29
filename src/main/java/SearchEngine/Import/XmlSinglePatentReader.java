@@ -16,6 +16,7 @@ class XmlSinglePatentReader {
     private static final Pattern docIdPattern = Pattern.compile("^\\d{3,8}$");
     private static final int minDocId = 7861317;
     private static final int maxDocId = 8984661;
+
     private boolean isUtilityPatent = false;
     private String inventionAbstract = null;
     private String inventionTitle = null;
@@ -26,6 +27,9 @@ class XmlSinglePatentReader {
 
     public static Optional<PatentDocument> parseSinglePatentDocument(SMInputCursor cursor) throws XMLStreamException {
         return new XmlSinglePatentReader().parsePatentDocument(cursor);
+    }
+
+    private XmlSinglePatentReader() {
     }
 
     private String cleanText(String text) {

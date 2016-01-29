@@ -20,6 +20,9 @@ public class SnippetGenerator {
 
     private static final int defaultTokenMargin = 5;
 
+    private SnippetGenerator() {
+    }
+
     private static int[][] partitionPositions(int[] source, int minOffset) {
 
         List<IntList> output = new ArrayList<>();
@@ -89,7 +92,8 @@ public class SnippetGenerator {
 
     public static List<String> getSnippets(String body, List<String> queryTokens, int tokenMargin) {
 
-        List<Pair<Integer, String>> bodyTokens = PatentDocumentPreprocessor.tokenizeWithOffset(body);
+        List<Pair<Integer, String>> bodyTokens = PatentDocumentPreprocessor.tokenizeWithOffset(body)
+                .collect(Collectors.toList());
         List<String> bodyStemmedTokens = bodyTokens.stream()
                 .map(Pair::getRight)
                 .map(String::toLowerCase)

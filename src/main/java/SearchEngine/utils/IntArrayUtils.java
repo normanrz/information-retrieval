@@ -7,6 +7,9 @@ import java.util.Arrays;
  */
 public class IntArrayUtils {
 
+    private IntArrayUtils() {
+    }
+
     public static boolean intArrayContains(final int[] array, final int key) {
         for (final int i : array) {
             if (i == key) {

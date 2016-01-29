@@ -9,6 +9,10 @@ import java.util.List;
  * Created by norman on 03.11.15.
  */
 public class TermReader {
+
+    private TermReader() {
+    }
+
     public static String readTerm(DataInput stream) throws IOException {
 //        int termLength = stream.readInt();
 //        byte[] termBytes = new byte[termLength];

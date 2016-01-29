@@ -9,6 +9,9 @@ import java.util.Collection;
  */
 public class TermWriter {
 
+    private TermWriter() {
+    }
+
     public static void writeTerm(DataOutput stream, String term) throws IOException {
 //        byte[] termBytes = term.getBytes("UTF8");
 //        stream.writeInt(termBytes.length);

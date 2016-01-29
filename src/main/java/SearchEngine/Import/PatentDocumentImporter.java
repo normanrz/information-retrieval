@@ -20,6 +20,8 @@ import java.util.zip.GZIPInputStream;
  */
 public class PatentDocumentImporter {
 
+    private PatentDocumentImporter() {
+    }
 
     public static List<PatentDocument> readPatentDocuments(File xmlFile) {
         try (InputStream xmlStream = new FileInputStream(xmlFile)) {

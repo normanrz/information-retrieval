@@ -5,6 +5,9 @@ package SearchEngine.utils;
  */
 public class ArrayUtils<T> {
 
+    private ArrayUtils() {
+    }
+
     public static <T> T first(T[] array) {
         return array[0];
     }

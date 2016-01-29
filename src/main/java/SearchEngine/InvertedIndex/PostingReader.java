@@ -13,29 +13,7 @@ import java.util.List;
  */
 public class PostingReader {
 
-    @Deprecated
-    public static Posting readPosting(DataInput stream) throws IOException {
-        int docId = stream.readInt();
-        int pos = stream.readInt();
-        return new Posting(docId, pos);
-    }
-
-    @Deprecated
-    public static List<Posting> readPostingsList(DataInput stream) throws IOException {
-        int postingsListLength = stream.readInt();
-        List<Posting> output = new ArrayList<>(postingsListLength);
-
-        Posting lastPosting = null;
-        for (int i = 0; i < postingsListLength; i++) {
-            Posting posting = readPosting(stream);
-            if (lastPosting != null) {
-                posting = fromDelta(posting, lastPosting);
-            }
-            output.add(posting);
-            lastPosting = posting;
-
-        }
-        return output;
+    private PostingReader() {
     }
 
     public static DocumentPostings readDocumentPostings(DataInput stream) throws IOException {

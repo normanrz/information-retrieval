@@ -17,6 +17,9 @@ import java.util.stream.Collectors;
  */
 public class InvertedIndexMerger {
 
+    private InvertedIndexMerger() {
+    }
+
     public static void merge(List<String> inputIndexFilenames, String outputFilename) throws IOException, InterruptedException {
         merge(
                 inputIndexFilenames.stream().map(File::new).collect(Collectors.toList()),

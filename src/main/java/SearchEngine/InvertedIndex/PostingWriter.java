@@ -12,6 +12,9 @@ import java.util.zip.DeflaterOutputStream;
  */
 public class PostingWriter {
 
+    private PostingWriter() {
+    }
+
     public static int writeDocumentPostings(
             DataOutputStream stream, DocumentPostings documentPostings) throws IOException {
 

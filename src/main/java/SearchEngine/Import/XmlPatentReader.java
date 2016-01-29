@@ -18,6 +18,9 @@ import java.util.Optional;
 
 public class XmlPatentReader {
 
+    private XmlPatentReader() {
+    }
+
     private static SMInputCursor createCursor(InputStream inputStream) throws XMLStreamException {
         XMLInputFactory factory = XMLInputFactory.newFactory();
 
