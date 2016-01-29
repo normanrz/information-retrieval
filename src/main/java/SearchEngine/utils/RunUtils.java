@@ -7,7 +7,8 @@ import java.util.function.Supplier;
  */
 public class RunUtils {
 
-    private RunUtils() {}
+    private RunUtils() {
+    }
 
     public static void runTimedBlock(Runnable action, String label) {
         System.out.println();

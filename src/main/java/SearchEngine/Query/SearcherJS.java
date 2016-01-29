@@ -4,6 +4,7 @@ import SearchEngine.Import.PatentDocumentPreprocessor;
 import SearchEngine.InvertedIndex.DocumentPostings;
 import SearchEngine.InvertedIndex.InvertedIndex;
 import SearchEngine.LinkIndex.LinkIndex;
+import SearchEngine.utils.Counter;
 import SearchEngine.utils.IntArrayUtils;
 import SearchEngine.utils.LevenshteinDistance;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
@@ -15,6 +16,7 @@ import java.util.stream.Stream;
 
 public class SearcherJS {
 
+    private static final int WEAKAND_CUTOFF = 1000;
     private final int[] emptyArray = new int[0];
     private final InvertedIndex index;
     private final LinkIndex linkIndex;
@@ -157,6 +159,19 @@ public class SearcherJS {
                 .reduce(IntArrayUtils::intersection).get();
     }
 
+    private int[] execWeakAnd(Collection<Object> values) {
+        List<int[]> resultLists = values.stream()
+                .map(value -> this.execQuery((ScriptObjectMirror) value))
+                .collect(Collectors.toList());
+        Counter counter = new Counter();
+        for (int[] docIds : resultLists) {
+            for (int docId : docIds) {
+                counter.add(docId);
+            }
+        }
+        return counter.topElements(WEAKAND_CUTOFF);
+    }
+
     private int[] execQuery(ScriptObjectMirror obj) {
         String type = (String) obj.get("type");
         switch (type) {
@@ -164,6 +179,8 @@ public class SearcherJS {
                 return execAnd(getValues(obj));
             case "or":
                 return execOr(getValues(obj));
+            case "weakand":
+                return execWeakAnd(getValues(obj));
             case "phrase":
                 return execPhraseQuery(getValues(obj));
             case "token":

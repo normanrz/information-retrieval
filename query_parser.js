@@ -1,5 +1,5 @@
 { function flatten(node) {
-    if (node.type == 'and' || node.type == 'or') {
+    if (node.type == 'and' || node.type == 'or' || node.type == 'weakand') {
     var values = [];
       node.values.forEach(function (value) {
         if (value.type == node.type) {
@@ -31,7 +31,7 @@ Subquery
 Keyword = "AND" / "OR" / "NOT"
 
 Word
-  = !Keyword [a-zA-Z0-9]+ { return text(); }
+  = !Keyword [a-zA-Z0-9\-]+ { return text().replace(/[0-9]+/g, ''); }
 
 Number
   = [0-9]+ { return parseInt(text()); }
@@ -72,8 +72,8 @@ BooleanAnd
   / Primary
 
 BooleanOr
-  = (left:BooleanAnd __ ("OR" __)? right:BooleanOr)
-  { return flatten({ type: 'or', values: [left, right] }); }
+  = (left:BooleanAnd __ operator:("OR" __)? right:BooleanOr)
+  { return flatten({ type: operator ? 'or' : 'weakand', values: [left, right] }); }
   / BooleanAnd
 
 Primary

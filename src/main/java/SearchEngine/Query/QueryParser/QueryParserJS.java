@@ -64,7 +64,7 @@ public class QueryParserJS {
             "        peg$c7 = { type: \"literal\", value: \"NOT\", description: \"\\\"NOT\\\"\" },\n" +
             "        peg$c8 = /^[a-zA-Z0-9\\-]/,\n" +
             "        peg$c9 = { type: \"class\", value: \"[a-zA-Z0-9\\\\-]\", description: \"[a-zA-Z0-9\\\\-]\" },\n" +
-            "        peg$c10 = function() { return text(); },\n" +
+            "        peg$c10 = function() { return text().replace(/[0-9]+/g, ''); },\n" +
             "        peg$c11 = /^[0-9]/,\n" +
             "        peg$c12 = { type: \"class\", value: \"[0-9]\", description: \"[0-9]\" },\n" +
             "        peg$c13 = function() { return parseInt(text()); },\n" +
@@ -75,7 +75,7 @@ public class QueryParserJS {
             "        peg$c18 = { type: \"literal\", value: \"linkTo:\", description: \"\\\"linkTo:\\\"\" },\n" +
             "        peg$c19 = function(number) { return {\n" +
             "              type: 'link',\n" +
-            "              value: number\n" +
+            "              value: parseInt(number)\n" +
             "            }; },\n" +
             "        peg$c20 = \"\\\"\",\n" +
             "        peg$c21 = { type: \"literal\", value: \"\\\"\", description: \"\\\"\\\\\\\"\\\"\" },\n" +
@@ -88,7 +88,7 @@ public class QueryParserJS {
             "        peg$c25 = { type: \"literal\", value: \"#\", description: \"\\\"#\\\"\" },\n" +
             "        peg$c26 = function(number) { return number; },\n" +
             "        peg$c27 = function(left, right) { return flatten({ type: 'and', values: [left, right] }); },\n" +
-            "        peg$c28 = function(left, right) { return flatten({ type: 'or', values: [left, right] }); },\n" +
+            "        peg$c28 = function(left, operator, right) { return flatten({ type: operator ? 'or' : 'weakand', values: [left, right] }); },\n" +
             "        peg$c29 = \"(\",\n" +
             "        peg$c30 = { type: \"literal\", value: \"(\", description: \"\\\"(\\\"\" },\n" +
             "        peg$c31 = \")\",\n" +
@@ -814,7 +814,7 @@ public class QueryParserJS {
             "            s4 = peg$parseBooleanOr();\n" +
             "            if (s4 !== peg$FAILED) {\n" +
             "              peg$savedPos = s0;\n" +
-            "              s1 = peg$c28(s1, s4);\n" +
+            "              s1 = peg$c28(s1, s3, s4);\n" +
             "              s0 = s1;\n" +
             "            } else {\n" +
             "              peg$currPos = s0;\n" +
@@ -962,7 +962,7 @@ public class QueryParserJS {
             "    }\n" +
             "\n" +
             "     function flatten(node) {\n" +
-            "        if (node.type == 'and' || node.type == 'or') {\n" +
+            "        if (node.type == 'and' || node.type == 'or' || node.type == 'weakand') {\n" +
             "        var values = [];\n" +
             "          node.values.forEach(function (value) {\n" +
             "            if (value.type == node.type) {\n" +
@@ -1002,7 +1002,7 @@ public class QueryParserJS {
             "    SyntaxError: peg$SyntaxError,\n" +
             "    parse:       peg$parse\n" +
             "  };\n" +
-            "})();\n\n\nfunction parse(str) { return module.parse(str); }" +
+            "})();\n\nfunction parse(str) { return module.parse(str); }" +
             "";
     static ScriptEngine engine;
 
