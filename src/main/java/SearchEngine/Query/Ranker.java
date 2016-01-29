@@ -98,14 +98,20 @@ public class Ranker {
 
     public Stream<SearchResult> rank(List<String> queryTokens, int[] docIds) {
 
-        return Arrays.stream(docIds)
-                .mapToObj(docId -> {
-                    double pageRank = Math.log(documentIndex.getDocumentPageRank(docId));
-                    double docQueryLikelihood = queryLikelihood(queryTokens, docId);
+        if (queryTokens.size() == 0) {
+            return Arrays.stream(docIds)
+                    .map(a -> -a).sorted().map(a -> -a)
+                    .mapToObj(docId -> new SearchResult(docId, 0));
+        } else {
+            return Arrays.stream(docIds)
+                    .mapToObj(docId -> {
+                        double pageRank = Math.log(documentIndex.getDocumentPageRank(docId));
+                        double docQueryLikelihood = queryLikelihood(queryTokens, docId);
 //                    System.out.println(docId + ": " + pageRank + " " + docQueryLikelihood);
-                    return new SearchResult(docId, pageRank + docQueryLikelihood);
-                })
-                .sorted(SearchResult::compareTo);
+                        return new SearchResult(docId, pageRank + docQueryLikelihood);
+                    })
+                    .sorted(SearchResult::compareTo);
+        }
     }
 
     public double queryLikelihood(List<String> queryTokens, int docId) {

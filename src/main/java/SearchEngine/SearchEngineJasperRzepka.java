@@ -200,7 +200,6 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
         } else {
 
             Map<String, Double> relevanceModel = pseudoRelevanceModelWithSnippets(rankResults, prf, queryTokens);
-//            Map<String, Double> relevanceModel = pseudoRelevanceModelWithDocuments(rankResults, prf, queryTokens);
 
             List<String> newQueryTokens = Ranker.expandQueryFromRelevanceModel(relevanceModel, queryTokens);
             ScriptObjectMirror newQueryObj = QueryParserJS.parse(String.join(" OR ", newQueryTokens));
@@ -215,15 +214,24 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
 
     public List<String> search(String query, int topK, int prf) {
 
-//        List<Integer> googleIds = new WebFile().getGoogleRanking(query).stream()
-//                .limit(topK)
-//                .collect(Collectors.toList());
+        return search(query, prf)
+                .limit(topK)
+                .map(result -> result.toString())
+                .collect(Collectors.toList());
+
+    }
+
+    public List<String> searchWithNDCG(String query, int topK, int prf) {
+
+        List<Integer> googleIds = new WebFile().getGoogleRanking(query).stream()
+                .limit(topK)
+                .collect(Collectors.toList());
 
         List<SnippetSearchResult> results = search(query, prf)
                 .limit(topK)
                 .collect(Collectors.toList());
 
-//        System.out.println(computeNDCG(googleIds, results, topK));
+        System.out.println(computeNDCG(googleIds, results, topK));
 
         return results.stream()
                 .map(result -> result.toString())

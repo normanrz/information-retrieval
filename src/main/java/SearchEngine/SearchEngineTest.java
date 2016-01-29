@@ -50,7 +50,7 @@ public class SearchEngineTest {
 //                    .forEach(token -> System.out.println(token + ": " + myEngine.index.getCollectionTokenCount(token)));
 
             String[] queries = {
-                    "linkTo:08365115", "reviewboa*", "review OR guidelines", "on-chip OR OCV"
+                    "linkTo:08365115", "reviewboa*", "review guidelines", "on-chip OR OCV"
             };
 
             for (String query : queries) {
