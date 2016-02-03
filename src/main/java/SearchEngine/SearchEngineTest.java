@@ -52,13 +52,34 @@ public class SearchEngineTest {
 //                    .forEach(token -> System.out.println(token + ": " + myEngine.index.getCollectionTokenCount(token)));
 
             String[] queries = {
-                    "linkTo:07920906", "reviewboa*", "review guidelines", "on-chip OR OCV"
+//                    "data AND information",
+//                    "mobile OR \"data processing\"",
+//                    "data NOT info*",
+//                    "\"data proces*\" NOT processing",
+//                    "\"data processing\" #2",
+//                    "\"data proces*\" #4",
+//                    "\"data processing\" mobile #2",
+//                    "mobile data #3",
+//                    "mobile dat* #2",
+                    "LinkTo:098754",
+                    "LinkTo:098754 AND LinkTo:034567",
+                    "LinkTo:098754 NOT LinkTo:034567",
+                    "LinkTo:098754 AND data",
+
+                    "Marker pen holder",
+                    "sodium polyphosphates",
+                    "\"ionizing radiation\"",
+                    "\"solar coronal holes\"",
+                    "\"patterns in scale-free networks\"",
+                    "radiographic NOT ventilator",
+                    "multi-label AND learning",
+                    "LinkTo:07866385"
             };
 
             for (String query : queries) {
 
                 RunUtils.runTimedBlock(() -> {
-                    List<String> results = myEngine.search(query, 20, 0);
+                    List<String> results = myEngine.searchWithNDCG(query, 20, 0);
                     System.out.println(String.format("Query: \'%s\' (%d)", query, results.size()));
                     results.forEach(System.out::println);
 

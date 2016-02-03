@@ -16,7 +16,7 @@ import java.util.zip.InflaterInputStream;
 
 public class DiskInvertedIndex implements InvertedIndex, AutoCloseable {
 
-    private final int LRU_CACHE_SIZE = 20;
+    private final int LRU_CACHE_SIZE = 5;
     private SeekList seekList;
     private RandomAccessFile file;
     private int seekListByteLength;
@@ -26,29 +26,31 @@ public class DiskInvertedIndex implements InvertedIndex, AutoCloseable {
 
     public DiskInvertedIndex(File indexFile) throws IOException {
         this.file = new RandomAccessFile(indexFile, "r");
-        this.seekList = readSeekList(file);
     }
 
-    private SeekList readSeekList(RandomAccessFile indexFile) throws IOException {
+    private void readHeader(RandomAccessFile indexFile) throws IOException {
         indexFile.seek(0);
         seekListByteLength = indexFile.readInt();
         collectionTokenCount = indexFile.readInt();
-
-        return readByteArraySeekList(indexFile);
     }
 
-    private ByteArraySeekList readByteArraySeekList(RandomAccessFile indexFile) throws IOException {
+    private void readByteArraySeekList(RandomAccessFile indexFile) throws IOException {
+        readHeader(indexFile);
         byte[] seekListByteArray = new byte[seekListByteLength];
         indexFile.readFully(seekListByteArray);
-        return ByteArraySeekList.read(new DataInputStream(new ByteArrayInputStream(seekListByteArray)));
+        seekList = ByteArraySeekList.read(new DataInputStream(new ByteArrayInputStream(seekListByteArray)));
     }
 
-    private EntryListSeekList readEntryListSeekList(RandomAccessFile indexFile) throws IOException {
-        return SeekListReader.readSeekListFromFile(
+    private void readEntryListSeekList(RandomAccessFile indexFile) throws IOException {
+        readHeader(indexFile);
+        seekList = SeekListReader.readSeekListFromFile(
                 new DataInputStream(new BufferedInputStream(new FileInputStream(indexFile.getFD()))),
                 seekListByteLength);
     }
 
+    public boolean has(String token) {
+        return seekList.has(token);
+    }
 
     private Optional<SeekListEntry> getSeekListEntry(String token) {
         return seekList.get(token).findFirst();
@@ -104,8 +106,12 @@ public class DiskInvertedIndex implements InvertedIndex, AutoCloseable {
     }
 
     private Optional<DocumentPostings> getDocumentPostings(String token, int docId) {
+
         return getSeekListEntry(token)
-                .map(this::loadDocumentPostingsList)
+                .map(entry -> {
+                    System.out.println(token + " " + entry.getOffset() + " " + entry.getLength());
+                    return this.loadDocumentPostingsList(entry);
+                })
                 .flatMap(documentPostingsList -> {
                     int i = Collections.binarySearch(documentPostingsList, DocumentPostings.searchDummy(docId));
                     if (i >= 0) {
@@ -142,6 +148,7 @@ public class DiskInvertedIndex implements InvertedIndex, AutoCloseable {
 
     private synchronized List<DocumentPostings> loadDocumentPostingsList(long offset, int length) {
         if (lruDocumentPostingsCache.containsKey(offset)) {
+//            System.out.println(String.format("[DiskInvertedIndex] Cache hit %d %d", offset, length));
             return lruDocumentPostingsCache.get(offset);
         }
 
@@ -168,6 +175,10 @@ public class DiskInvertedIndex implements InvertedIndex, AutoCloseable {
         return Collections.emptyList();
     }
 
+    public void clearCache() {
+        lruDocumentPostingsCache.clear();
+    }
+
 
     @Override
     public void close() throws IOException {
@@ -177,5 +188,17 @@ public class DiskInvertedIndex implements InvertedIndex, AutoCloseable {
     public void printStats() {
         System.out.println("Terms in index: " + seekList.getLength());
         System.out.println("Postings in index: " + getCollectionTokenCount());
+    }
+
+    public static DiskInvertedIndex withEntryListSeekList(File indexFile) throws IOException {
+        DiskInvertedIndex index = new DiskInvertedIndex(indexFile);
+        index.readEntryListSeekList(index.file);
+        return index;
+    }
+
+    public static DiskInvertedIndex withByteArraySeekList(File indexFile) throws IOException {
+        DiskInvertedIndex index = new DiskInvertedIndex(indexFile);
+        index.readByteArraySeekList(index.file);
+        return index;
     }
 }

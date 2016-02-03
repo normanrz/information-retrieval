@@ -32,7 +32,7 @@ public class SeekListReader {
                 break;
             }
         }
-        System.out.println(seekList.getLength());
+//        System.out.println(seekList.getLength());
         return seekList;
     }
 

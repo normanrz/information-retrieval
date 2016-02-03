@@ -40,6 +40,11 @@ public class EntryListSeekList implements SeekList {
     }
 
     @Override
+    public boolean has(String token) {
+        return Collections.binarySearch(list, SeekListEntry.createSearchDummy(token)) >= 0;
+    }
+
+    @Override
     public Stream<SeekListEntry> getByPrefix(String prefixToken) {
         return list.stream().filter(entry -> entry.getToken().startsWith(prefixToken));
     }

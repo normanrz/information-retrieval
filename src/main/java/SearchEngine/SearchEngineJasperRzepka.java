@@ -127,7 +127,7 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
             QueryParserJS.parse("linkTo:1234567 OR test* AND review NOT test1 #2");
             // Load stuff
             linkIndex = LinkIndex.load(new File(indexDirectory, linkIndexFileName));
-            index = new DiskInvertedIndex(new File(indexDirectory, invertedIndexFileName));
+            index = DiskInvertedIndex.withByteArraySeekList(new File(indexDirectory, invertedIndexFileName));
             index.printStats();
             docIndex = XmlDocumentIndex.load(dataDirectory, new File(indexDirectory, documentIndexFileName));
         } catch (IOException e) {
@@ -215,28 +215,37 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
 
     public List<String> search(String query, int topK, int prf) {
 
-        return search(query, prf)
-                .limit(topK)
-                .map(result -> result.toString())
-                .collect(Collectors.toList());
+        try {
+            return search(query, prf)
+                    .limit(topK)
+                    .map(result -> result.toString())
+                    .collect(Collectors.toList());
+        } finally {
+            index.clearCache();
+        }
 
     }
 
     public List<String> searchWithNDCG(String query, int topK, int prf) {
 
-        List<Integer> googleIds = new WebFile().getGoogleRanking(query).stream()
-                .limit(topK)
-                .collect(Collectors.toList());
+        try {
+            List<Integer> googleIds = new WebFile().getGoogleRanking(query).stream()
+                    .limit(topK)
+                    .collect(Collectors.toList());
 
-        List<SnippetSearchResult> results = search(query, prf)
-                .limit(topK)
-                .collect(Collectors.toList());
 
-        System.out.println(computeNDCG(googleIds, results, topK));
+            List<SnippetSearchResult> results = search(query, prf)
+                    .limit(topK)
+                    .collect(Collectors.toList());
 
-        return results.stream()
-                .map(result -> result.toString())
-                .collect(Collectors.toList());
+            System.out.println(String.format("NDCG:\t%f", computeNDCG(googleIds, results, topK)));
+
+            return results.stream()
+                    .map(result -> result.toString())
+                    .collect(Collectors.toList());
+        } finally {
+            index.clearCache();
+        }
 
     }
 

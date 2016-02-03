@@ -24,7 +24,7 @@ import java.util.zip.GZIPOutputStream;
 public class XmlDocumentIndex implements DocumentIndex {
 
     private final String directory;
-    private final int LRU_CACHE_SIZE = 300;
+    private final int LRU_CACHE_SIZE = 100;
     private SortedMap<Integer, XmlDocumentIndexEntry> map = new TreeMap<>();
     private LRUMap<XmlDocumentIndexEntry, PatentDocument> lruDocumentCache = new LRUMap<>(LRU_CACHE_SIZE);
 

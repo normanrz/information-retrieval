@@ -28,7 +28,7 @@ Subquery
   = boolean:BooleanOr
   { return boolean; }
 
-Keyword = "AND" / "OR" / "NOT"
+Keyword = "AND"i / "OR"i / "NOT"i
 
 Word
   = !Keyword [a-zA-Z0-9\-]+ { return text().replace(/[0-9]+/g, ''); }
@@ -38,11 +38,11 @@ Number
 
 Token
   = word:Word asterisk:("*")?
-  { return { type: 'token', value: word, isPrefix: !!asterisk }; }
+  { return { type: 'token', value: word.toLowerCase(), isPrefix: !!asterisk }; }
 
 
 LinkTo
-  = "linkTo:" number:Number
+  = "linkTo:"i number:Number
   { return {
       type: 'link',
       value: parseInt(number)
@@ -59,7 +59,7 @@ TokenOrPhrase
   = LinkTo / Token / Phrase
   
 NotToken
-  = "NOT" _ value:TokenOrPhrase
+  = "NOT"i _ value:TokenOrPhrase
   { return value }
   
 Prf
@@ -67,12 +67,12 @@ Prf
   { return number; }
 
 BooleanAnd
-  = left:Primary __ "AND" __ right:BooleanAnd
+  = left:Primary __ "AND"i __ right:BooleanAnd
   { return flatten({ type: 'and', values: [left, right] }); }
   / Primary
 
 BooleanOr
-  = (left:BooleanAnd __ operator:("OR" __)? right:BooleanOr)
+  = (left:BooleanAnd __ operator:("OR"i __)? right:BooleanOr)
   { return flatten({ type: operator ? 'or' : 'weakand', values: [left, right] }); }
   / BooleanAnd
 

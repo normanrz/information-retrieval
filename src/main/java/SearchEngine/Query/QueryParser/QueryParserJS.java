@@ -56,11 +56,11 @@ public class QueryParserJS {
             "              prf: prf ? prf[1] : 0\n" +
             "            }; },\n" +
             "        peg$c1 = function(boolean) { return boolean; },\n" +
-            "        peg$c2 = \"AND\",\n" +
+            "        peg$c2 = \"and\",\n" +
             "        peg$c3 = { type: \"literal\", value: \"AND\", description: \"\\\"AND\\\"\" },\n" +
-            "        peg$c4 = \"OR\",\n" +
+            "        peg$c4 = \"or\",\n" +
             "        peg$c5 = { type: \"literal\", value: \"OR\", description: \"\\\"OR\\\"\" },\n" +
-            "        peg$c6 = \"NOT\",\n" +
+            "        peg$c6 = \"not\",\n" +
             "        peg$c7 = { type: \"literal\", value: \"NOT\", description: \"\\\"NOT\\\"\" },\n" +
             "        peg$c8 = /^[a-zA-Z0-9\\-]/,\n" +
             "        peg$c9 = { type: \"class\", value: \"[a-zA-Z0-9\\\\-]\", description: \"[a-zA-Z0-9\\\\-]\" },\n" +
@@ -70,8 +70,8 @@ public class QueryParserJS {
             "        peg$c13 = function() { return parseInt(text()); },\n" +
             "        peg$c14 = \"*\",\n" +
             "        peg$c15 = { type: \"literal\", value: \"*\", description: \"\\\"*\\\"\" },\n" +
-            "        peg$c16 = function(word, asterisk) { return { type: 'token', value: word, isPrefix: !!asterisk }; },\n" +
-            "        peg$c17 = \"linkTo:\",\n" +
+            "        peg$c16 = function(word, asterisk) { return { type: 'token', value: word.toLowerCase(), isPrefix: !!asterisk }; },\n" +
+            "        peg$c17 = \"linkto:\",\n" +
             "        peg$c18 = { type: \"literal\", value: \"linkTo:\", description: \"\\\"linkTo:\\\"\" },\n" +
             "        peg$c19 = function(number) { return {\n" +
             "              type: 'link',\n" +
@@ -392,24 +392,24 @@ public class QueryParserJS {
             "    function peg$parseKeyword() {\n" +
             "      var s0;\n" +
             "\n" +
-            "      if (input.substr(peg$currPos, 3) === peg$c2) {\n" +
-            "        s0 = peg$c2;\n" +
+            "      if (input.substr(peg$currPos, 3).toLowerCase() === peg$c2) {\n" +
+            "        s0 = input.substr(peg$currPos, 3);\n" +
             "        peg$currPos += 3;\n" +
             "      } else {\n" +
             "        s0 = peg$FAILED;\n" +
             "        if (peg$silentFails === 0) { peg$fail(peg$c3); }\n" +
             "      }\n" +
             "      if (s0 === peg$FAILED) {\n" +
-            "        if (input.substr(peg$currPos, 2) === peg$c4) {\n" +
-            "          s0 = peg$c4;\n" +
+            "        if (input.substr(peg$currPos, 2).toLowerCase() === peg$c4) {\n" +
+            "          s0 = input.substr(peg$currPos, 2);\n" +
             "          peg$currPos += 2;\n" +
             "        } else {\n" +
             "          s0 = peg$FAILED;\n" +
             "          if (peg$silentFails === 0) { peg$fail(peg$c5); }\n" +
             "        }\n" +
             "        if (s0 === peg$FAILED) {\n" +
-            "          if (input.substr(peg$currPos, 3) === peg$c6) {\n" +
-            "            s0 = peg$c6;\n" +
+            "          if (input.substr(peg$currPos, 3).toLowerCase() === peg$c6) {\n" +
+            "            s0 = input.substr(peg$currPos, 3);\n" +
             "            peg$currPos += 3;\n" +
             "          } else {\n" +
             "            s0 = peg$FAILED;\n" +
@@ -545,8 +545,8 @@ public class QueryParserJS {
             "      var s0, s1, s2;\n" +
             "\n" +
             "      s0 = peg$currPos;\n" +
-            "      if (input.substr(peg$currPos, 7) === peg$c17) {\n" +
-            "        s1 = peg$c17;\n" +
+            "      if (input.substr(peg$currPos, 7).toLowerCase() === peg$c17) {\n" +
+            "        s1 = input.substr(peg$currPos, 7);\n" +
             "        peg$currPos += 7;\n" +
             "      } else {\n" +
             "        s1 = peg$FAILED;\n" +
@@ -668,8 +668,8 @@ public class QueryParserJS {
             "      var s0, s1, s2, s3;\n" +
             "\n" +
             "      s0 = peg$currPos;\n" +
-            "      if (input.substr(peg$currPos, 3) === peg$c6) {\n" +
-            "        s1 = peg$c6;\n" +
+            "      if (input.substr(peg$currPos, 3).toLowerCase() === peg$c6) {\n" +
+            "        s1 = input.substr(peg$currPos, 3);\n" +
             "        peg$currPos += 3;\n" +
             "      } else {\n" +
             "        s1 = peg$FAILED;\n" +
@@ -736,8 +736,8 @@ public class QueryParserJS {
             "      if (s1 !== peg$FAILED) {\n" +
             "        s2 = peg$parse__();\n" +
             "        if (s2 !== peg$FAILED) {\n" +
-            "          if (input.substr(peg$currPos, 3) === peg$c2) {\n" +
-            "            s3 = peg$c2;\n" +
+            "          if (input.substr(peg$currPos, 3).toLowerCase() === peg$c2) {\n" +
+            "            s3 = input.substr(peg$currPos, 3);\n" +
             "            peg$currPos += 3;\n" +
             "          } else {\n" +
             "            s3 = peg$FAILED;\n" +
@@ -787,8 +787,8 @@ public class QueryParserJS {
             "        s2 = peg$parse__();\n" +
             "        if (s2 !== peg$FAILED) {\n" +
             "          s3 = peg$currPos;\n" +
-            "          if (input.substr(peg$currPos, 2) === peg$c4) {\n" +
-            "            s4 = peg$c4;\n" +
+            "          if (input.substr(peg$currPos, 2).toLowerCase() === peg$c4) {\n" +
+            "            s4 = input.substr(peg$currPos, 2);\n" +
             "            peg$currPos += 2;\n" +
             "          } else {\n" +
             "            s4 = peg$FAILED;\n" +

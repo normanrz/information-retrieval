@@ -6,10 +6,8 @@ import SearchEngine.InvertedIndex.seeklist.SeekListEntry;
 import SearchEngine.InvertedIndex.seeklist.SeekListWriter;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -33,32 +31,40 @@ public class InvertedIndexMerger {
 //            return;
 //        }
 
-
+        System.out.println("Read seeklists");
         List<DiskInvertedIndex> indexes = new ArrayList<>();
         for (File file : inputIndexFiles) {
-            indexes.add(new DiskInvertedIndex(file));
+            indexes.add(DiskInvertedIndex.withEntryListSeekList(file));
         }
 
         EntryListSeekList seekList = new EntryListSeekList();
 
-        SortedMap<String, List<DiskInvertedIndex>> tokenMap = new TreeMap<>();
-        for (DiskInvertedIndex index : indexes) {
-            List<String> tokenList = index.allTokens().distinct().collect(Collectors.toList());
-            for (String token : tokenList) {
-                if (!tokenMap.containsKey(token)) {
-                    tokenMap.put(token, new ArrayList<>());
-                }
-                tokenMap.get(token).add(index);
-            }
-        }
+        System.out.println("Collect tokens");
+        List<String> allTokens = indexes.stream()
+                .flatMap(DiskInvertedIndex::allTokens)
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+
+
+        System.out.println("Collect tokens");
+        List<List<DiskInvertedIndex>> tokenMap = allTokens.stream()
+//                .peek(System.out::println)
+                .map(token -> indexes.stream()
+                        .filter(index -> index.has(token))
+                        .collect(Collectors.toList()))
+                .collect(Collectors.toList());
+
 
         // Write postings
         File postingsFile = new File(outputFile.getPath() + ".postings");
-        try (OutputStream postingsFileStream = new FileOutputStream(postingsFile)) {
+        try (OutputStream postingsFileStream = new BufferedOutputStream(new FileOutputStream(postingsFile))) {
             long byteCounter = 0;
-            for (String token : tokenMap.keySet()) {
+            for (int i = 0; i < allTokens.size(); i++) {
+                String token = allTokens.get(i);
+                System.out.println(String.format("Read  %s %d", token, byteCounter));
                 // Assumption: One document is only present in strictly one input index
-                List<DocumentPostings> postings = tokenMap.get(token).stream()
+                List<DocumentPostings> postings = tokenMap.get(i).stream()
                         .flatMap(index -> index.get(token))
                         .sorted()
                         .collect(Collectors.toList());
@@ -67,6 +73,7 @@ public class InvertedIndexMerger {
                         .mapToInt(DocumentPostings::getTokenCount)
                         .sum();
 
+                System.out.println(String.format("Write %s %d %d", token, byteCounter, tokenCount));
                 ByteArrayOutputStream postingsBuffer =
                         PostingWriter.writeDocumentPostingsListToBuffer(postings);
                 int length = postingsBuffer.size();
@@ -79,9 +86,10 @@ public class InvertedIndexMerger {
 
 
         // Write EntryListSeekList
+        System.out.println("Write seeklist");
         File seekListFile = new File(outputFile.getPath() + ".seeklist");
         try (DataOutputStream seekListFileStream =
-                     new DataOutputStream(new FileOutputStream(seekListFile))) {
+                     new DataOutputStream(new BufferedOutputStream(new FileOutputStream(seekListFile)))) {
             SeekListWriter.writeSeekList(seekListFileStream, seekList);
             seekListFileStream.close();
         }
@@ -96,6 +104,7 @@ public class InvertedIndexMerger {
 
 
         // Merge files
+        System.out.println("Combine inverted index files");
         String[] cmd = {
                 "/bin/sh",
                 "-c",

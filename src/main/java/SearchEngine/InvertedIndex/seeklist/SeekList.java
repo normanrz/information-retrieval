@@ -8,6 +8,8 @@ import java.util.stream.Stream;
 public interface SeekList extends Iterable<SeekListEntry> {
     int getLength();
 
+    boolean has(String token);
+
     Stream<SeekListEntry> get(String token);
 
     Stream<SeekListEntry> getByPrefix(String prefixToken);

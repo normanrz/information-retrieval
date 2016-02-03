@@ -1,9 +1,9 @@
 JAVA=java
-JVMOPTS=-Xmx4g
+JVMOPTS=-Xmx8g
 CLI=$(JAVA) $(JVMOPTS) -cp target/patent-searchengine-1.0-SNAPSHOT-jar-with-dependencies.jar SearchEngine.SearchEngineCli
 DATA_DIR=data
 TMP_DIR=tmp
-OUT_DIR=index
+OUT_DIR=out
 
 INPUT_FILES=$(shell find $(DATA_DIR)/ -name "*.xml")
 INTERMEDIATE_FILES=$(INPUT_FILES:$(DATA_DIR)/%=$(TMP_DIR)/%)

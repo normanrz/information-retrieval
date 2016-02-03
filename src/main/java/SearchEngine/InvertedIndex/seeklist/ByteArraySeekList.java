@@ -103,6 +103,10 @@ public class ByteArraySeekList implements SeekList {
         return getSingle(token).map(Stream::of).orElseGet(Stream::empty);
     }
 
+    public boolean has(String token) {
+        return indexOf(token) >= 0;
+    }
+
     public Stream<SeekListEntry> getByPrefix(String prefixToken) {
         int index = indexOf(prefixToken);
         index = index < 0 ? 1 - index : index;
