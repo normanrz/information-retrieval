@@ -16,7 +16,7 @@ public class PatentDocumentPreprocessor {
 
     private final static SnowballStemmer stemmer = new englishStemmer();
     private final static int MIN_TOKEN_LENGTH = 2;
-    private final static Pattern tokenPattern = Pattern.compile("[\\p{L}]+(?:\\-[\\p{L}]+)*");
+    private final static Pattern tokenPattern = Pattern.compile("[a-z]+(?:\\-[a-z]+)*", Pattern.CASE_INSENSITIVE);
 
     private static List<String> stopwords = Arrays.asList(new String[]{
             // Own selection
