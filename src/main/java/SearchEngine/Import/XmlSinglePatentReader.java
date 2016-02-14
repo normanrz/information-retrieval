@@ -102,7 +102,7 @@ class XmlSinglePatentReader {
             }
         }
     }
-    
+
     private Optional<PatentDocument> parsePatentDocument(SMInputCursor cursor) throws XMLStreamException {
         while (cursor.getNext() != null) {
             switch (cursor.getLocalName()) {

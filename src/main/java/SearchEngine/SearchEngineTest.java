@@ -22,17 +22,17 @@ public class SearchEngineTest {
 
         try (SearchEngineJasperRzepka myEngine = new SearchEngineJasperRzepka()) {
 
-            RunUtils.runTimedBlock(() -> {
-
-                SearchEngineJasperRzepka.index("data_test", "index_test");
-
-            }, "Build Test Index");
-
-            RunUtils.runTimedBlock(() -> {
-
-                myEngine.loadIndex("index_test", "data_test");
-
-            }, "Load Test Index");
+//            RunUtils.runTimedBlock(() -> {
+//
+//                SearchEngineJasperRzepka.index("data_test", "index_test");
+//
+//            }, "Build Test Index");
+//
+//            RunUtils.runTimedBlock(() -> {
+//
+//                myEngine.loadIndex("index_test", "data_test");
+//
+//            }, "Load Test Index");
 
 //            RunUtils.runTimedBlock(() -> {
 //
@@ -61,6 +61,7 @@ public class SearchEngineTest {
 //                    "\"data processing\" mobile #2",
 //                    "mobile data #3",
 //                    "mobile dat* #2",
+
                     "LinkTo:098754",
                     "LinkTo:098754 AND LinkTo:034567",
                     "LinkTo:098754 NOT LinkTo:034567",
@@ -69,8 +70,10 @@ public class SearchEngineTest {
                     "Marker pen holder",
                     "sodium polyphosphates",
                     "\"ionizing radiation\"",
-                    "\"solar coronal holes\"",
-                    "\"patterns in scale-free networks\"",
+                    "solar coronal holes",
+                    "patterns in scale-free networks",
+                    "\"nail polish\"",
+                    "\"keyboard shortcuts\"",
                     "radiographic NOT ventilator",
                     "multi-label AND learning",
                     "LinkTo:07866385"

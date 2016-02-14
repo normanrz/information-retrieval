@@ -39,7 +39,7 @@ public class InvertedIndexMerger {
 
         EntryListSeekList seekList = new EntryListSeekList();
 
-        System.out.println("Collect tokens");
+        System.out.println("Collect tokens 1/2");
         List<String> allTokens = indexes.stream()
                 .flatMap(DiskInvertedIndex::allTokens)
                 .distinct()
@@ -47,7 +47,7 @@ public class InvertedIndexMerger {
                 .collect(Collectors.toList());
 
 
-        System.out.println("Collect tokens");
+        System.out.println("Collect tokens 2/2");
         List<List<DiskInvertedIndex>> tokenMap = allTokens.stream()
 //                .peek(System.out::println)
                 .map(token -> indexes.stream()

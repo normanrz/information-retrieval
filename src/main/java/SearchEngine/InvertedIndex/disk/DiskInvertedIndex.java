@@ -108,10 +108,7 @@ public class DiskInvertedIndex implements InvertedIndex, AutoCloseable {
     private Optional<DocumentPostings> getDocumentPostings(String token, int docId) {
 
         return getSeekListEntry(token)
-                .map(entry -> {
-                    System.out.println(token + " " + entry.getOffset() + " " + entry.getLength());
-                    return this.loadDocumentPostingsList(entry);
-                })
+                .map(this::loadDocumentPostingsList)
                 .flatMap(documentPostingsList -> {
                     int i = Collections.binarySearch(documentPostingsList, DocumentPostings.searchDummy(docId));
                     if (i >= 0) {

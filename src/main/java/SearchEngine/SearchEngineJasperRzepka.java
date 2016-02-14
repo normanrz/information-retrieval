@@ -14,9 +14,12 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,6 +51,8 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
     protected DiskInvertedIndex index;
     protected XmlDocumentIndex docIndex;
     protected LinkIndex linkIndex;
+
+    static Predicate<String> booleanQueryPattern = Pattern.compile(" (AND|OR|NOT) ", Pattern.CASE_INSENSITIVE).asPredicate();
 
 
     public static void indexSingle(
@@ -193,14 +198,19 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
         System.out.println("Search results: " + searchResultSet.getDocIds().length);
 
         // Rank first-pass
-        List<SearchResult> rankResults = RunUtils.runTimed(() -> ranker.rank(searchResultSet).collect(Collectors.toList()), "Rank");
+        Stream<SearchResult> rankResults;
+        if (booleanQueryPattern.test(query)) {
+            rankResults = ranker.rankByDocId(searchResultSet.getDocIds());
+        } else {
+            rankResults = RunUtils.runTimed(() -> ranker.rank(searchResultSet).collect(Collectors.toList()).stream(), "Rank");
+        }
 
         if (prf == 0) {
-            return rankResults.stream()
+            return rankResults
                     .map(result -> createSnippetFromBodySearchResult(result, queryTokens));
         } else {
 
-            Map<String, Double> relevanceModel = pseudoRelevanceModelWithSnippets(rankResults.stream(), prf, queryTokens);
+            Map<String, Double> relevanceModel = pseudoRelevanceModelWithSnippets(rankResults, prf, queryTokens);
 
             List<String> newQueryTokens = Ranker.expandQueryFromRelevanceModel(relevanceModel, queryTokens);
             ScriptObjectMirror newQueryObj = QueryParserJS.parse(String.join(" OR ", newQueryTokens));
@@ -238,7 +248,7 @@ public class SearchEngineJasperRzepka implements AutoCloseable {
                     .limit(topK)
                     .collect(Collectors.toList());
 
-            System.out.println(String.format("NDCG:\t%f", computeNDCG(googleIds, results, topK)));
+            System.out.println(String.format("NDCG:\t%f\t(%d)", computeNDCG(googleIds, results, topK), googleIds.size()));
 
             return results.stream()
                     .map(result -> result.toString())

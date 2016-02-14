@@ -96,12 +96,16 @@ public class Ranker {
         return rank(searchResultSet.getQueryTokens(), searchResultSet.getDocIds());
     }
 
+    public Stream<SearchResult> rankByDocId(int[] docIds) {
+        return Arrays.stream(docIds)
+                .map(a -> -a).sorted().map(a -> -a)
+                .mapToObj(docId -> new SearchResult(docId, 0));
+    }
+
     public Stream<SearchResult> rank(List<String> queryTokens, int[] docIds) {
 
         if (queryTokens.size() == 0) {
-            return Arrays.stream(docIds)
-                    .map(a -> -a).sorted().map(a -> -a)
-                    .mapToObj(docId -> new SearchResult(docId, 0));
+            return rankByDocId(docIds);
         } else {
             return Arrays.stream(docIds)
                     .mapToObj(docId -> {

@@ -4,6 +4,7 @@ import SearchEngine.Import.PatentDocumentPreprocessor;
 import SearchEngine.InvertedIndex.DocumentPostings;
 import SearchEngine.InvertedIndex.InvertedIndex;
 import SearchEngine.LinkIndex.LinkIndex;
+import SearchEngine.PatentDocument;
 import SearchEngine.utils.Counter;
 import SearchEngine.utils.IntArrayUtils;
 import SearchEngine.utils.LevenshteinDistance;
@@ -22,7 +23,7 @@ public class SearcherJS {
     private final LinkIndex linkIndex;
 
 
-    private List<String> stemmedQueryTokens = new ArrayList<>();
+    private List<String> stemmedQueryTokens = Collections.emptyList();
     private boolean shouldCorrectSpelling = false;
 
     public SearcherJS(InvertedIndex index, LinkIndex linkIndex) {
@@ -48,6 +49,7 @@ public class SearcherJS {
     public SearchResultSet search(ScriptObjectMirror query) {
         int[] docIds = execQuery((ScriptObjectMirror) query.get("query"));
         int[] results = execNot(((ScriptObjectMirror) query.get("not")).values(), docIds);
+        stemmedQueryTokens = collectStemmedTokens((ScriptObjectMirror) query.get("query")).collect(Collectors.toList());
         return new SearchResultSet(results, getStemmedQueryTokens());
     }
 
@@ -64,11 +66,15 @@ public class SearcherJS {
             List<DocumentPostings> results = null;
             for (Object _tokenObj : values) {
                 ScriptObjectMirror tokenObj = (ScriptObjectMirror) _tokenObj;
+                boolean isStopword = PatentDocumentPreprocessor.preprocess((String) tokenObj.get("value")).count() == 0;
+                if (isStopword) {
+                    continue;
+                }
                 if (results == null) {
                     // First token
                     results = execTokenWithPostings(tokenObj);
-                } else {
 
+                } else {
                     // Subsequent tokens
                     final int finalTokenCount = tokenCount;
                     final int[] docIds = docIds(results);
@@ -94,8 +100,13 @@ public class SearcherJS {
                                             })
                             )
                             .collect(Collectors.toList());
+
                 }
                 tokenCount += 1;
+                if (results.size() == 0) {
+                    // Return early
+                    return emptyArray;
+                }
             }
             return docIds(results);
         }
@@ -115,13 +126,17 @@ public class SearcherJS {
     private List<DocumentPostings> execTokenWithPostings(ScriptObjectMirror obj) {
         String token = (String) obj.get("value");
         boolean isPrefix = (Boolean) obj.get("isPrefix");
+        boolean isStopword = PatentDocumentPreprocessor.preprocess(token).count() == 0;
         token = token.toLowerCase();
+
+        if (isStopword) {
+            return Collections.emptyList();
+        }
 
         Stream<DocumentPostings> results;
         if (isPrefix) {
             // Prefix search (no stemming)
             results = index.getByPrefix(token);
-            stemmedQueryTokens.add(token);
         } else {
             // Regular search with stemming
             String stemmedToken = PatentDocumentPreprocessor.stem(token);
@@ -133,13 +148,11 @@ public class SearcherJS {
                 if (correctedTokenOptional.isPresent()) {
                     stemmedToken = correctedTokenOptional.get();
                     results = index.get(stemmedToken);
-                    stemmedQueryTokens.add(stemmedToken);
                 } else {
                     results = Stream.empty();
                 }
             } else {
                 results = tmpResults.stream();
-                stemmedQueryTokens.add(stemmedToken);
             }
         }
         return results.collect(Collectors.toList());
@@ -170,6 +183,46 @@ public class SearcherJS {
             }
         }
         return counter.topElements(WEAKAND_CUTOFF);
+    }
+
+    private Stream<String> collectStemmedTokens(Collection<Object> values) {
+        return values.stream()
+                .flatMap(value -> collectStemmedTokens((ScriptObjectMirror) value));
+    }
+
+    private Stream<String> collectStemmedTokens(ScriptObjectMirror obj) {
+        String type = (String) obj.get("type");
+        switch (type) {
+            case "and":
+                return collectStemmedTokens(getValues(obj));
+            case "or":
+                return collectStemmedTokens(getValues(obj));
+            case "weakand":
+                return collectStemmedTokens(getValues(obj));
+            case "phrase":
+                return collectStemmedTokens(getValues(obj));
+            case "token":
+                String token = ((String) obj.get("value")).toLowerCase();
+                if ((Boolean) obj.get("isPrefix")) {
+                    return Stream.of(token);
+                } else {
+                    token = PatentDocumentPreprocessor.stem(token);
+                    if (shouldCorrectSpelling) {
+                        if (index.getCollectionTokenCount(token) == 0) {
+                            return findCorrectSpelledToken(token)
+                                    .map(Stream::of)
+                                    .orElseGet(Stream::empty);
+                        } else {
+                            return Stream.of(token);
+                        }
+                    } else {
+                        return Stream.of(token);
+                    }
+
+                }
+            default:
+                return Stream.empty();
+        }
     }
 
     private int[] execQuery(ScriptObjectMirror obj) {
