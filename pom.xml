@@ -91,7 +91,7 @@
                     <!-- MainClass in mainfest make a executable jar -->
                     <archive>
                         <manifest>
-                            <mainClass>SearchEngine.SearchEngineTest</mainClass>
+                            <mainClass>com.normanrz.SearchEngine.SearchEngineTest</mainClass>
                         </manifest>
                     </archive>
 
